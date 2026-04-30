@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido - Elixir and Flexx</title>
+    <link rel="stylesheet" href="estilos_elixir.css">
+</head>
+<body>
+    <div class="contenedor-principal">
+        <div class="tarjeta-form">
+            <h1>BIENVENIDO AL SISTEMA</h1>
+            <p class="subtitulo">INICIA SESION PARA ACCEDER AL CARRITO Y AL SISTEMA</p>
+            
+            <form>
+                <input type="email" placeholder="EMAIL" required>
+                <input type="password" placeholder="CONTRASEÑA" required>
+                
+                <a href="#" class="olvido" onclick="abrirModal()">¿Olvidaste la contraseña?</a>
+                
+                <button type="submit" class="btn-principal">INICIAR SESION</button>
+            </form>
+            
+            <div class="separador">
+                <hr> <span>o</span> <hr>
+            </div>
+            
+            <div class="botones-sociales">
+                <button class="btn-social google">CONTINUAR CON GOOGLE</button>
+                <button class="btn-social facebook">CONTINUAR CON FACEBOOK</button>
+            </div>
+            
+            <div class="registro-link">
+                <p>NO TIENES CUENTA? <a href="registro.html">REGISTRATE</a></p>
+            </div>
+
+            <div id="modalRecuperar" class="modal">
+                <div class="contenido-modal">
+                    <span class="cerrar-modal" onclick="cerrarModal()">&times;</span>></span>
+                    <h2>¿Recuperar Contraseña?</h2>
+                    <p>Elixir and Flexx le enviara un enlace de recuperacion a su correo</p>
+
+                    <form onsubmit="enviarRecuperacion(event)">
+                        <input type="email" placeholder="INGRESE SU EMAIL" required style="margin-bottom: 20px;">
+                        <button type="submit" class="btn-principal" style="width: 100%; border-radius: 25px;">ENVIAR ENLACE</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
