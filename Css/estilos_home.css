@@ -1,0 +1,104 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial Black', Gadget, sans-serif; /* O la que uses en Figma */
+}
+
+body {
+    background-color: #111;
+    color: white;
+}
+
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    background-color: #111;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 25px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: white;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.nav-icons i {
+    font-size: 1.4rem;
+    margin-left: 15px;
+    cursor: pointer;
+}
+
+/* HERO SECTION */
+.hero {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.banner-container {
+    display: flex;
+    width: 90%;
+    gap: 10px;
+    height: 500px;
+}
+
+.img-main {
+    flex: 2;
+    object-fit: cover;
+    border: 1px solid #333;
+}
+
+.card-producto {
+    flex: 1;
+    background: white;
+    color: black;
+    padding: 10px;
+    text-align: center;
+}
+
+.card-producto img {
+    width: 100%;
+    height: 80%;
+    object-fit: cover;
+}
+
+/* BARRA ROJA */
+.action-bar {
+    background-color: #ff0000; /* Rojo puro de su diseño */
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin-top: 20px;
+}
+
+.btn-red {
+    background-color: #b30000;
+    color: white;
+    border: 1px solid black;
+    padding: 15px 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-red:hover {
+    background-color: white;
+    color: black;
+}
