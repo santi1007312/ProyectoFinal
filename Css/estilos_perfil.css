@@ -1,0 +1,149 @@
+/* RESET O AJUSTES PARA ESTA VISTA */
+body {
+    background-color: #1a1a1a; /* Gris oscuro de fondo estilo Flexx */
+    color: #ffffff;
+    font-family: sans-serif;
+}
+
+/* CONTENEDOR EN DOS COLUMNAS */
+.panel-usuario-container {
+    max-width: 1400px;
+    margin: 40px auto;
+    padding: 0 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas exactamente iguales */
+    gap: 40px; /* Separación entre pedidos y perfil */
+}
+
+/* ESTILO GENERAL DE LAS COLUMNAS */
+.seccion-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.encabezado-bloque {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.encabezado-bloque h2 {
+    font-size: 1.8rem;
+    font-weight: 500;
+}
+
+/* BOTONES ESTILO FLEXX */
+.btn-vista-galeria {
+    background-color: #2a2a2a;
+    border: none;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* TARJETAS CONTENEDORAS DE DATOS Y PEDIDOS */
+.tarjeta-pedido, .bloque-datos-usuario {
+    background-color: #222222; /* Fondo de los contenedores internos */
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+/* SECCIÓN PEDIDOS INTERNA */
+.estado-envio-placeholder {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
+}
+
+.galeria-productos-pedido {
+    display: flex;
+    gap: 15px;
+}
+
+.img-producto-pedido {
+    width: 100px;
+    height: 120px;
+    background-color: #fff;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.img-producto-pedido img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* SECCIÓN PERFIL INTERNA */
+.fila-dato-editable {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.fila-dato-editable h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.btn-editar-dato, .btn-agregar-direccion {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-agregar-direccion {
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+.etiqueta-gris {
+    color: #666;
+    font-size: 0.8rem;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.valor-dato, .nombre-recibe, .detalle-calle, .edificio-conjunto, .pais-destino {
+    font-size: 0.95rem;
+    color: #ddd;
+}
+
+/* ESTRUCTURA DE LA DIRECCIÓN EN DOS COLUMNAS MINI */
+.sub-grid-direcciones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 15px;
+    border-top: 1px solid #333;
+    padding-top: 15px;
+}
+
+.info-direccion p, .info-pais p {
+    margin-bottom: 3px;
+}
+
+/* ICONO ACTIVO EN EL NAVBAR */
+.nav-icons i.active-icon {
+    color: #ff0000; /* Le da prioridad visual para saber que está en su perfil */
+}
+
+/* RESPONSIVE PARA DISPOSITIVOS MÓVILES */
+@media (max-width: 900px) {
+    .panel-usuario-container {
+        grid-template-columns: 1fr; /* En celular se pone uno debajo del otro */
+        gap: 30px;
+    }
+}
