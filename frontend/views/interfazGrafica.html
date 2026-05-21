@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elixir and Flexx - Inicio</title>
+    <link rel="stylesheet" href="../public/css/global.css">
+    <link rel="stylesheet" href="../public/css/estilos_home.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="nav-bar">
+            <div class="nav-bar__logo">ELIXIRANDFLEXX</div>
+            <ul class="nav-bar__links">
+                <li><a href="interfazGrafica.html" class="nav-bar__link nav-bar__link--active">Inicio</a></li>
+                <li><a href="interfazCatalogo.html" class="nav-bar__link">Catalogo</a></li>
+                <li><a href="#" class="nav-bar__link">Guia de tallas</a></li>
+                <li><a href="#" class="nav-bar__link">Politicas de devolucion</a></li>
+            </ul>
+            <div class="nav-bar__icons">
+                <i class="bx bx-search nav-bar__icon"></i>
+                <a href="interfazPerfil.html" style="color:inherit;"><i class="bx bx-user nav-bar__icon"></i></a>
+                <i class="bx bx-shopping-bag nav-bar__icon"></i>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero-section">
+            <div class="hero-section__container">
+                <img src="../public/images/el_estilo_de_asap_rocky_947117425.webp" alt="Fashion Editorial" class="hero-section__main-img">
+                <div class="hero-product-card">
+                    <img src="../public/images/bmm92840_black_xl.webp" alt="Hoodie #19" class="hero-product-card__img">
+                    <div class="hero-product-card__info">
+                        <h3 class="hero-product-card__title">Hoodie #19 boohhooMAN</h3>
+                        <p class="hero-product-card__price">$65.000 COP</p>
+                    </div>
+                </div>
+
+                <a href="#seccion-lanzamientos" class="hero-section__vertical-btn">
+                    <span>NUEVOS LANZAMIENTOS</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="action-bar-section">
+            <a href="interfazCatalogo.html">
+                <button class="btn btn--red">VER CATALOGO</button>
+            </a>
+            <button class="btn btn--red">PEDIR POR WHATSAPP</button>
+            <a href="interfazPerfil.html">
+                <button class="btn btn--red bx bx-user"></button>
+            </a>
+        </section>
+
+        <section class="editorial-section">
+            <div class="editorial-section__container">
+                <div class="editorial-section__box editorial-section__box--right">
+                    <img src="../public/images/ASAP Rocky outfit.jpg" alt="Editorial Flexx Left" class="editorial-section__img">
+                </div>
+                <div class="editorial-section__box editorial-section__box--left">
+                    <img src="../public/images/descarga.jpg" alt="Editorial Flexx Right" class="editorial-section__img">
+                </div>
+            </div>
+        </section>
+
+        <section id="seccion-lanzamientos" class="launches-section">
+            <div class="launches-section__header">
+                <h2>NUEVOS LANZAMIENTOS</h2>
+            </div>
+    
+            <div class="launches-section__grid">
+                <div class="launches-card">
+                    <img src="../public/images/8e281690b314c15d3997f211f95c8783.jpg" alt="Collection #19" class="launches-card__img">
+                    <div class="launches-card__info">
+                        <h4>Collection #19</h4>
+                        <p>$60.000</p>
+                    </div>
+                </div>
+
+                <div class="launches-card">
+                    <img src="../public/images/89a1919bf16e2679f99bd0461960b0de.jpg" alt="Collection #20" class="launches-card__img">
+                    <div class="launches-card__info">
+                        <h4>Collection #20</h4>
+                        <p>$70.000</p>
+                    </div>
+                </div>
+
+                <div class="launches-card">
+                    <img src="../public/images/91e29a59296ade0d281a53969b3ca2ee.jpg" alt="Collection #21" class="launches-card__img">
+                    <div class="launches-card__info">
+                        <h4>Collection #21</h4>
+                        <p>$70.000</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="../public/js/views/home.js" type="module"></script>
+</body>
+</html>

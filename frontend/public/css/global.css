@@ -1,0 +1,157 @@
+/* ==========================================================================
+   VARIABLES DE ROOT Y CONFIGURACIÓN BASE (global.css)
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+:root {
+    /* Colores Principales del Sistema */
+    --color-black-pure: #000000;
+    --color-black-bg: #111111;
+    --color-gray-dark: #1a1a1a;
+    --color-gray-container: #222222;
+    --color-gray-light: #aaaaaa;
+    --color-gray-border: #333333;
+    --color-white: #ffffff;
+    
+    /* Colores de Acento Estilo Elixir & Flexx */
+    --color-red-vibrant: #ff0000;
+    --color-red-hover: #b30000;
+    --color-olive-main: #7A7F3F;
+    --color-olive-hover: #6a6e37;
+
+    /* Fuentes del Figma */
+    --font-primary: 'Montserrat', sans-serif;
+    --font-display: 'Arial Black', Gadget, sans-serif;
+}
+
+/* Reset Estándar */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--color-black-pure);
+    color: var(--color-white);
+    font-family: var(--font-primary);
+    overflow-x: hidden;
+}
+
+/* ==========================================================================
+   COMPONENTE NAVBAR REUTILIZABLE (BEM)
+   ========================================================================== */
+.nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    background-color: transparent; /* Se adapta al contenedor */
+}
+
+.nav-bar__logo {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.nav-bar__links {
+    display: flex;
+    list-style: none;
+    gap: 25px;
+}
+
+.nav-bar__link {
+    text-decoration: none;
+    color: var(--color-white);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-family: var(--font-display);
+    transition: color 0.2s ease;
+}
+
+.nav-bar__link--active {
+    border-bottom: 2px solid var(--color-red-vibrant);
+    padding-bottom: 4px;
+}
+
+.nav-bar__icons {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-bar__icon {
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.nav-bar__icon--active {
+    color: var(--color-red-vibrant);
+}
+
+/* ==========================================================================
+   COMPONENTE BOTÓN GLOBAL (BEM)
+   ========================================================================== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.btn--red {
+    background-color: var(--color-red-hover);
+    color: var(--color-white);
+    border: 1px solid var(--color-black-pure);
+    padding: 15px 40px;
+    font-family: var(--font-display);
+}
+
+.btn--red:hover {
+    background-color: var(--color-white);
+    color: var(--color-black-pure);
+}
+
+.btn--olive {
+    background-color: var(--color-olive-main);
+    color: var(--color-white);
+    padding: 15px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.btn--olive:hover {
+    background-color: var(--color-olive-hover);
+}
+
+.btn--social {
+    flex: 1;
+    padding: 12px;
+    background-color: var(--color-white);
+    color: #333333;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    font-size: 0.7rem;
+}
+
+.btn--social:hover {
+    background-color: #f0f0f0;
+}
+
+/* Ocultar elementos para pantallas móviles en Navbar */
+@media (max-width: 1024px) {
+    .nav-bar { padding: 20px; }
+    .nav-bar__links { display: none; }
+}

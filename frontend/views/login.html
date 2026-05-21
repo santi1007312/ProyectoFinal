@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -54,5 +54,61 @@
             </div>
         </div>
     </div>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido - Elixir and Flexx</title>
+    <link rel="stylesheet" href="../public/css/global.css">
+    <link rel="stylesheet" href="../public/css/estilos_elixir.css">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h1 class="auth-card__title">BIENVENIDO AL SISTEMA</h1>
+            <p class="auth-card__subtitle">INICIA SESION PARA ACCEDER AL CARRITO Y AL SISTEMA</p>
+            
+            <form class="auth-form" id="formLogin">
+                <input type="email" class="auth-form__input" placeholder="EMAIL" required>
+                <input type="password" class="auth-form__input" placeholder="CONTRASEÑA" required>
+                
+                <a href="#" class="auth-form__recover-link" id="btnOpenModal">¿Olvidaste la contraseña?</a>
+                
+                <button type="submit" class="btn btn--olive">INICIAR SESION</button>
+            </form>
+            
+            <div class="auth-card__divider">
+                <hr> <span>o</span> <hr>
+            </div>
+            
+            <div class="auth-card__socials">
+                <button class="btn btn--social">CONTINUAR CON GOOGLE</button>
+                <button class="btn btn--social">CONTINUAR CON FACEBOOK</button>
+            </div>
+            
+            <div class="auth-card__footer">
+                <p>¿NO TIENES CUENTA? <a href="registro.html" class="auth-card__redirect">REGISTRATE</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalRecuperar" class="auth-modal">
+        <div class="auth-modal__content">
+            <span class="auth-modal__close" id="btnCloseModal">&times;</span>
+            <h2 class="auth-modal__title">¿Recuperar Contraseña?</h2>
+            <p class="auth-modal__text">Elixir and Flexx le enviara un enlace de recuperacion a su correo</p>
+
+            <form class="auth-form">
+                <input type="email" class="auth-form__input auth-form__input--modal" placeholder="INGRESE SU EMAIL" required>
+                <button type="submit" class="btn btn--olive">ENVIAR ENLACE</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../public/js/views/login.js" type="module"></script>
 </body>
 </html>

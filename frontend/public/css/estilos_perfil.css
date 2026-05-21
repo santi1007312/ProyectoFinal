@@ -1,0 +1,154 @@
+/* ==========================================================================
+   ESTILOS ESPECÍFICOS DEL PANEL DE PERFIL (BEM)
+   ========================================================================== */
+body {
+    background-color: var(--color-gray-dark);
+}
+
+.profile-panel {
+    max-width: 1400px;
+    margin: 40px auto;
+    padding: 0 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.profile-panel__column {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-panel__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-panel__header h2 {
+    font-size: 1.8rem;
+    font-weight: 500;
+}
+
+.profile-panel__gallery-btn {
+    background-color: #2a2a2a;
+    border: none;
+    color: var(--color-white);
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* BLOQUE TARJETA DE PEDIDOS */
+.order-container {
+    background-color: var(--color-gray-container);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.order-container__status {
+    color: #888888;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--color-gray-border);
+    padding-bottom: 15px;
+}
+
+.order-container__gallery {
+    display: flex;
+    gap: 15px;
+}
+
+.order-container__img-box {
+    width: 100px;
+    height: 120px;
+    background-color: var(--color-white);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.order-container__img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* BLOQUE DE INFORMACIÓN DE USUARIO */
+.user-info-card {
+    background-color: var(--color-gray-container);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.user-info-card__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.user-info-card__row h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.user-info-card__edit-btn,
+.user-info-card__add-btn {
+    background: none;
+    border: none;
+    color: var(--color-white);
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.user-info-card__add-btn {
+    font-size: 0.9rem;
+    color: var(--color-gray-light);
+}
+
+.user-info-card__label {
+    color: #666666;
+    font-size: 0.8rem;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.user-info-card__value {
+    font-size: 0.95rem;
+    color: #dddddd;
+}
+
+/* SUB-GRID DE DIRECCIONES INTERNAS */
+.address-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 15px;
+    border-top: 1px solid var(--color-gray-border);
+    padding-top: 15px;
+}
+
+.address-grid__text {
+    font-size: 0.95rem;
+    color: #dddddd;
+    margin-bottom: 3px;
+}
+
+.address-grid__text--bold {
+    font-weight: bold;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .profile-panel {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}
