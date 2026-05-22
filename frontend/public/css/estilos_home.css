@@ -195,6 +195,107 @@ body {
     margin-top: 5px;
 }
 
+.seccion-categorias-home {
+    background-color: var(--color-black-bg);
+    padding: 60px 5%;
+    display: flex;
+    flex-direction: column;
+}
+
+.titulo-categorias h2 {
+    font-family: var(--font-display);
+    font-size: 2.8rem;
+    color: var(--color-white);
+    margin-bottom: 40px;
+    letter-spacing: -2px;
+    text-transform: uppercase;
+}
+
+/* El Grid para alinear las 4 tarjetas de categorías */
+.grid-categorias-home {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+}
+
+/* Tarjeta individual de categoría */
+.tarjeta-categoria {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* La caja con el fondo azul rey */
+.caja-img-cat.fondo-azul {
+    background-color: #0d2fa5; /* Azul rey puro de Flexx */
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Cuadrado perfecto */
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--color-gray-border);
+}
+
+.caja-img-cat img {
+    width: 85%;
+    height: 85%;
+    object-fit: contain; /* Flota la prenda limpia */
+    transition: transform 0.3s ease;
+}
+
+/* Animación al pasar el mouse por la tarjeta */
+.tarjeta-categoria:hover .caja-img-cat img {
+    transform: scale(1.08);
+}
+
+/* Título de la categoría debajo del cuadro */
+.info-categoria h3 {
+    color: var(--color-white);
+    font-size: 1.1rem;
+    font-family: var(--font-primary);
+    font-weight: 700;
+    margin-top: 15px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-categoria h3 span {
+    color: var(--color-red-vibrant);
+    transition: transform 0.3s ease;
+}
+
+.tarjeta-categoria:hover .info-categoria h3 span {
+    transform: translateX(5px); /* Mueve la flecha */
+}
+
+/* Contenedor del botón Ver Todo */
+.contenedor-ver-todo {
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+/* Botón Ver Todo sutil */
+.btn-ver-todo {
+    color: var(--color-gray-light);
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    padding: 10px 30px;
+    transition: color 0.3s ease, border-color 0.3s ease;
+    border-bottom: 2px solid transparent;
+}
+
+.btn-ver-todo:hover {
+    color: var(--color-white);
+    border-bottom: 2px solid var(--color-red-vibrant);
+}
+
 /* DISEÑO RESPONSIVO */
 @media (max-width: 1024px) {
     .hero-section__container { flex-direction: column; }

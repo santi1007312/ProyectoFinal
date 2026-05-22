@@ -1,0 +1,116 @@
+/* ==========================================================================
+   ESTILOS GENERALES DE LA INTERFAZ GUÍA DE TALLAS
+   ========================================================================== */
+
+body {
+    background-color: #111214; /* Fondo oscuro oficial de la marca */
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+}
+
+
+
+
+/* Contenedor que agrupa todas las secciones */
+.contenedor-tallas {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 100px; /* Separación elegante entre secciones */
+}
+
+/* Estructura base de cada fila (Imagen + Info) */
+.fila-talla {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 60px;
+}
+
+/* Clase para invertir el orden en Sudaderas y Pantalonetas */
+.fila-invertida {
+    flex-direction: row-reverse;
+}
+
+/* Bloques de contenido al 50% cada uno */
+.bloque-imagen, .bloque-info {
+    flex: 1;
+}
+
+/* Ajuste de las imágenes de las tablas de medidas */
+.bloque-imagen img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+/* Estilos de los textos informativos */
+.bloque-info .subtitulo-talla {
+    font-size: 0.75rem;
+    color: #888888;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.bloque-info h2 {
+    font-family: var(--font-display), 'Impact', 'Arial Black', sans-serif;
+    font-size: 3rem;
+    margin: 0 0 20px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.bloque-info p {
+    font-family: var(--font-primary), 'Helvetica', sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #cccccc;
+    margin-bottom: 20px;
+}
+
+/* Botón Sutil (Sin funcionalidad aún) */
+.btn-talla-vista {
+    display: inline-block;
+    padding: 12px 24px;
+    border: 1px solid #333333;
+    background-color: transparent;
+    color: #ffffff;
+    text-decoration: none;
+    font-family: var(--font-primary), sans-serif;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.btn-talla-vista:hover {
+    background-color: #ffffff;
+    color: #111214;
+    border-color: #ffffff;
+    cursor: default; /* Muestra que aún no es clickeable */
+}
+
+/* Responsive para celulares y pantallas pequeñas */
+@media (max-width: 1024px) {
+    .contenedor-tallas {
+        gap: 60px;
+        padding: 0 20px;
+    }
+    
+    .fila-talla, .fila-invertida {
+        flex-direction: column; /* Todo en una sola columna en celular */
+        gap: 30px;
+    }
+
+    .bloque-info h2 {
+        font-size: 2.2rem;
+    }
+}
