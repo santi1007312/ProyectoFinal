@@ -1,0 +1,209 @@
+/* ==========================================================================
+   ESTILOS EXCLUSIVOS DE LA VISTA DE DETALLE - ELIXIR AND FLEXX
+   ========================================================================== */
+
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Reutilización del Header para consistencia visual */
+header {
+    background-color: #0b0b0b;
+    border-bottom: 1px solid #222;
+}
+
+.nav-bar {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+}
+
+.nav-bar__logo {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+}
+
+.nav-bar__links {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-bar__link {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.nav-bar__icons {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-bar__icon {
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+/* Contenedor en dos columnas */
+.product-detail-container {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 40px;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 60px;
+    box-sizing: border-box;
+}
+
+/* Galería de Imagen */
+.product-gallery {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.main-product-img {
+    width: 100%;
+    max-height: 650px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #222;
+}
+
+/* Panel de Información */
+.product-info-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-title {
+    font-size: 2.2rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 0 0 15px 0;
+}
+
+.product-price {
+    font-size: 1.5rem;
+    color: #e0e0e0;
+    letter-spacing: 1px;
+    margin: 0 0 25px 0;
+}
+
+.divider {
+    border: 0;
+    border-top: 1px solid #222;
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+/* Grupos de opciones (Talla y Color) */
+.option-group {
+    margin-bottom: 35px;
+}
+
+.group-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #777;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+.highlight-text {
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Círculos de Color */
+.color-options-container {
+    display: flex;
+    gap: 15px;
+}
+
+.color-ball {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.color-ball:hover {
+    transform: scale(1.1);
+}
+
+.color-ball.active {
+    border-color: #ffffff;
+    transform: scale(1.05);
+}
+
+/* Cajas de Talla */
+.size-options-container {
+    display: flex;
+    gap: 12px;
+}
+
+.size-box {
+    border: 1px solid #333;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: none;
+    color: white;
+    transition: background 0.2s, border-color 0.2s;
+    min-width: 50px;
+    text-align: center;
+}
+
+.size-box:hover {
+    border-color: #666;
+}
+
+.size-box.active {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+    font-weight: bold;
+}
+
+/* Botón Añadir al Carrito */
+.action-container {
+    margin-top: 20px;
+}
+
+.btn-add-cart {
+    width: 100%;
+    background-color: transparent;
+    color: white;
+    border: 1px solid #ffffff;
+    padding: 18px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s, color 0.3s;
+}
+
+.btn-add-cart:hover {
+    background-color: #ffffff;
+    color: #000000;
+}

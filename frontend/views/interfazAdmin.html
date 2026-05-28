@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Elixir and Flexx</title>
+    <link rel="stylesheet" href="../public/css/global.css">
+    <link rel="stylesheet" href="../public/css/estilos_admin.css"> 
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="admin-container">
+        <h1>Panel de Inventario</h1>
+        
+        <form id="formCrearProducto">
+            <div class="form-group">
+                <label for="nombreProducto">Nombre de la Prenda</label>
+                <input type="text" id="nombreProducto" placeholder="ej: CONJUNTO DRAGÓN" required>
+            </div>
+
+            <div class="form-group">
+                <label for="descripcion">Descripción</label>
+                <input type="text" id="descripcion" placeholder="ej: Hoodie oversized con estampado reflectivo..." required>
+            </div>
+
+            <div class="form-group">
+                <label for="precioBase">Precio Base (COP)</label>
+                <input type="number" step="0.01" id="precioBase" placeholder="ej: 220000" required>
+            </div>
+
+            <div class="form-group">
+                <label for="idCategorias">ID Categoría</label>
+                <input type="number" id="idCategorias" placeholder="ej: 1 (Hoodies), 2 (Sudaderas)" required>
+            </div>
+
+            <div class="form-group">
+                <label for="material">Material de Fabricación</label>
+                <input type="text" id="material" placeholder="ej: 100% Algodón fleece 380GSM">
+            </div>
+
+            <div class="form-group">
+                <label for="imagen">Ruta de la Imagen (Para el Catálogo)</label>
+                <input type="text" id="imagen" placeholder="ej: ../public/images/34.webp" required>
+            </div>
+
+            <div class="form-group">
+                <label for="colores">Colores Disponibles</label>
+                <input type="text" id="colores" value="Negro,Gris,Blanco">
+                <span class="help-text">Separados por comas y sin espacios.</span>
+            </div>
+
+            <div class="form-group">
+                <label for="tallas">Tallas Disponibles</label>
+                <input type="text" id="tallas" value="S,M,L,XL">
+                <span class="help-text">Separados por comas y sin espacios.</span>
+            </div>
+
+            <button type="submit" class="btn-submit">Inyectar Producto</button>
+        </form>
+
+        <a href="interfazCatalogo.html" class="nav-back">← Volver al catálogo</a>
+    </div>
+
+    <script src="../public/js/views/admin.js" type="module"></script>
+</body>
+</html>
