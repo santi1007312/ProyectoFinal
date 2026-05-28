@@ -53,13 +53,41 @@
             <h1 class="auth-card__title">CREA TU CUENTA</h1>
             <p class="auth-card__subtitle">REGÍSTRATE PARA COMPRAR MÁS RÁPIDO</p>
             
-            <form class="auth-form" action="interfazGrafica.html" method="GET">
-                <input type="text" class="auth-form__input" placeholder="INGRESE SU NOMBRE COMPLETO" required>
-                <input type="number" class="auth-form__input" placeholder="INGRESE SU EDAD" required>
-                <input type="email" class="auth-form__input" placeholder="EMAIL" required>
-                <input type="password" class="auth-form__input" placeholder="CONTRASEÑA" required>
-                
-                <button type="submit" class="btn btn--olive">REGISTRARSE</button>
+            <form action="UsuarioController" method="POST">
+    
+                <input type="hidden" name="accion" value="registrar">
+
+                <div class="input-group">
+                    <label>Nombre</label>
+                    <input type="text" name="nombre" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Apellido</label>
+                    <input type="text" name="apellido" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Edad</label>
+                    <input type="number" name="edad" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Teléfono</label>
+                    <input type="text" name="telefono" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="email" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="contrasena" required>
+                </div>
+
+                <button type="submit" class="btn-urban">Crear Cuenta</button>
             </form>
 
             <div class="auth-card__footer">
@@ -76,5 +104,6 @@
             </div>
         </div>
     </div>
+    <script src="../public/js/views/registro.js" type="module"></script>
 </body>
 </html>

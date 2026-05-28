@@ -72,13 +72,21 @@
             <h1 class="auth-card__title">BIENVENIDO AL SISTEMA</h1>
             <p class="auth-card__subtitle">INICIA SESION PARA ACCEDER AL CARRITO Y AL SISTEMA</p>
             
-            <form class="auth-form" id="formLogin">
-                <input type="email" class="auth-form__input" placeholder="EMAIL" required>
-                <input type="password" class="auth-form__input" placeholder="CONTRASEÑA" required>
-                
-                <a href="#" class="auth-form__recover-link" id="btnOpenModal">¿Olvidaste la contraseña?</a>
-                
-                <button type="submit" class="btn btn--olive">INICIAR SESION</button>
+            <form action="UsuarioController" method="POST">
+    
+                <input type="hidden" name="accion" value="login">
+
+                <div class="input-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="email" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="contrasena" required>
+                </div>
+
+                <button type="submit" class="btn-urban">Entrar</button>
             </form>
             
             <div class="auth-card__divider">
