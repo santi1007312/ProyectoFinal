@@ -1,0 +1,276 @@
+/* --- CONFIGURACIONES GENERALES --- */
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Barra de anuncios superior */
+.announcement-bar {
+    background-color: #000000;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    border-bottom: 1px solid #222;
+}
+
+/* --- HEADER Y DROPDOWN --- */
+header {
+    background-color: #0b0b0b;
+    border-bottom: 1px solid #222;
+}
+
+.nav-bar {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+}
+
+.nav-bar__logo {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+}
+
+.nav-bar__links {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-bar__link {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.nav-bar__link:hover, .nav-bar__link--active {
+    color: #ff3333;
+}
+
+/* Lógica del Dropdown en CSS */
+.nav-bar__item--dropdown {
+    position: relative;
+}
+
+.nav-bar__dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #0f0f0f;
+    border: 1px solid #222;
+    list-style: none;
+    padding: 10px 0;
+    margin: 10px 0 0 0;
+    min-width: 220px;
+    z-index: 200;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+}
+
+.nav-bar__dropdown-menu.show {
+    display: block;
+}
+
+.nav-bar__dropdown-link {
+    color: #888;
+    text-decoration: none;
+    padding: 10px 20px;
+    display: block;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.nav-bar__dropdown-link:hover {
+    background-color: #161616;
+    color: #ffffff;
+    padding-left: 25px;
+}
+
+.dropdown-arrow {
+    transition: transform 0.3s ease;
+}
+
+.dropdown-arrow.rotate {
+    transform: rotate(180deg);
+}
+
+.nav-bar__icons {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-bar__icon {
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+/* --- VISTA DE CONTENIDOS (DEVOLUCIONES & CONTACTO) --- */
+.support-container {
+    max-width: 1000px;
+    margin: 60px auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 100px; /* Separación limpia entre las dos secciones */
+}
+
+.support-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.support-section__title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+.support-section__title--left {
+    align-self: flex-start;
+    text-align: left;
+    font-size: 2.5rem;
+}
+
+.support-section__subtitle {
+    font-size: 1.1rem;
+    color: #b3b3b3;
+    max-width: 700px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.support-section__btn {
+    background: transparent;
+    border: 1px solid #333;
+    color: #ffffff;
+    padding: 15px 40px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.support-section__btn:hover {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+}
+
+/* --- DISEÑO DE FORMULARIOS URBANOS --- */
+.form-container {
+    width: 100%;
+    max-width: 800px;
+    margin-top: 40px;
+    display: none; /* Se activa inyectando display: block desde JS */
+}
+
+.form-container.show {
+    display: block;
+    animation: fadeIn 0.4s ease;
+}
+
+.support-form {
+    width: 100%;
+    background-color: #121212;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: left;
+}
+
+.support-form__title {
+    font-size: 1.5rem;
+    border-bottom: 1px solid #222;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.support-form__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 600px) {
+    .support-form__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.support-form__group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.support-form__label {
+    font-size: 0.8rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.support-form__input, .support-form__textarea {
+    background-color: #0d2366; /* Azul oscuro corporativo de las capturas */
+    border: none;
+    color: #ffffff;
+    padding: 14px 18px;
+    font-size: 1rem;
+    border-radius: 2px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.support-form__input:focus, .support-form__textarea:focus {
+    background-color: #112e85; /* Un toque más claro en focus */
+}
+
+.support-form__btn-submit {
+    background-color: transparent;
+    border: 1px solid #222;
+    color: #888;
+    padding: 12px 30px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    align-self: center;
+    transition: all 0.3s;
+}
+
+.support-form__btn-submit:hover {
+    color: #ffffff;
+    border-color: #ffffff;
+}
+
+.support-form__btn-submit--left {
+    align-self: flex-start;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

@@ -17,7 +17,7 @@
                 <li><a href="interfazGrafica.html" class="nav-bar__link">Inicio</a></li>
                 <li><a href="interfazCatalogo.html" class="nav-bar__link">Catalogo</a></li>
                 <li><a href="interfazGuiaTallas.html" class="nav-bar__link">Guia de tallas</a></li>
-                <li><a href="#" class="nav-bar__link">Politicas de devolucion</a></li>
+                <li><a href="interfazDevoluciones.html" class="nav-bar__link">Politicas de devolucion</a></li>
             </ul>
             <div class="nav-bar__icons">
                 <i class="bx bx-search nav-bar__icon"></i>
@@ -76,19 +76,21 @@
                 <div class="address-grid">
                     <div class="address-grid__col">
                         <span class="user-info-card__label">Dirección predeterminada</span>
-                        <p class="address-grid__text address-grid__text--bold">Santiago Carrillo rivera</p>
-                        <p class="address-grid__text">Calle 64e 1w 48</p>
-                        <p class="address-grid__text">Balcones de gratamira</p>
+                        <p id="addressNameDisplay" class="address-grid__text address-grid__text--bold">Santiago Carrillo rivera</p>
+        
+                        <p id="addressStreetDisplay" class="address-grid__text">Calle 64e 1w 48</p>
+                        <p id="addressNeighbourDisplay" class="address-grid__text">Balcones de gratamira</p>
                     </div>
                     <div class="address-grid__col">
                         <span class="user-info-card__label">&nbsp;</span>
                         <p class="address-grid__text address-grid__text--bold">Santiago Carrillo rivera</p>
-                        <p class="address-grid__text">Colombia</p>
+                        <p id="addressCountryDisplay" class="address-grid__text">Colombia</p>
                     </div>
                 </div>
             </div>
         </section>
 
     </main>
+    <script src="../public/js/views/perfil.js" type="module"></script>
 </body>
 </html>

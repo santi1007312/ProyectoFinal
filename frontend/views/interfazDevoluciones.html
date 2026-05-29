@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soporte y Devoluciones - Elixir and Flexx</title>
+    <link rel="stylesheet" href="../public/css/global.css">
+    <link rel="stylesheet" href="../public/css/estilos_devoluciones.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- BARRA DE ANUNCIOS SUPERIOR -->
+    <div class="announcement-bar">
+        <span>SOLO SENA</span>
+    </div>
+
+    <!-- HEADER CON DROPDOWN BEM -->
+    <header>
+        <div class="nav-bar">
+            <div class="nav-bar__logo">ELIXIRANDFLEXX</div>
+            
+            <nav>
+                <ul class="nav-bar__links">
+                    <li><a href="interfazGrafica.html" class="nav-bar__link">INICIO</a></li>
+                    <li><a href="interfazCatalogo.html" class="nav-bar__link">CATALOGO</a></li>
+                    <li><a href="interfazGuiaTallas.html" class="nav-bar__link">GUIA DE TALLAS</a></li>
+                    
+                    <!-- ITEM DROPDOWN ACTIVO -->
+                    <li class="nav-bar__item--dropdown">
+                        <a href="#" class="nav-bar__link nav-bar__link--active" id="dropdownToggle">
+                            Politicas de Devolucion <i class="bx bx-chevron-down dropdown-arrow"></i>
+                        </a>
+                        <ul class="nav-bar__dropdown-menu" id="headerDropdown">
+                            <li><a href="interfazDevoluciones.html?seccion=devoluciones" class="nav-bar__dropdown-link">Politicas de Devolucion</a></li>
+                            <li><a href="interfazDevoluciones.html?seccion=contacto" class="nav-bar__dropdown-link">Contacto</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="nav-bar__icons">
+                <i class="bx bx-search nav-bar__icon"></i>
+                <a href="interfazPerfil.html" class="nav-bar__link">
+                    <i class="bx bx-user nav-bar__icon"></i>
+                </a>
+                <a href="interfazCarrito.html" class="nav-bar__link">
+                    <i class="bx bx-shopping-bag nav-bar__icon"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="support-container">
+        
+        <!-- SECCIÓN 1: APARTADO DE DEVOLUCIONES -->
+        <section id="sectionDevoluciones" class="support-section">
+            <h1 class="support-section__title">DEVOLUCIONES</h1>
+            <p class="support-section__subtitle">
+                Si necesitas devolver tu producto, por cambio de talla, Diseño o porque no estás conforme. Toca el siguiente botón para ayudarte.
+            </p>
+            <button id="btnSolicitarDevolucion" class="support-section__btn">SOLICITAR DEVOLUCION</button>
+            
+            <!-- FORMULARIO DE DEVOLUCIÓN (Oculto por defecto, se despliega con JS) -->
+            <div id="formDevolucionContainer" class="form-container">
+                <form class="support-form" id="formDevolucion">
+                    <h2 class="support-form__title">Formulario de Devolución</h2>
+                    <div class="support-form__grid">
+                        <div class="support-form__group">
+                            <label class="support-form__label">Nombre</label>
+                            <input type="text" class="support-form__input" placeholder="Tu nombre completo" required>
+                        </div>
+                        <div class="support-form__group">
+                            <label class="support-form__label">Cédula o Tarjeta de Identidad</label>
+                            <input type="text" class="support-form__input" placeholder="Número de documento" required>
+                        </div>
+                    </div>
+                    <div class="support-form__group">
+                        <label class="support-form__label">Correo electrónico</label>
+                        <input type="email" class="support-form__input" placeholder="tu@correo.com" required>
+                    </div>
+                    <div class="support-form__group">
+                        <label class="support-form__label">Descripción del porqué la devolución</label>
+                        <textarea class="support-form__textarea" rows="4" placeholder="Detalla los motivos del cambio o devolución del producto..." required></textarea>
+                    </div>
+                    <button type="submit" class="support-form__btn-submit">Enviar Solicitud</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: APARTADO DE CONTACTO -->
+        <section id="sectionContacto" class="support-section">
+            <h1 class="support-section__title support-section__title--left">CONTACTANOS</h1>
+            
+            <form class="support-form" id="formContacto">
+                <div class="support-form__grid">
+                    <div class="support-form__group">
+                        <label class="support-form__label">Nombre</label>
+                        <input type="text" class="support-form__input" value="Santiago Carrillo rivera" required>
+                    </div>
+                    <div class="support-form__group">
+                        <label class="support-form__label">Correo electrónico *</label>
+                        <input type="email" class="support-form__input" value="carrilloriverasantiago@gmail.com" required>
+                    </div>
+                </div>
+                <div class="support-form__group">
+                    <label class="support-form__label">Número de teléfono</label>
+                    <input type="tel" class="support-form__input" placeholder="Número de teléfono">
+                </div>
+                <div class="support-form__group">
+                    <label class="support-form__label">Comentario</label>
+                    <textarea class="support-form__textarea" rows="5" placeholder="Comentario"></textarea>
+                </div>
+                <button type="submit" class="support-form__btn-submit support-form__btn-submit--left">Enviar</button>
+            </form>
+        </section>
+
+    </main>
+
+    <script src="public/js/views/devoluciones.js" type="module"></script>
+</body>
+</html>

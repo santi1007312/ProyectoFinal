@@ -1,0 +1,348 @@
+/* Contenedor Principal */
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+header {
+    background-color: #0b0b0b; /* Un tono un toque más oscuro para el nav */
+    border-bottom: 1px solid #222;
+}
+
+.nav-bar {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+}
+
+.nav-bar__logo {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+}
+
+.nav-bar__links {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-bar__link {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.3s;
+}
+
+.nav-bar__link:hover {
+    color: #ff3333; /* Color de acento para los hovers */
+}
+
+.nav-bar__icons {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-bar__icon {
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.nav-bar__icon:hover {
+    transform: scale(1.1);
+}
+
+.pedidos-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.pedidos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.pedidos-header h1 {
+    font-size: 2rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+/* Botones de Control */
+.view-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.control-btn {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    color: #888;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.control-btn.active, .control-btn:hover {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+}
+
+/* ESTRUCTURA MODO LISTA (Por Defecto) */
+.pedidos-wrapper.view-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.pedidos-wrapper.view-list .pedido-card {
+    background-color: #161616;
+    border-radius: 8px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 50px;
+    align-items: center;
+    gap: 20px;
+}
+
+.pedidos-wrapper.view-list .pedido-main-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.pedidos-wrapper.view-list .pedido-thumbnails {
+    display: grid;
+    grid-template-columns: repeat(4, 45px);
+    gap: 6px;
+}
+
+.pedidos-wrapper.view-list .pedido-thumbnails img {
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 4px;
+    background-color: #222;
+}
+
+.pedidos-wrapper.view-list .pedido-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pedidos-wrapper.view-list .id-pedido {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.pedidos-wrapper.view-list .cant-articulos {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.pedidos-wrapper.view-list .pedido-status-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pedidos-wrapper.view-list .status-delivery {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.pedidos-wrapper.view-list .pedido-date {
+    color: #666;
+    font-size: 0.85rem;
+    padding-left: 22px;
+}
+
+.pedidos-wrapper.view-list .pedido-pricing {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.pedidos-wrapper.view-list .total-label {
+    font-size: 0.8rem;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.pedidos-wrapper.view-list .total-amount {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.pedidos-wrapper.view-list .pedido-actions {
+    text-align: right;
+    font-size: 1.3rem;
+    color: #888;
+    cursor: pointer;
+}
+
+
+/* ESTRUCTURA MODO GALERÍA (Se activa con JS) */
+.pedidos-wrapper.view-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.pedidos-wrapper.view-gallery .pedido-card {
+    background-color: #161616;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.pedidos-wrapper.view-gallery .pedido-main-info {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 14px;
+}
+
+.pedidos-wrapper.view-gallery .pedido-thumbnails {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.pedidos-wrapper.view-gallery .pedido-thumbnails img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.pedidos-wrapper.view-gallery .pedido-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pedidos-wrapper.view-gallery .pedido-status-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #222;
+    padding-top: 12px;
+}
+
+.pedidos-wrapper.view-gallery .status-delivery {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pedidos-wrapper.view-gallery .pedido-date {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.pedidos-wrapper.view-gallery .pedido-pricing {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1f1f1f;
+    padding: 10px 14px;
+    border-radius: 6px;
+}
+
+.pedidos-wrapper.view-gallery .pedido-actions {
+    display: none; /* Oculto en Galería para limpiar la tarjeta */
+}
+
+/* Contenedor relativo para posicionar el dropdown */
+.pedido-actions {
+    position: relative;
+    display: inline-block;
+    text-align: right;
+}
+
+.menu-dots-btn {
+    font-size: 1.5rem;
+    color: #888;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s ease;
+}
+
+.menu-dots-btn:hover {
+    color: #ffffff;
+}
+
+/* Menú oculto por defecto */
+.dropdown-menu-pedido {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 35px;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    padding: 6px 0;
+}
+
+/* Clase que se añade con JS para mostrar el menú */
+.dropdown-menu-pedido.show {
+    display: block;
+}
+
+/* Enlace interno del menú */
+.dropdown-link {
+    color: #ffffff;
+    padding: 10px 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: left;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-link i {
+    font-size: 1.1rem;
+    color: #888;
+}
+
+.dropdown-link:hover {
+    background-color: #262626;
+}
+
+.dropdown-link:hover i {
+    color: #ffffff;
+}

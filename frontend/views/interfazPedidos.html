@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Pedidos - Elixir and Flexx</title>
+    <link rel="stylesheet" href="../public/css/global.css">
+    <link rel="stylesheet" href="../public/css/estilos_pedidos.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- HEADER ACTUALIZADO CON SUS CLASES BEM -->
+    <header>
+        <div class="nav-bar">
+            <div class="nav-bar__logo">ELIXIRANDFLEXX</div>
+        
+            <nav>
+                <ul class="nav-bar__links">
+                    <li><a href="interfazGrafica.html" class="nav-bar__link">INICIO</a></li>
+                    <li><a href="interfazCatalogo.html" class="nav-bar__link">CATALOGO</a></li>
+                    <li><a href="interfazGuiaTallas.html" class="nav-bar__link">GUIA DE TALLAS</a></li>
+                    <li><a href="interfazDevoluciones.html" class="nav-bar__link">POLITICAS DE DEVOLUCION</a></li>
+                </ul>
+            </nav>
+        
+            <div class="nav-bar__icons">
+                <i class="bx bx-search nav-bar__icon"></i>
+                <a href="interfazPerfil.html" class="nav-bar__link">
+                    <i class="bx bx-user nav-bar__icon"></i>
+                </a>
+                <a href="interfazCarrito.html" class="nav-bar__link">
+                    <i class="bx bx-shopping-bag nav-bar__icon"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="pedidos-container">
+        <div class="pedidos-header">
+            <h1>Mis Pedidos</h1>
+            <div class="view-controls">
+                <button id="btnVistaLista" class="control-btn active">
+                    <i class="bx bx-list-ul"></i> Lista
+                </button>
+                <button id="btnVistaGaleria" class="control-btn">
+                    <i class="bx bx-grid-alt"></i> Galería
+                </button>
+            </div>
+        </div>
+
+        <div id="contenedorPedidos" class="pedidos-wrapper view-list">
+            
+            <div class="pedido-card">
+                <div class="pedido-main-info">
+                    <div class="pedido-thumbnails">
+                        <img src="../public/images/pantalones ejemplo 1.webp" alt="Prenda">
+                        <img src="../public/images/zapatos ejemplo 1.webp" alt="Prenda">
+                        <img src="../public/images/oodie ejemplo 1.avif" alt="Prenda">
+                        <img src="../public/images/camisa ejemplo 1.webp" alt="Prenda">
+                    </div>
+                    <div class="pedido-details">
+                        <span class="id-pedido">#1585</span>
+                        <span class="cant-articulos">4 artículos</span>
+                    </div>
+                </div>
+
+                <div class="pedido-status-group">
+                    <div class="status-delivery">
+                        <i class="bx bx-truck"></i>
+                        <span>En camino</span>
+                    </div>
+                    <span class="pedido-date">28 de ene</span>
+                </div>
+
+                <div class="pedido-pricing">
+                    <span class="total-label">Total</span>
+                    <span class="total-amount">$ 190.000,00 COP</span>
+                </div>
+                
+                <div class="pedido-actions">
+    <!-- El botón de los tres puntos -->
+                    <i class="bx bx-dots-horizontal-rounded menu-dots-btn"></i>
+    
+    <!-- Menú flotante desplegable -->
+                    <div class="dropdown-menu-pedido">
+                        <a href="interfazCarrito.html" class="dropdown-link">
+                        <i class="bx bx-refresh"></i> Volver a comprar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>     
+    </main>
+
+    <script src="../public/js/views/pedidos.js" type="module"></script>
+</body>
+</html>
