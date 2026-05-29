@@ -10,30 +10,39 @@
 </head>
 <body>
 
-    <!-- HEADER ACTUALIZADO CON SUS CLASES BEM -->
+    <!-- HEADER ESTANDARIZADO PARA TODAS LAS VISTAS -->
     <header>
-        <div class="nav-bar">
+        <nav class="nav-bar">
             <div class="nav-bar__logo">ELIXIRANDFLEXX</div>
-        
-            <nav>
-                <ul class="nav-bar__links">
-                    <li><a href="interfazGrafica.html" class="nav-bar__link">INICIO</a></li>
-                    <li><a href="interfazCatalogo.html" class="nav-bar__link">CATALOGO</a></li>
-                    <li><a href="interfazGuiaTallas.html" class="nav-bar__link">GUIA DE TALLAS</a></li>
-                    <li><a href="interfazDevoluciones.html" class="nav-bar__link">POLITICAS DE DEVOLUCION</a></li>
-                </ul>
-            </nav>
-        
+            
+            <ul class="nav-bar__links">
+                <li><a href="interfazGrafica.html" class="nav-bar__link">Inicio</a></li>
+                <li><a href="interfazCatalogo.html" class="nav-bar__link">Catalogo</a></li>
+                <li><a href="interfazGuiaTallas.html" class="nav-bar__link">Guia de tallas</a></li>
+                <li><a href="interfazPedidos.html" class="nav-bar__link">Pedidos</a></li>
+                
+                <!-- ITEM DROPDOWN UNIFICADO -->
+                <li class="nav-bar__item--dropdown">
+                    <a href="#" class="nav-bar__link" id="dropdownToggle">
+                        Politicas de Devolucion <i class="bx bx-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <ul class="nav-bar__dropdown-menu" id="headerDropdown">
+                        <li><a href="interfazDevoluciones.html?seccion=devoluciones" class="nav-bar__dropdown-link">Politicas de Devolucion</a></li>
+                        <li><a href="interfazDevoluciones.html?seccion=contacto" class="nav-bar__dropdown-link">Contacto</a></li>
+                    </ul>
+                </li>
+            </ul>
+            
             <div class="nav-bar__icons">
                 <i class="bx bx-search nav-bar__icon"></i>
-                <a href="interfazPerfil.html" class="nav-bar__link">
+                <a href="interfazPerfil.html" style="color: inherit; text-decoration: none;">
                     <i class="bx bx-user nav-bar__icon"></i>
                 </a>
-                <a href="interfazCarrito.html" class="nav-bar__link">
+                <a href="interfazCarrito.html" style="color: inherit; text-decoration: none;">
                     <i class="bx bx-shopping-bag nav-bar__icon"></i>
                 </a>
             </div>
-        </div>
+        </nav>
     </header>
 
     <main class="pedidos-container">
