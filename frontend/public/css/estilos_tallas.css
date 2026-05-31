@@ -9,7 +9,24 @@ body {
     padding: 0;
 }
 
+.title-view {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 50px;
+}
 
+.title-view__header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.title-view__badge {
+    font-size: 0.9rem;
+    letter-spacing: 3px;
+    color: var(--color-gray-light);
+    display: block;
+    margin-bottom: 5px;
+}
 
 
 /* Contenedor que agrupa todas las secciones */

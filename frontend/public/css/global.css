@@ -45,50 +45,103 @@ body {
 /* ==========================================================================
    COMPONENTE NAVBAR REUTILIZABLE (BEM)
    ========================================================================== */
+/* ==========================================================================
+   HEADER ESTANDARIZADO - ELIXIR AND FLEXX
+   ========================================================================== */
+header {
+    background-color: #0b0b0b;
+    border-bottom: 1px solid #222;
+    width: 100%;
+}
+
 .nav-bar {
+    max-width: 1400px;
+    margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 50px;
-    background-color: transparent; /* Se adapta al contenedor */
+    padding: 20px 40px;
+    box-sizing: border-box;
 }
 
 .nav-bar__logo {
-    font-family: var(--font-display);
+    color: #ffffff;
     font-size: 1.5rem;
-    font-weight: bold;
-    letter-spacing: 2px;
+    font-weight: 900;
+    letter-spacing: 3px;
 }
 
 .nav-bar__links {
-    display: flex;
     list-style: none;
-    gap: 25px;
+    display: flex;
+    gap: 30px;
+    margin: 0;
+    padding: 0;
+    align-items: center;
 }
 
 .nav-bar__link {
+    color: #ffffff;
     text-decoration: none;
-    color: var(--color-white);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    font-family: var(--font-display);
-    transition: color 0.2s ease;
-}
-
-.nav-bar__link--active {
-    border-bottom: 2px solid var(--color-red-vibrant);
-    padding-bottom: 4px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase; /* Fuerza las mayúsculas de la imagen */
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .nav-bar__icons {
     display: flex;
     gap: 15px;
+    align-items: center;
+    color: #ffffff;
 }
 
 .nav-bar__icon {
     font-size: 1.4rem;
     cursor: pointer;
     transition: color 0.2s ease;
+}
+.nav-bar__item--dropdown {
+    position: relative;
+}
+
+.nav-bar__dropdown-menu {
+    display: none; /* Oculto por defecto */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #0b0b0b;
+    border: 1px solid #222;
+    list-style: none;
+    padding: 10px 0;
+    margin-top: 10px;
+    min-width: 200px;
+    z-index: 1000;
+}
+
+.nav-bar__dropdown-menu.is-active {
+    display: block; /* Se muestra con JS */
+}
+
+.nav-bar__dropdown-link {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 10px 20px;
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.nav-bar__dropdown-link:hover {
+    background-color: #1a1a1a;
+}
+
+.nav-bar__link--active {
+    border-bottom: 2px solid var(--color-red-vibrant);
+    padding-bottom: 4px;
 }
 
 .nav-bar__icon--active {

@@ -21,11 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         const card = document.createElement('a');
                         card.href = `interfazProductos.html?categoria=${item.id}`; // Redirección pasando el ID por URL
                         card.className = 'category-card';
-                        
-                        card.addEventListener('click', () => {
-                            // Redirecciona pasándole el ID de la prenda en la URL
-                            window.location.href = `interfazProductoDetalle.html?id=${prod.id}`;
-                        });
 
                         card.innerHTML = `
                             <div class="category-card__img-wrapper">

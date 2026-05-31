@@ -26,12 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             // 4. Lo mandamos al backend
-            fetch('http://localhost:3000/api/usuarios/registro', {
+            fetch('UsuarioController', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: JSON.stringify(datosUsuario)
+                body: new URLSearchParams({ accion: 'registro', nombre, correo, password })
             })
             .then(respuesta => respuesta.json())
             .then(data => {

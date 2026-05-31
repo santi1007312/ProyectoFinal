@@ -1,36 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- ELEMENTOS DEL DOM ---
-    const dropdownToggle = document.getElementById('dropdownToggle');
-    const headerDropdown = document.getElementById('headerDropdown');
-    const dropdownArrow = document.querySelector('.dropdown-arrow');
-    
     const btnSolicitarDevolucion = document.getElementById('btnSolicitarDevolucion');
     const formDevolucionContainer = document.getElementById('formDevolucionContainer');
 
-    // 1. INTERACCIÓN DEL DROPDOWN EN EL HEADER
-    if (dropdownToggle && headerDropdown) {
-        dropdownToggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            headerDropdown.classList.toggle('show');
-            if (dropdownArrow) dropdownArrow.classList.toggle('rotate');
-        });
-
-        // Cerrar dropdown al hacer clic en cualquier otra parte externa
-        document.addEventListener('click', () => {
-            headerDropdown.classList.remove('show');
-            if (dropdownArrow) dropdownArrow.classList.remove('rotate');
-        });
-    }
-
-    // 2. DESPLEGAR FORMULARIO DE DEVOLUCIÓN
+    // DESPLEGAR FORMULARIO DE DEVOLUCIÓN
     if (btnSolicitarDevolucion && formDevolucionContainer) {
         btnSolicitarDevolucion.addEventListener('click', () => {
-            formDevolucionContainer.classList.toggle('show');
+            formDevolucionContainer.classList.toggle('is-visible');
             
-            // Auto scroll suave hacia el formulario recién abierto
-            if (formDevolucionContainer.classList.contains('show')) {
+            if (formDevolucionContainer.classList.contains('is-visible')) {
                 formDevolucionContainer.scrollIntoView({ behavior: 'smooth' });
             }
         });
