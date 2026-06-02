@@ -365,3 +365,57 @@ header {
 .dropdown-link:hover i {
     color: #ffffff;
 }
+
+/* Contenedor del botón */
+.pedido-galeria__acciones {
+    margin-top: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start; /* Alínea el botón a la izquierda */
+}
+
+/* Botón Volver a comprar */
+.btn-volver-compra {
+    background-color: transparent;
+    color: #ffffff;
+    border: 1px solid #333333;
+    padding: 12px 30px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-volver-compra:hover {
+    background-color: #ffffff;
+    color: #0b0b0b;
+    border-color: #ffffff;
+}
+
+/* Línea intermedia divisoria (Fina y sutil) */
+.divisor-pedido {
+    border: 0;
+    border-top: 1px solid #222222; /* Color oscuro que separa sin chillar */
+    margin: 25px 0;
+    width: 100%;
+}
+
+/* Enlace inferior */
+.pedido-galeria__footer {
+    width: 100%;
+    text-align: left;
+}
+
+.enlace-footer-devolucion {
+    color: #888888; /* Gris sutil idéntico al de privacidad */
+    font-size: 0.85rem;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.enlace-footer-devolucion:hover {
+    color: #ffffff; /* Ilumina al pasar el cursor */
+}
