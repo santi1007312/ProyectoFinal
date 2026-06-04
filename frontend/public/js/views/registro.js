@@ -1,51 +1,76 @@
+/**
+ * registro.js — Elixir and Flexx
+ * Maneja el formulario de registro mapeando los campos exactos
+ * que espera UsuarioController (nombre, apellido, edad, email, contrasena, telefono).
+ */
+import { UsuarioService } from '../services/api.js';
+
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Seleccionamos el formulario de registro por su ID 
-    const formRegistro = document.getElementById('formRegistro');
 
-    if (formRegistro) {
-        formRegistro.addEventListener('submit', (e) => {
-            // Evitamos que la página se recargue sola
-            e.preventDefault();
+    // Mensajes de error pasados por query param
+    const urlParams = new URLSearchParams(window.location.search);
+    const msgEl = document.getElementById('registroMessage');
 
-            // 2. Capturamos los datos de los inputs
-            const nombre = document.getElementById('inputNombre').value;
-            const correo = document.getElementById('inputCorreo').value;
-            const password = document.getElementById('inputPassword').value;
+    if (msgEl) {
+        if (urlParams.get('error') === 'camposVacios') {
+            msgEl.textContent = '⚠️ Complete todos los campos obligatorios.';
+            msgEl.className = 'auth-message auth-message--warning';
+        } else if (urlParams.get('error') === 'registroFallido') {
+            msgEl.textContent = '❌ No se pudo crear la cuenta. El correo puede estar ya registrado.';
+            msgEl.className = 'auth-message auth-message--error';
+        } else if (urlParams.get('error') === 'edadInvalida') {
+            msgEl.textContent = '⚠️ Ingrese una edad válida.';
+            msgEl.className = 'auth-message auth-message--warning';
+        }
+    }
 
-            // Validación antes de mandar al backend
-            if (nombre === '' || correo === '' || password === '') {
-                alert('Por favor, llene todos los campos, mi ñero.');
-                return;
-            }
+    const formRegistro = document.getElementById('formRegistro') || document.querySelector('.auth-card form');
 
-            // 3. Creamos el objeto con los datos del nuevo usuario
-            const datosUsuario = {
-                nombre: nombre,
-                correo: correo,
-                password: password
-            };
+    if (!formRegistro) return;
 
-            // 4. Lo mandamos al backend
-            fetch('UsuarioController', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({ accion: 'registro', nombre, correo, password })
-            })
-            .then(respuesta => respuesta.json())
-            .then(data => {
-                if (data.success) {
-                    alert('¡Usuario registrado! Ya puede iniciar sesión.');
-                    window.location.href = 'login.html'; // Lo mandamos al login
-                } else {
-                    alert('Huy, hubo un error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error conectando al backend:', error);
-                alert('No se pudo conectar con el servidor backend.');
-            });
+    formRegistro.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Capturamos por name="" exactamente como están en el HTML y en el backend
+        const nombre    = (formRegistro.querySelector('[name="nombre"]')?.value || '').trim();
+        const apellido  = (formRegistro.querySelector('[name="apellido"]')?.value || '').trim();
+        const edad      = (formRegistro.querySelector('[name="edad"]')?.value || '0').trim();
+        const email     = (formRegistro.querySelector('[name="email"]')?.value || '').trim();
+        const contrasena = (formRegistro.querySelector('[name="contrasena"]')?.value || '').trim();
+        const telefono  = (formRegistro.querySelector('[name="telefono"]')?.value || '').trim();
+
+        // Validación del lado del cliente
+        if (!nombre || !email || !contrasena) {
+            mostrarMensaje('⚠️ Nombre, correo y contraseña son obligatorios.', 'warning');
+            return;
+        }
+
+        if (contrasena.length < 6) {
+            mostrarMensaje('⚠️ La contraseña debe tener al menos 6 caracteres.', 'warning');
+            return;
+        }
+
+        const btnSubmit = formRegistro.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Registrando...';
+
+        const resultado = await UsuarioService.registrar({
+            nombre, apellido, edad, email, contrasena, telefono
         });
+
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'CREAR CUENTA';
+
+        if (resultado.ok) {
+            window.location.href = 'login.html?registro=ok';
+        } else {
+            mostrarMensaje('❌ ' + resultado.error, 'error');
+        }
+    });
+
+    function mostrarMensaje(texto, tipo) {
+        if (!msgEl) { alert(texto); return; }
+        msgEl.textContent = texto;
+        msgEl.className = `auth-message auth-message--${tipo}`;
     }
 });

@@ -1,47 +1,56 @@
+/**
+ * home.js — Elixir and Flexx
+ * Carga los últimos 3 lanzamientos desde ProductoController para el home.
+ */
+import { ProductoService } from '../services/api.js';
+
 document.addEventListener('DOMContentLoaded', () => {
+
     const launchesGrid = document.getElementById('launchesGrid');
 
     if (launchesGrid) {
-        // Hacemos la petición al Servlet pidiendo solo los nuevos lanzamientos
-        fetch('ProductoController?accion=lanzamientos')
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error('Error al traer los lanzamientos');
-                }
-                return res.json();
-            })
-            .then(productos => {
-                // Si el backend nos responde con un arreglo de productos reales, reemplazamos lo estático
-                if (productos && productos.length > 0) {
-                    launchesGrid.innerHTML = ''; // Limpiamos las tarjetas quemadas en el HTML
+        cargarLanzamientos();
+    }
 
-                    productos.forEach(prod => {
-                        // Creamos el contenedor de la tarjeta
-                        const card = document.createElement('div');
-                        card.className = 'launches-card';
+    async function cargarLanzamientos() {
+        try {
+            const productos = await ProductoService.lanzamientos();
 
-                        // Le metemos la estructura nativa respetando tus clases de CSS
-                        card.innerHTML = `
-                            <img src="${prod.imagen || '../public/images/default.webp'}" alt="${prod.nombre}" class="launches-card__img">
-                            <div class="launches-card__info">
-                                <h4>${prod.nombre}</h4>
-                                <p>$${Number(prod.precio).toLocaleString('co')} COP</p>
-                            </div>
-                        `;
+            if (!productos || productos.length === 0) return; // Deja las tarjetas estáticas
 
-                        // Escuchador por si quieren darle clic a la prenda e ir al detalle
-                        card.addEventListener('click', () => {
-                            window.location.href = `interfazProductos.html?id=${prod.id}`;
-                        });
+            launchesGrid.innerHTML = '';
 
-                        launchesGrid.appendChild(card);
-                    });
-                }
-            })
-            .catch(err => {
-                // Si el backend no está corriendo, el "catch" evita que se rompa la página 
-                // y se quedan viendo las tarjetas por defecto.
-                console.warn('Cargando lanzamientos en modo local:', err.message);
+            productos.forEach(prod => {
+                const card = document.createElement('div');
+                card.className = 'launches-card';
+
+                const imgSrc = prod.imagenPrincipal || prod.imagen || '../public/images/34.webp';
+                const precio = Number(prod.precioFinal || prod.precioBase).toLocaleString('es-CO');
+
+                card.innerHTML = `
+                    <img
+                        src="${imgSrc}"
+                        alt="${prod.nombre}"
+                        class="launches-card__img"
+                        onerror="this.src='../public/images/34.webp'"
+                    >
+                    <div class="launches-card__info">
+                        <h4>${prod.nombre}</h4>
+                        <p>$${precio} COP</p>
+                        ${prod.descuento > 0 ? `<span class="launches-card__discount">-${prod.descuento}% OFF</span>` : ''}
+                    </div>
+                `;
+
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', () => {
+                    window.location.href = `interfazProductoDetalle.html?id=${prod.id}`;
+                });
+
+                launchesGrid.appendChild(card);
             });
+
+        } catch (err) {
+            console.warn('Cargando lanzamientos en modo local:', err.message);
+        }
     }
 });

@@ -1,64 +1,137 @@
+/**
+ * login.js — Elixir and Flexx
+ * Maneja el formulario de login, detección de rol y modal de recuperación.
+ */
+import { UsuarioService } from '../services/api.js';
+
 document.addEventListener('DOMContentLoaded', () => {
-    // LÓGICA DEL MODAL DE RECUPERACIÓN
-    const modal = document.getElementById('modalRecuperar');
-    const btnClose = document.getElementById('btnCloseModal');
 
-    if (modal && btnClose) {
-        btnClose.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
+    // ── MENSAJES DE QUERY PARAMS (registro=ok, error=credenciales, etc.) ──────
+    const urlParams = new URLSearchParams(window.location.search);
+    const msgEl = document.getElementById('loginMessage');
 
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
+    if (msgEl) {
+        if (urlParams.get('registro') === 'ok') {
+            msgEl.textContent = '✅ ¡Registro exitoso! Ya puede iniciar sesión.';
+            msgEl.className = 'auth-message auth-message--success';
+        } else if (urlParams.get('error') === 'credenciales') {
+            msgEl.textContent = '❌ Correo o contraseña incorrectos. Vuelva a intentarlo.';
+            msgEl.className = 'auth-message auth-message--error';
+        } else if (urlParams.get('error') === 'camposVacios') {
+            msgEl.textContent = '⚠️ Complete todos los campos antes de continuar.';
+            msgEl.className = 'auth-message auth-message--warning';
+        } else if (urlParams.get('recuperacion') === 'enviado') {
+            msgEl.textContent = '📧 Solicitud enviada. Revise su correo electrónico.';
+            msgEl.className = 'auth-message auth-message--success';
+        } else if (urlParams.get('logout') === 'ok') {
+            msgEl.textContent = '👋 Sesión cerrada correctamente.';
+            msgEl.className = 'auth-message auth-message--success';
+        }
+    }
+
+    // ── FORMULARIO DE LOGIN ───────────────────────────────────────────────────
+    const formLogin = document.querySelector('.auth-card form');
+
+    if (formLogin) {
+        formLogin.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const emailInput     = formLogin.querySelector('input[name="email"]');
+            const contrasenaInput = formLogin.querySelector('input[name="contrasena"]');
+            const btnSubmit      = formLogin.querySelector('button[type="submit"]');
+
+            const email     = emailInput.value.trim();
+            const contrasena = contrasenaInput.value.trim();
+
+            if (!email || !contrasena) {
+                mostrarMensaje('⚠️ Complete todos los campos.', 'warning');
+                return;
+            }
+
+            // Estado de carga
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Verificando...';
+
+            const resultado = await UsuarioService.login(email, contrasena);
+
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'INICIAR SESIÓN';
+
+            if (resultado.ok) {
+                // El backend redirige según rol (admin → interfazAdmin, cliente → interfazCatalogo)
+                // pero como usamos fetch(), seguimos la URL manualmente
+                if (resultado.esAdmin) {
+                    window.location.href = 'interfazAdmin.html';
+                } else {
+                    window.location.href = 'interfazCatalogo.html';
+                }
+            } else {
+                mostrarMensaje('❌ ' + resultado.error, 'error');
+                contrasenaInput.value = '';
             }
         });
     }
 
-    // LÓGICA DEL LOGIN (CONEXIÓN BACKEND)
-    // Buscamos el formulario dentro de la tarjeta de autenticación
-    const formLogin = document.querySelector('.auth-card form');
+    // ── MODAL DE RECUPERACIÓN ─────────────────────────────────────────────────
+    const modal     = document.getElementById('modalRecuperar');
+    const btnAbrir  = document.getElementById('btnAbrirModal') || document.querySelector('.auth-forgot-link');
+    const btnClose  = document.getElementById('btnCloseModal');
+    const formRecup = document.getElementById('formRecuperacion');
 
-    if (formLogin) {
-        formLogin.addEventListener('submit', (e) => {
-            e.preventDefault(); // Evita que la página parpadee o se recargue
+    if (btnAbrir && modal) {
+        btnAbrir.addEventListener('click', (e) => {
+            e.preventDefault();
+            modal.style.display = 'flex';
+        });
+    }
 
-            // Capturamos los datos usando el atributo 'name' de los inputs
-            const email = formLogin.querySelector('input[name="email"]').value.trim();
-            const contrasena = formLogin.querySelector('input[name="contrasena"]').value.trim();
-            const accion = formLogin.querySelector('input[name="accion"]').value;
+    if (btnClose) {
+        btnClose.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
 
-            if (email === '' || contrasena === '') {
-                alert('ojo, complete todos los campos.');
+    // Cerrar modal al hacer clic fuera del contenido
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+    }
+
+    if (formRecup) {
+        formRecup.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const emailInput = formRecup.querySelector('input[type="email"]');
+            const btnEnviar = formRecup.querySelector('button[type="submit"]');
+            const emailVal = emailInput.value.trim();
+
+            if (!emailVal) {
+                alert('Ingrese su correo electrónico.');
                 return;
             }
 
-            // Creamos los parámetros estructurados como los espera tu Controller de Java
-            const urlParams = new URLSearchParams();
-            urlParams.append('accion', accion);
-            urlParams.append('email', email);
-            urlParams.append('contrasena', contrasena);
+            btnEnviar.disabled = true;
+            btnEnviar.textContent = 'Enviando...';
 
-            // Enviamos la petición al Servlet de Java
-            fetch('UsuarioController', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: urlParams
-            })
-            .then(res => {
-                if (res.ok) {
-                    // Si el backend responde bien, redirigimos al catálogo o interfaz principal
-                    window.location.href = 'interfazCatalogo.html'; 
-                } else {
-                    alert('Credenciales incorrectas o error en el servidor, verifique.');
-                }
-            })
-            .catch(err => {
-                console.error('Error en el login:', err);
-                alert('No se pudo conectar con el servidor backend.');
-            });
+            const resultado = await UsuarioService.recuperarContrasena(emailVal);
+
+            btnEnviar.disabled = false;
+            btnEnviar.textContent = 'ENVIAR ENLACE';
+
+            if (resultado.ok) {
+                modal.style.display = 'none';
+                mostrarMensaje('📧 Enlace de recuperación enviado a su correo.', 'success');
+                emailInput.value = '';
+            } else {
+                alert('❌ ' + resultado.error);
+            }
         });
+    }
+
+    // ── HELPER ────────────────────────────────────────────────────────────────
+    function mostrarMensaje(texto, tipo) {
+        if (!msgEl) return;
+        msgEl.textContent = texto;
+        msgEl.className = `auth-message auth-message--${tipo}`;
     }
 });

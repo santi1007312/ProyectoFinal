@@ -1,54 +1,61 @@
+/**
+ * perfil.js — Elixir and Flexx
+ * Carga los datos del perfil del usuario logueado desde el backend.
+ */
+import { UsuarioService, PedidoService } from '../services/api.js';
+
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Buscamos las etiquetas exactas mediante los IDs que acabamos de meter
-    const userNameEl = document.getElementById('userNameDisplay');
-    const userEmailEl = document.getElementById('userEmailDisplay');
-    const addressNameEl = document.getElementById('addressNameDisplay');
-    const addressStreetEl = document.getElementById('addressStreetDisplay');
-    const addressNeighbourEl = document.getElementById('addressNeighbourDisplay');
+
+    const userNameEl       = document.getElementById('userNameDisplay');
+    const userEmailEl      = document.getElementById('userEmailDisplay');
+    const addressNameEl    = document.getElementById('addressNameDisplay');
+    const addressStreetEl  = document.getElementById('addressStreetDisplay');
+    const addressNeighEl   = document.getElementById('addressNeighbourDisplay');
     const addressCountryEl = document.getElementById('addressCountryDisplay');
-    
-    // Capturamos su icono del lápiz por su ID o clase de Boxicons
-    const btnEditarPerfil = document.getElementById('btnEditPerfil') || document.querySelector('.bx-edit');
+    const btnLogout        = document.getElementById('btnLogout');
+    const btnEditarPerfil  = document.getElementById('btnEditPerfil') || document.querySelector('.bx-edit');
 
-    // 2. Pedimos los datos al controlador de Java
-    fetch('../UsuarioController?accion=obtenerPerfil')
-        .then(res => {
-            if (!res.ok) throw new Error('Simulación modo offline');
-            return res.json();
-        })
-        .then(usuario => {
+    // Cargar perfil
+    cargarPerfil();
+
+    async function cargarPerfil() {
+        try {
+            const usuario = await UsuarioService.obtenerPerfil();
             renderizarDatos(usuario);
-        })
-        .catch(() => {
-            // Sus datos reales por defecto si el servidor está caído
-            const datosSimulados = {
-                nombre: 'Santiago Carrillo rivera',
-                correo: 'carrilloriverasantiago@gmail.com',
-                direccion: 'Calle 64e 1w 48',
-                barrio: 'Balcones de gratamira',
-                pais: 'Colombia'
-            };
-            renderizarDatos(datosSimulados);
-        });
-
-    // 3. Inyectamos los textos de forma dinámica sin romper los estilos de las clases
-    function renderizarDatos(user) {
-        if (userNameEl) userNameEl.textContent = user.nombre;
-        if (userEmailEl) userEmailEl.textContent = user.correo;
-        if (addressNameEl) addressNameEl.textContent = user.nombre;
-        if (addressStreetEl) addressStreetEl.textContent = user.direccion;
-        if (addressNeighbourEl) addressNeighbourEl.textContent = user.barrio;
-        if (addressCountryEl) addressCountryEl.textContent = user.pais;
+        } catch {
+            // Si no hay sesión activa, redirigir al login
+            window.location.href = 'login.html?error=sesionExpirada';
+        }
     }
 
-    // 4. Evento del clic en el lápiz
+    function renderizarDatos(user) {
+        const nombreCompleto = `${user.nombre || ''} ${user.apellido || ''}`.trim();
+        if (userNameEl)       userNameEl.textContent       = nombreCompleto;
+        if (userEmailEl)      userEmailEl.textContent      = user.correo || user.email || '';
+        if (addressNameEl)    addressNameEl.textContent    = nombreCompleto;
+        if (addressStreetEl)  addressStreetEl.textContent  = user.direccion || 'Sin dirección registrada';
+        if (addressNeighEl)   addressNeighEl.textContent   = user.barrio || '';
+        if (addressCountryEl) addressCountryEl.textContent = user.pais || 'Colombia';
+    }
+
+    // Edición básica de nombre
     if (btnEditarPerfil) {
         btnEditarPerfil.addEventListener('click', () => {
-            const nuevoNombre = prompt('Modifique su nombre de perfil:', userNameEl.textContent);
-            if (nuevoNombre && nuevoNombre.trim() !== "") {
-                userNameEl.textContent = nuevoNombre;
-                
-                // Aquí manda el fetch por POST al Servlet como vimos antes...
+            const actual = userNameEl?.textContent || '';
+            const nuevo = prompt('Modifique su nombre:', actual);
+            if (nuevo && nuevo.trim()) {
+                if (userNameEl)    userNameEl.textContent    = nuevo.trim();
+                if (addressNameEl) addressNameEl.textContent = nuevo.trim();
+            }
+        });
+    }
+
+    // Cerrar sesión
+    if (btnLogout) {
+        btnLogout.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (confirm('¿Desea cerrar sesión?')) {
+                await UsuarioService.logout();
             }
         });
     }

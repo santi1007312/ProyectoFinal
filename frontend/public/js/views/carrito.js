@@ -1,133 +1,137 @@
+/**
+ * carrito.js — Elixir and Flexx
+ * Gestiona el carrito (localStorage) y crea el pedido real en el backend al pagar.
+ */
+import { PedidoService, CarritoService } from '../services/api.js';
+
 document.addEventListener('DOMContentLoaded', () => {
+
     const itemsContainer = document.getElementById('cartItemsContainer');
-    const totalSumLabel = document.getElementById('cartTotalSum');
-    const btnPagar = document.getElementById('btnPagarPedido');
+    const totalSumLabel  = document.getElementById('cartTotalSum');
+    const btnPagar       = document.getElementById('btnPagarPedido');
+    const direccionInput = document.getElementById('inputDireccionEnvio');
 
-    // 1. Simulación de carga inicial si no hay nada en el carrito (Para tu presentación)
-    let carrito = JSON.parse(localStorage.getItem('elixir_cart')) || [];
+    let carrito = CarritoService.obtenerLocal();
 
+    // Si está vacío, mostrar un item de demo para presentación
     if (carrito.length === 0) {
-        carrito = [
-            {
-                id: 101,
-                nombre: 'Conjunto Dragón 🥷',
-                precio: 220000,
-                color: 'Negro',
-                talla: 'S',
-                cantidad: 1,
-                imagen: '../public/images/el_estilo_de_asap_rocky_947117425.webp' // Cambia por tu ruta real de imagen si quieres
-            }
-        ];
-        guardarCarrito();
+        carrito = [{
+            idVariante: 1,
+            id: 1,
+            nombre: 'Hoodie Crossroads ✦',
+            precio: 185000,
+            color: 'Negro',
+            talla: 'M',
+            cantidad: 1,
+            imagen: '../public/images/34.webp'
+        }];
+        CarritoService.guardarLocal(carrito);
     }
 
-    // 2. Función para renderizar los productos en la pantalla
     function renderizarCarrito() {
         if (!itemsContainer) return;
-        itemsContainer.innerHTML = ''; // Limpiamos pantalla
+        itemsContainer.innerHTML = '';
 
         if (carrito.length === 0) {
-            itemsContainer.innerHTML = '<p style="padding: 20px 0; color: #555;">El carrito está vacío, mi ñero.</p>';
-            totalSumLabel.textContent = '$0,00 COP';
+            itemsContainer.innerHTML = '<p style="padding:20px 0;color:var(--color-text-secondary)">El carrito está vacío, añade prendas desde el catálogo.</p>';
+            if (totalSumLabel) totalSumLabel.textContent = '$0 COP';
             return;
         }
 
-        let acumuladorTotal = 0;
+        let total = 0;
 
-        carrito.forEach((producto, indice) => {
-            const subtotalItem = producto.precio * producto.cantidad;
-            acumuladorTotal += subtotalItem;
+        carrito.forEach((prod, idx) => {
+            const subtotal = prod.precio * prod.cantidad;
+            total += subtotal;
 
-            // Creamos el div con el grid del item
-            const itemRow = document.createElement('div');
-            itemRow.className = 'cart-item';
-
-            itemRow.innerHTML = `
+            const row = document.createElement('div');
+            row.className = 'cart-item';
+            row.innerHTML = `
                 <div class="item-product">
-                    <img src="${producto.imagen}" alt="${producto.nombre}" class="item-img" onerror="this.src='../public/images/34.webp'">
+                    <img
+                        src="${prod.imagen || '../public/images/34.webp'}"
+                        alt="${prod.nombre}"
+                        class="item-img"
+                        onerror="this.src='../public/images/34.webp'"
+                    >
                     <div class="item-details">
-                        <h3>${producto.nombre}</h3>
-                        <p>$${producto.precio.toLocaleString('es-CO')},00</p>
-                        <p>Color: ${producto.color}</p>
-                        <p>Talla: ${producto.talla}</p>
+                        <h3>${prod.nombre}</h3>
+                        <p>$${prod.precio.toLocaleString('es-CO')} COP</p>
+                        <p>Color: ${prod.color} &nbsp;|&nbsp; Talla: ${prod.talla}</p>
                     </div>
                 </div>
-
                 <div class="item-qty-selector">
                     <div class="qty-controls">
-                        <button class="qty-btn btn-restar" data-index="${indice}">−</button>
-                        <span class="qty-number">${producto.cantidad}</span>
-                        <button class="qty-btn btn-sumar" data-index="${indice}">+</button>
+                        <button class="qty-btn btn-restar" data-index="${idx}" type="button">−</button>
+                        <span class="qty-number">${prod.cantidad}</span>
+                        <button class="qty-btn btn-sumar" data-index="${idx}" type="button">+</button>
                     </div>
-                    <button class="btn-delete bxs-trash-alt bx" data-index="${indice}"></button>
+                    <button class="btn-delete bx bxs-trash-alt" data-index="${idx}" type="button" title="Eliminar"></button>
                 </div>
-
                 <div class="item-total">
-                    $${subtotalItem.toLocaleString('es-CO')},00
+                    $${subtotal.toLocaleString('es-CO')} COP
                 </div>
             `;
-
-            itemsContainer.appendChild(itemRow);
+            itemsContainer.appendChild(row);
         });
 
-        // Actualizamos el bloque inferior del total general
-        totalSumLabel.textContent = `$${acumuladorTotal.toLocaleString('es-CO')},00 COP`;
+        if (totalSumLabel) totalSumLabel.textContent = `$${total.toLocaleString('es-CO')} COP`;
     }
 
-    // 3. Escuchador de clics del contenedor para manejar la lógica de sumar, restar y eliminar
+    // Delegación de eventos para sumar, restar y eliminar
     if (itemsContainer) {
         itemsContainer.addEventListener('click', (e) => {
-            const indice = e.target.getAttribute('data-index');
-            if (indice === null) return;
+            const idx = e.target.getAttribute('data-index');
+            if (idx === null) return;
+            const i = parseInt(idx);
 
             if (e.target.classList.contains('btn-sumar')) {
-                carrito[indice].cantidad++;
-            } 
-            else if (e.target.classList.contains('btn-restar')) {
-                if (carrito[indice].cantidad > 1) {
-                    carrito[indice].cantidad--;
-                }
-            } 
-            else if (e.target.classList.contains('btn-delete')) {
-                carrito.splice(indice, 1); // Lo saca del arreglo
+                carrito[i].cantidad++;
+            } else if (e.target.classList.contains('btn-restar')) {
+                if (carrito[i].cantidad > 1) carrito[i].cantidad--;
+            } else if (e.target.classList.contains('btn-delete')) {
+                carrito.splice(i, 1);
             }
 
-            guardarCarrito();
+            CarritoService.guardarLocal(carrito);
             renderizarCarrito();
         });
     }
 
-    // 4. Función para guardar los cambios en el LocalStorage
-    function guardarCarrito() {
-        localStorage.setItem('elixir_cart', JSON.stringify(carrito));
-    }
-
-    // 5. Lógica del botón Pagar Pedido (Envío al backend)
+    // ── BOTÓN PAGAR → crea el pedido real en el backend ──────────────────────
     if (btnPagar) {
-        btnPagar.addEventListener('click', () => {
+        btnPagar.addEventListener('click', async () => {
             if (carrito.length === 0) {
-                alert('No hay prendas en el carrito para procesar el pago.');
+                alert('El carrito está vacío.');
                 return;
             }
 
-            // Aquí recolectamos los datos para mandárselos a tu Servlet en Java (PedidoController)
-            const datosPedido = {
-                items: carrito,
-                accion: 'guardarPedido'
-            };
+            const direccion = direccionInput?.value.trim() || 'Sin dirección especificada';
+            const total = carrito.reduce((acc, p) => acc + (p.precio * p.cantidad), 0);
 
-            console.log('Enviando datos al backend de Java:', datosPedido);
-            
-            // Simulación o ejecución de Fetch hacia tu backend:
-            alert('¡Conexión melo! Procesando el pago en el sistema de Elixir and Flexx...');
-            
-            // Si necesitas vaciar el carrito tras comprar exitosamente descomenta esto:
-            // carrito = [];
-            // guardarCarrito();
-            // renderizarCarrito();
+            btnPagar.disabled = true;
+            btnPagar.textContent = 'Procesando...';
+
+            const resultado = await PedidoService.crear(total, direccion);
+
+            if (resultado.ok) {
+                // Limpiar carrito tras compra exitosa
+                CarritoService.limpiarLocal();
+                alert(`✅ ¡Pedido #${resultado.idPedido} creado exitosamente!\nTotal: $${total.toLocaleString('es-CO')} COP\nPronto recibirás tu pedido.`);
+                window.location.href = 'interfazPedidos.html';
+            } else {
+                btnPagar.disabled = false;
+                btnPagar.textContent = 'PAGAR PEDIDO';
+                // Si el backend retorna 401 (no autenticado), redirigir al login
+                if (resultado.mensaje && resultado.mensaje.includes('sesion')) {
+                    alert('⚠️ Debes iniciar sesión para realizar un pedido.');
+                    window.location.href = 'login.html';
+                } else {
+                    alert('❌ No se pudo procesar el pedido: ' + (resultado.mensaje || 'error del servidor.'));
+                }
+            }
         });
     }
 
-    // Dibujamos todo por primera vez
     renderizarCarrito();
 });
