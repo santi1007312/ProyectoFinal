@@ -52,8 +52,9 @@
         <div class="auth-card">
             <h1 class="auth-card__title">CREA TU CUENTA</h1>
             <p class="auth-card__subtitle">REGÍSTRATE PARA COMPRAR MÁS RÁPIDO</p>
+            <div id="registroMessage" class="auth-message"></div>
             
-            <form action="UsuarioController" method="POST">
+            <form id="formRegistro" action="UsuarioController" method="POST">
     
                 <input type="hidden" name="accion" value="registrar">
 
@@ -87,7 +88,7 @@
                     <input type="password" name="contrasena" required>
                 </div>
 
-                <button type="submit" class="btn-urban">Crear Cuenta</button>
+                <button type="submit" class="btn-urban">CREAR CUENTA</button>
             </form>
 
             <div class="auth-card__footer">

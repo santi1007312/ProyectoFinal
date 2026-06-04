@@ -69,6 +69,7 @@
 <body>
     <div class="auth-wrapper">
         <div class="auth-card">
+            <div id="loginMessage" class="auth-message"></div>
             <h1 class="auth-card__title">BIENVENIDO AL SISTEMA</h1>
             <p class="auth-card__subtitle">INICIA SESION PARA ACCEDER AL CARRITO Y AL SISTEMA</p>
             
@@ -110,8 +111,8 @@
             <h2 class="auth-modal__title">¿Recuperar Contraseña?</h2>
             <p class="auth-modal__text">Elixir and Flexx le enviara un enlace de recuperacion a su correo</p>
 
-            <form class="auth-form">
-                <input type="email" class="auth-form__input auth-form__input--modal" placeholder="INGRESE SU EMAIL" required>
+            <form class="auth-form" id="formRecuperacion">
+                <input type="email" class="auth-form__input auth-form__input--modal" placeholder="INGRESE SU EMAIL" name="emailRecuperar" required>
                 <button type="submit" class="btn btn--olive">ENVIAR ENLACE</button>
             </form>
         </div>
