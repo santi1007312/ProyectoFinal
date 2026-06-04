@@ -36,16 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const apellido  = (formRegistro.querySelector('[name="apellido"]')?.value || '').trim();
         const edad      = (formRegistro.querySelector('[name="edad"]')?.value || '0').trim();
         const email     = (formRegistro.querySelector('[name="email"]')?.value || '').trim();
-        const contrasena = (formRegistro.querySelector('[name="contrasena"]')?.value || '').trim();
+        const contraseña = (formRegistro.querySelector('[name="contraseña"]')?.value || '').trim();
         const telefono  = (formRegistro.querySelector('[name="telefono"]')?.value || '').trim();
 
         // Validación del lado del cliente
-        if (!nombre || !email || !contrasena) {
+        if (!nombre || !email || !contraseña) {
             mostrarMensaje('⚠️ Nombre, correo y contraseña son obligatorios.', 'warning');
             return;
         }
 
-        if (contrasena.length < 6) {
+        if (contraseña.length < 6) {
             mostrarMensaje('⚠️ La contraseña debe tener al menos 6 caracteres.', 'warning');
             return;
         }
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSubmit.textContent = 'Registrando...';
 
         const resultado = await UsuarioService.registrar({
-            nombre, apellido, edad, email, contrasena, telefono
+            nombre, apellido, edad, email, contraseña, telefono
         });
 
         btnSubmit.disabled = false;
