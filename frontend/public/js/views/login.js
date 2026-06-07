@@ -1,12 +1,14 @@
 /**
  * login.js — Elixir and Flexx
  * Maneja el formulario de login, detección de rol y modal de recuperación.
+ *
+ * CORRECCIÓN: lee resultado.esAdmin del JSON del backend (no res.redirected).
  */
 import { UsuarioService } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── MENSAJES DE QUERY PARAMS (registro=ok, error=credenciales, etc.) ──────
+    // ── MENSAJES DE QUERY PARAMS ──────────────────────────────────────────────
     const urlParams = new URLSearchParams(window.location.search);
     const msgEl = document.getElementById('loginMessage');
 
@@ -20,9 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (urlParams.get('error') === 'camposVacios') {
             msgEl.textContent = '⚠️ Complete todos los campos antes de continuar.';
             msgEl.className = 'auth-message auth-message--warning';
-        } else if (urlParams.get('recuperacion') === 'enviado') {
-            msgEl.textContent = '📧 Solicitud enviada. Revise su correo electrónico.';
-            msgEl.className = 'auth-message auth-message--success';
         } else if (urlParams.get('logout') === 'ok') {
             msgEl.textContent = '👋 Sesión cerrada correctamente.';
             msgEl.className = 'auth-message auth-message--success';
@@ -37,13 +36,13 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
 
             const emailInput     = formLogin.querySelector('input[name="email"]');
-            const contrasenaInput = formLogin.querySelector('input[name="contrasena"]');
+            const contraseñaInput = formLogin.querySelector('input[name="contraseña"]');
             const btnSubmit      = formLogin.querySelector('button[type="submit"]');
 
             const email     = emailInput.value.trim();
-            const contrasena = contrasenaInput.value.trim();
+            const contraseña = contraseñaInput.value.trim();
 
-            if (!email || !contrasena) {
+            if (!email || !contraseña) {
                 mostrarMensaje('⚠️ Complete todos los campos.', 'warning');
                 return;
             }
@@ -58,16 +57,15 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSubmit.textContent = 'INICIAR SESIÓN';
 
             if (resultado.ok) {
-                // El backend redirige según rol (admin → interfazAdmin, cliente → interfazCatalogo)
-                // pero como usamos fetch(), seguimos la URL manualmente
+                // CORRECCIÓN: redirigimos según esAdmin que viene del JSON
                 if (resultado.esAdmin) {
                     window.location.href = 'interfazAdmin.html';
                 } else {
-                    window.location.href = 'interfazCatalogo.html';
+                    window.location.href = 'interfazGrafica.html';
                 }
             } else {
                 mostrarMensaje('❌ ' + resultado.error, 'error');
-                contrasenaInput.value = '';
+                contraseñaInput.value = '';
             }
         });
     }
@@ -91,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Cerrar modal al hacer clic fuera del contenido
     if (modal) {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.style.display = 'none';
@@ -105,16 +102,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const btnEnviar = formRecup.querySelector('button[type="submit"]');
             const emailVal = emailInput.value.trim();
 
-            if (!emailVal) {
-                alert('Ingrese su correo electrónico.');
-                return;
-            }
+            if (!emailVal) { alert('Ingrese su correo electrónico.'); return; }
 
             btnEnviar.disabled = true;
             btnEnviar.textContent = 'Enviando...';
-
-            const resultado = await UsuarioService.recuperarContrasena(emailVal);
-
+            const resultado = await UsuarioService.recuperarContraseña(emailVal);
             btnEnviar.disabled = false;
             btnEnviar.textContent = 'ENVIAR ENLACE';
 

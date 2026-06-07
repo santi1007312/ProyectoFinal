@@ -1,13 +1,11 @@
 /**
  * registro.js — Elixir and Flexx
- * Maneja el formulario de registro mapeando los campos exactos
- * que espera UsuarioController (nombre, apellido, edad, email, contrasena, telefono).
+ * CORRECCIÓN: usa "contrasena" (sin ñ) como name del input y como key del payload.
  */
 import { UsuarioService } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Mensajes de error pasados por query param
     const urlParams = new URLSearchParams(window.location.search);
     const msgEl = document.getElementById('registroMessage');
 
@@ -25,21 +23,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const formRegistro = document.getElementById('formRegistro') || document.querySelector('.auth-card form');
-
     if (!formRegistro) return;
 
     formRegistro.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Capturamos por name="" exactamente como están en el HTML y en el backend
-        const nombre    = (formRegistro.querySelector('[name="nombre"]')?.value || '').trim();
-        const apellido  = (formRegistro.querySelector('[name="apellido"]')?.value || '').trim();
-        const edad      = (formRegistro.querySelector('[name="edad"]')?.value || '0').trim();
-        const email     = (formRegistro.querySelector('[name="email"]')?.value || '').trim();
+        const nombre     = (formRegistro.querySelector('[name="nombre"]')?.value     || '').trim();
+        const apellido   = (formRegistro.querySelector('[name="apellido"]')?.value   || '').trim();
+        const edad       = (formRegistro.querySelector('[name="edad"]')?.value       || '0').trim();
+        const email      = (formRegistro.querySelector('[name="email"]')?.value      || '').trim();
         const contraseña = (formRegistro.querySelector('[name="contraseña"]')?.value || '').trim();
-        const telefono  = (formRegistro.querySelector('[name="telefono"]')?.value || '').trim();
+        const telefono   = (formRegistro.querySelector('[name="telefono"]')?.value   || '').trim();
 
-        // Validación del lado del cliente
         if (!nombre || !email || !contraseña) {
             mostrarMensaje('⚠️ Nombre, correo y contraseña son obligatorios.', 'warning');
             return;
