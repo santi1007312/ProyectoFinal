@@ -8,21 +8,25 @@
  *   en lugar de esperar res.redirected (que fetch() nunca expone al JS).
  */
 
-// ─── BASE URL ────────────────────────────────────────────────────────────────
-// Detecta si estamos bajo Tomcat (/backend_corregido/...) y construye
-// la URL base apuntando siempre a http://localhost:8080/<contextPath>
+// ─── BASE URL CORREGIDA ──────────────────────────────────────────────────────
 const BASE_URL = (() => {
     const { protocol, hostname, port } = window.location;
-    // En Tomcat el contexto normalmente es el nombre del WAR, p.ej. /backend_corregido
-    // Tomamos el primer segmento del path como contexto
+    
+    // Si estás visualizando desde Live Server (puerto 5500)
+    if (port === '5500') {
+        return `${protocol}//${hostname}:8080/Backend_de_los_backend`;
+    }
+    
+    // Si ya estás corriendo el front directamente montado dentro de Tomcat
     const parts = window.location.pathname.split('/').filter(Boolean);
     const ctx = parts.length > 0 ? '/' + parts[0] : '';
-    return `${protocol}//${hostname}:${port || 8080}${ctx}`;
+    return `${protocol}//${hostname}:${port}${ctx}`;
 })();
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+// ─── HELPERS CORREGIDOS ──────────────────────────────────────────────────────
 async function post(servlet, params) {
     const body = new URLSearchParams(params);
+    // Ahora dinámicamente le pega a http://localhost:8080/Backend_de_los_backend/NombreDelServlet
     const res = await fetch(`${BASE_URL}/${servlet}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

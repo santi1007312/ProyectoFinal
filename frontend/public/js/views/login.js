@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSubmit.disabled = true;
             btnSubmit.textContent = 'Verificando...';
 
-            const resultado = await UsuarioService.login(email, contrasena);
+            const resultado = await UsuarioService.login(email, contraseña);
 
             btnSubmit.disabled = false;
             btnSubmit.textContent = 'INICIAR SESIÓN';
