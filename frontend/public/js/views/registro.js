@@ -2,7 +2,7 @@
  * registro.js — Elixir and Flexx
  * CORRECCIÓN: usa "contrasena" (sin ñ) como name del input y como key del payload.
  */
-import { UsuarioService } from '../services/api.js';
+import { UsuarioService } from '../UsuarioController';
 
 document.addEventListener('DOMContentLoaded', () => {
 

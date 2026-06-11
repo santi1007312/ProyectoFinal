@@ -60,7 +60,7 @@ export const UsuarioService = {
     async login(email, contraseña) {
         try {
             // Enviamos "contrasena" — el servlet acepta ambas formas
-            const res = await post('UsuarioController', {
+            const res = await post('../UsuarioController', {
                 accion: 'login',
                 email,
                 contraseña    
