@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const usuario = await UsuarioService.obtenerPerfil();
             renderizarDatos(usuario);
+            document.body.style.display = 'block';
         } catch {
             // Si no hay sesión activa, redirigir al login
             window.location.href = 'login.html?error=sesionExpirada';

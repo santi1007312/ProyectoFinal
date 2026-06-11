@@ -29,9 +29,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function cargarProductos() {
         try {
-            const productos = await ProductoService.listar();
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryBusqueda = urlParams.get('buscar');
+            
+            const params = queryBusqueda ? { q: queryBusqueda } : {};
+            const productos = await ProductoService.listar(params);
 
-            if (!productos || productos.length === 0) return; // Deja las tarjetas estáticas
+            if (queryBusqueda && buscadorInput) {
+                buscadorInput.value = queryBusqueda;
+            }
+
+            if (!productos || productos.length === 0) {
+                todosLosProductos = [];
+                renderizarProductos([]);
+                return;
+            }
 
             todosLosProductos = productos;
             renderizarProductos(productos);

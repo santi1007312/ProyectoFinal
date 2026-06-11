@@ -31,6 +31,7 @@ async function post(servlet, params) {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body,
+        credentials: 'include',
         redirect: 'follow'
     });
     return res;
@@ -39,7 +40,9 @@ async function post(servlet, params) {
 async function get(servlet, params = {}) {
     const query = new URLSearchParams(params).toString();
     const url = `${BASE_URL}/${servlet}${query ? '?' + query : ''}`;
-    const res = await fetch(url);
+    const res = await fetch(url, {
+        credentials: 'include'
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
@@ -108,6 +111,20 @@ export const UsuarioService = {
         return get('UsuarioController', { accion: 'obtenerPerfil' });
     },
 
+    async listarTodos() {
+        return get('UsuarioController', { accion: 'listar' });
+    },
+
+    async cambiarEstado(idUsuarios, estado) {
+        try {
+            const res = await post('UsuarioController', { accion: 'cambiarEstado', idUsuarios, estado });
+            const json = await res.json();
+            return { ok: json.success === true };
+        } catch (err) {
+            return { ok: false };
+        }
+    },
+
     /**
      * Envía solicitud de recuperación de contraseña.
      * (Función placeholder — implementar lógica de email en backend si se requiere)
@@ -125,15 +142,15 @@ export const UsuarioService = {
         } catch (e) {
             // ignorar errores de red al cerrar sesión
         }
-        window.location.href = `${BASE_URL}/frontend/views/login.html`;
+        window.location.href = 'login.html?logout=ok';
     }
 };
 
 // ─── PRODUCTOS ────────────────────────────────────────────────────────────────
 export const ProductoService = {
 
-    async listar() {
-        return get('ProductoController', { accion: 'listar' });
+    async listar(params = {}) {
+        return get('ProductoController', { accion: 'listar', ...params });
     },
 
     async lanzamientos() {
@@ -190,6 +207,26 @@ export const VarianteService = {
         } catch {
             return { ok: false, mensaje: 'Error de conexión.' };
         }
+    },
+
+    async actualizar(datos) {
+        try {
+            const res = await post('VarianteProductoController', { accion: 'actualizar', ...datos });
+            const json = await res.json();
+            return { ok: json.status === 'success', mensaje: json.mensaje };
+        } catch {
+            return { ok: false, mensaje: 'Error de conexión.' };
+        }
+    },
+
+    async eliminar(idVariantes) {
+        try {
+            const res = await post('VarianteProductoController', { accion: 'eliminar', idVariantes });
+            const json = await res.json();
+            return { ok: json.status === 'success', mensaje: json.mensaje };
+        } catch {
+            return { ok: false, mensaje: 'Error de conexión.' };
+        }
     }
 };
 
@@ -234,6 +271,14 @@ export const PedidoService = {
 
     async listarMisPedidos() {
         return get('PedidoController', { accion: 'listarMisPedidos' });
+    },
+
+    async listarTodos() {
+        return get('PedidoController', { accion: 'listarTodos' });
+    },
+
+    async obtenerMetricas() {
+        return get('PedidoController', { accion: 'obtenerMetricas' });
     },
 
     async crear(total, direccionEnvio) {

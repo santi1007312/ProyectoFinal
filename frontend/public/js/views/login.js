@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (urlParams.get('error') === 'camposVacios') {
             msgEl.textContent = '⚠️ Complete todos los campos antes de continuar.';
             msgEl.className = 'auth-message auth-message--warning';
+        } else if (urlParams.get('error') === 'sesionExpirada') {
+            msgEl.textContent = '⚠️ Su sesión ha expirado o no está autenticado.';
+            msgEl.className = 'auth-message auth-message--warning';
         } else if (urlParams.get('logout') === 'ok') {
             msgEl.textContent = '👋 Sesión cerrada correctamente.';
             msgEl.className = 'auth-message auth-message--success';
