@@ -9,25 +9,58 @@
  */
 
 // ─── BASE URL CORREGIDA ──────────────────────────────────────────────────────
-const BASE_URL = (() => {
+// ─── BASE URL CORREGIDA DINÁMICAMENTE ─────────────────────────────────────────
+export async function getBaseUrl() {
+    let url = sessionStorage.getItem('detected_base_url');
+    if (url) return url;
+
     const { protocol, hostname, port } = window.location;
     
-    // Si estás visualizando desde Live Server (puerto 5500)
-    if (port === '5500') {
-        return `${protocol}//${hostname}:8080/Backend_de_los_backend`;
+    // Si estás visualizando desde Tomcat directamente
+    if (port !== '5500') {
+        const parts = window.location.pathname.split('/').filter(Boolean);
+        let ctx = '';
+        const idx = parts.indexOf('frontend');
+        if (idx > 0) {
+            ctx = '/' + parts.slice(0, idx).join('/');
+        } else if (parts.length > 0 && parts[0] !== 'frontend') {
+            ctx = '/' + parts[0];
+        }
+        url = `${protocol}//${hostname}:${port}${ctx}`;
+        sessionStorage.setItem('detected_base_url', url);
+        return url;
     }
-    
-    // Si ya estás corriendo el front directamente montado dentro de Tomcat
-    const parts = window.location.pathname.split('/').filter(Boolean);
-    const ctx = parts.length > 0 ? '/' + parts[0] : '';
-    return `${protocol}//${hostname}:${port}${ctx}`;
-})();
+
+    // Si estás visualizando desde Live Server (puerto 5500), probamos los posibles contextos de Tomcat
+    const candidates = [
+        `${protocol}//${hostname}:8080/ElixirAndFlexx`,
+        `${protocol}//${hostname}:8080/Backend_de_los_backend`,
+        `${protocol}//${hostname}:8080`
+    ];
+
+    for (const cand of candidates) {
+        try {
+            // Hacemos una consulta rápida y ligera para validar cuál contexto de Tomcat responde
+            const res = await fetch(`${cand}/ProductoController?accion=listar`);
+            if (res.status !== 404) {
+                sessionStorage.setItem('detected_base_url', cand);
+                return cand;
+            }
+        } catch (e) {
+            // Si hay error de conexión, ignoramos y seguimos
+        }
+    }
+
+    // Fallback por defecto si nada responde
+    const defaultUrl = `${protocol}//${hostname}:8080/ElixirAndFlexx`;
+    return defaultUrl;
+}
 
 // ─── HELPERS CORREGIDOS ──────────────────────────────────────────────────────
 async function post(servlet, params) {
     const body = new URLSearchParams(params);
-    // Ahora dinámicamente le pega a http://localhost:8080/Backend_de_los_backend/NombreDelServlet
-    const res = await fetch(`${BASE_URL}/${servlet}`, {
+    const baseUrl = await getBaseUrl();
+    const res = await fetch(`${baseUrl}/${servlet}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body,
@@ -39,7 +72,8 @@ async function post(servlet, params) {
 
 async function get(servlet, params = {}) {
     const query = new URLSearchParams(params).toString();
-    const url = `${BASE_URL}/${servlet}${query ? '?' + query : ''}`;
+    const baseUrl = await getBaseUrl();
+    const url = `${baseUrl}/${servlet}${query ? '?' + query : ''}`;
     const res = await fetch(url, {
         credentials: 'include'
     });
@@ -53,17 +87,14 @@ export const UsuarioService = {
     /**
      * Inicia sesión.
      * Devuelve { ok: true, esAdmin: bool } o { ok: false, error: string }
-     *
-     * CORRECCIÓN: el servlet devuelve JSON {"success":true,"esAdmin":false}
-     * No hay redirect real, así que leemos el JSON directamente.
      */
     async login(email, contraseña) {
         try {
-            // Enviamos "contrasena" — el servlet acepta ambas formas
-            const res = await post('../UsuarioController', {
+            const res = await post('UsuarioController', {
                 accion: 'login',
                 email,
-                contraseña    
+                contraseña,
+                contrasena: contraseña // Enviamos ambas formas para máxima compatibilidad
             });
 
             const data = await res.json();
@@ -86,12 +117,12 @@ export const UsuarioService = {
      */
     async registrar(datos) {
         try {
-            // Aseguramos enviar "contrasena" sin ñ al backend
-            const payload = { accion: 'crear', ...datos };
-            if (payload.contraseña !== undefined) {
-                payload.contraseña = payload.contraseña;
-                delete payload.contraseña;
-            }
+            // Enviamos accion: 'registro' y ambas claves de contraseña
+            const payload = { 
+                accion: 'registro', 
+                ...datos,
+                contrasena: datos.contraseña
+            };
 
             const res = await post('UsuarioController', payload);
             const data = await res.json();

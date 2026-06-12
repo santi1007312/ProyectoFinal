@@ -31,12 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const urlParams = new URLSearchParams(window.location.search);
             const queryBusqueda = urlParams.get('buscar');
+            const queryCategoria = urlParams.get('categoria');
             
             const params = queryBusqueda ? { q: queryBusqueda } : {};
             const productos = await ProductoService.listar(params);
 
             if (queryBusqueda && buscadorInput) {
                 buscadorInput.value = queryBusqueda;
+            }
+
+            if (queryCategoria && filtroSelect) {
+                filtroSelect.value = queryCategoria;
             }
 
             if (!productos || productos.length === 0) {
@@ -46,7 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             todosLosProductos = productos;
-            renderizarProductos(productos);
+            
+            // Si hay filtros en la URL al cargar la página, aplicamos el filtrado dinámico
+            if (queryCategoria || queryBusqueda) {
+                filtrar();
+            } else {
+                renderizarProductos(productos);
+            }
 
         } catch (err) {
             // Si falla, el catálogo estático del HTML sigue visible
