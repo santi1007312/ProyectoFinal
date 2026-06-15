@@ -190,8 +190,7 @@
             color: #888;
             font-size: 1.4rem;
             cursor: pointer;
-        }
-        .btn-cerrar-modal:hover { color: #fff; }
+        }        .btn-cerrar-modal:hover { color: #fff; }
         .btn-guardar-cambios {
             width: 100%;
             background: transparent;

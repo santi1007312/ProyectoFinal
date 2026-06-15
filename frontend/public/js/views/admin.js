@@ -3,7 +3,7 @@
  * Panel de administración: CRUD completo de productos conectado al backend Java.
  * Operaciones: Crear, Listar, Editar (inline) y Eliminar productos.
  */
-import { ProductoService, CategoriaService } from '../UsuarioController';
+import { ProductoService, CategoriaService } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 

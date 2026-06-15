@@ -159,12 +159,12 @@
         e.preventDefault();
         if (confirm('¿Desea cerrar sesión?')) {
             const b = new URLSearchParams({ accion: 'logout' });
-            await fetch('../UsuarioController', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: b });
+            await fetch('../../UsuarioController', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: b });
             window.location.href = 'login.html?logout=ok';
         }
     });
 </script>
 
-    <script src="/frontend/public/js/views/admin.js" type="module"></script>
+    <script src="../public/js/views/admin.js" type="module"></script>
 </body>
 </html>

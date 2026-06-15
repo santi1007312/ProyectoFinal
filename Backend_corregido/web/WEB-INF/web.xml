@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+    <!-- CORREGIDO: typo "UsurarioController" → "UsuarioController" -->
+    <!-- Todos los servlets registrados explícitamente como respaldo a las anotaciones -->
+    <servlet>
+        <servlet-name>UsuarioController</servlet-name>
+        <servlet-class>com.elixirflexx.controller.UsuarioController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UsuarioController</servlet-name>
+        <url-pattern>/UsuarioController</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>VarianteProductoController</servlet-name>
+        <servlet-class>com.elixirflexx.controller.VarianteProductoController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ProductoController</servlet-name>
+        <servlet-class>com.elixirflexx.controller.ProductoController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProductoController</servlet-name>
+        <url-pattern>/ProductoController</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>CarritoController</servlet-name>
+        <servlet-class>com.elixirflexx.controller.CarritoController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CarritoController</servlet-name>
+        <url-pattern>/CarritoController</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>PedidoController</servlet-name>
+        <servlet-class>com.elixirflexx.controller.PedidoController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PedidoController</servlet-name>
+        <url-pattern>/PedidoController</url-pattern>
+    </servlet-mapping>
+    <!-- Sesión expira en 30 minutos de inactividad -->
+    <servlet-mapping>
+        <servlet-name>VarianteProductoController</servlet-name>
+        <url-pattern>/VarianteProductoController</url-pattern>
+    </servlet-mapping>
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+    <!-- Página de bienvenida -->
+    <welcome-file-list>
+        <welcome-file>frontend/views/login.html</welcome-file>
+    </welcome-file-list>
+    <!-- Páginas de error personalizadas -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/frontend/views/login.html</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/frontend/views/login.html</location>
+    </error-page>
+</web-app>

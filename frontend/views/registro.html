@@ -44,8 +44,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crea tu cuenta - Elixir and Flexx</title>
-    <link rel="stylesheet" href="/frontend/public/css/global.css">
-    <link rel="stylesheet" href="/frontend/public/css/estilos_elixir.css">
+    <link rel="stylesheet" href="../public/css/global.css">
+    <link rel="stylesheet" href="../public/css/estilos_elixir.css">
 </head>
 <body>
     <div class="auth-wrapper">
@@ -54,7 +54,7 @@
             <p class="auth-card__subtitle">REGÍSTRATE PARA COMPRAR MÁS RÁPIDO</p>
             <div id="registroMessage" class="auth-message"></div>
             
-            <form id="formRegistro" action="UsuarioController" method="POST">
+            <form id="formRegistro" action="../../UsuarioController" method="POST">
     
                 <input type="hidden" name="accion" value="registrar">
 
@@ -100,6 +100,6 @@
             </div>
         </div>
     </div>
-    <script src="/frontend/public/js/views/registro.js" type="module"></script>
+    <script src="../public/js/views/registro.js" type="module"></script>
 </body>
 </html>
