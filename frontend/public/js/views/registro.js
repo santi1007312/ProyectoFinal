@@ -1,14 +1,14 @@
 /**
  * registro.js — Elixir and Flexx
- * CORRECCIÓN: usa "contrasena" (sin ñ) como name del input y como key del payload.
+ * CORRECCIÓN: import apunta a '../services/api.js' (estaba roto con '../UsuarioController')
  */
-import { UsuarioService } from '../UsuarioController';
-
+import { UsuarioService } from '../services/api.js';
+ 
 document.addEventListener('DOMContentLoaded', () => {
-
+ 
     const urlParams = new URLSearchParams(window.location.search);
     const msgEl = document.getElementById('registroMessage');
-
+ 
     if (msgEl) {
         if (urlParams.get('error') === 'camposVacios') {
             msgEl.textContent = '⚠️ Complete todos los campos obligatorios.';
@@ -21,48 +21,48 @@ document.addEventListener('DOMContentLoaded', () => {
             msgEl.className = 'auth-message auth-message--warning';
         }
     }
-
+ 
     const formRegistro = document.getElementById('formRegistro') || document.querySelector('.auth-card form');
     if (!formRegistro) return;
-
+ 
     formRegistro.addEventListener('submit', async (e) => {
         e.preventDefault();
-
+ 
         const nombre     = (formRegistro.querySelector('[name="nombre"]')?.value     || '').trim();
         const apellido   = (formRegistro.querySelector('[name="apellido"]')?.value   || '').trim();
         const edad       = (formRegistro.querySelector('[name="edad"]')?.value       || '0').trim();
         const email      = (formRegistro.querySelector('[name="email"]')?.value      || '').trim();
         const contraseña = (formRegistro.querySelector('[name="contraseña"]')?.value || '').trim();
         const telefono   = (formRegistro.querySelector('[name="telefono"]')?.value   || '').trim();
-
+ 
         if (!nombre || !email || !contraseña) {
             mostrarMensaje('⚠️ Nombre, correo y contraseña son obligatorios.', 'warning');
             return;
         }
-
+ 
         if (contraseña.length < 6) {
             mostrarMensaje('⚠️ La contraseña debe tener al menos 6 caracteres.', 'warning');
             return;
         }
-
+ 
         const btnSubmit = formRegistro.querySelector('button[type="submit"]');
         btnSubmit.disabled = true;
         btnSubmit.textContent = 'Registrando...';
-
+ 
         const resultado = await UsuarioService.registrar({
             nombre, apellido, edad, email, contraseña, telefono
         });
-
+ 
         btnSubmit.disabled = false;
         btnSubmit.textContent = 'CREAR CUENTA';
-
+ 
         if (resultado.ok) {
             window.location.href = 'login.html?registro=ok';
         } else {
             mostrarMensaje('❌ ' + resultado.error, 'error');
         }
     });
-
+ 
     function mostrarMensaje(texto, tipo) {
         if (!msgEl) { alert(texto); return; }
         msgEl.textContent = texto;

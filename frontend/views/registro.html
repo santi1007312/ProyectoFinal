@@ -1,51 +1,12 @@
-<!-- <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crea tu cuenta - Elixir and Flexx</title>
-    <link rel="stylesheet" href="/Css/estilos_elixir.css">
-</head>
-<body>
-    <div class="contenedor-principal">
-        <div class="tarjeta-form">
-            <h1>CREA TU CUENTA</h1>
-            <p class="subtitulo">REGÍSTRATE PARA COMPRAR MÁS RÁPIDO</p>
-            
-            <form>
-                <input type="text" placeholder="INGRESE SU NOMBRE COMPLETO" required>
-                <input type="number" placeholder="INGRESE SU EDAD" required>
-                <input type="email" placeholder="EMAIL" required>
-                <input type="password" placeholder="CONTRASEÑA" required>
-                
-                <a href="#" class="olvido">¿Olvidaste la contraseña?</a>
-                
-                <button type="submit" class="btn-principal">INICIAR SESION</button>
-            </form>
-
-            <p>¿YA TIENES CUENTA? <a href="login.html">INICIA SESIÓN</a></p>
-            
-            <div class="separador">
-                <hr> <span>o</span> <hr>
-            </div>
-            
-            <div class="botones-sociales">
-                <button class="btn-social google">CONTINUAR CON GOOGLE</button>
-                <button class="btn-social facebook">CONTINUAR CON FACEBOOK</button>
-            </div>
-        </div>
-    </div>
-</body>
-</html> -->
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crea tu cuenta - Elixir and Flexx</title>
-    <link rel="stylesheet" href="/frontend/public/css/global.css">
-    <link rel="stylesheet" href="/frontend/public/css/estilos_elixir.css">
+    <!-- CORRECCIÓN: rutas relativas igual que login.html -->
+    <link rel="stylesheet" href="../public/css/global.css">
+    <link rel="stylesheet" href="../public/css/estilos_elixir.css">
 </head>
 <body>
     <div class="auth-wrapper">
@@ -54,43 +15,42 @@
             <p class="auth-card__subtitle">REGÍSTRATE PARA COMPRAR MÁS RÁPIDO</p>
             <div id="registroMessage" class="auth-message"></div>
             
-            <form id="formRegistro" action="UsuarioController" method="POST">
-    
-                <input type="hidden" name="accion" value="registrar">
-
+            <!-- CORRECCIÓN: sin action/method para que el JS lo maneje siempre -->
+            <form id="formRegistro">
+ 
                 <div class="input-group">
                     <label>Nombre</label>
                     <input type="text" name="nombre" required>
                 </div>
-
+ 
                 <div class="input-group">
                     <label>Apellido</label>
                     <input type="text" name="apellido" required>
                 </div>
-
+ 
                 <div class="input-group">
                     <label>Edad</label>
                     <input type="number" name="edad" required>
                 </div>
-
+ 
                 <div class="input-group">
                     <label>Teléfono</label>
                     <input type="text" name="telefono" required>
                 </div>
-
+ 
                 <div class="input-group">
                     <label>Correo Electrónico</label>
                     <input type="email" name="email" required>
                 </div>
-
+ 
                 <div class="input-group">
                     <label>Contraseña</label>
                     <input type="password" name="contraseña" required>
                 </div>
-
+ 
                 <button type="submit" class="btn-urban">CREAR CUENTA</button>
             </form>
-
+ 
             <div class="auth-card__footer">
                 <p>¿YA TIENES CUENTA? <a href="login.html" class="auth-card__redirect">INICIA SESIÓN</a></p>
             </div>
@@ -100,6 +60,8 @@
             </div>
         </div>
     </div>
-    <script src="/frontend/public/js/views/registro.js" type="module"></script>
+    <!-- CORRECCIÓN: ruta relativa igual que login.html -->
+    <script src="../public/js/views/registro.js" type="module"></script>
 </body>
 </html>
+ 

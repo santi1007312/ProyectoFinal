@@ -1,17 +1,15 @@
 /**
  * login.js — Elixir and Flexx
- * Maneja el formulario de login, detección de rol y modal de recuperación.
- *
- * CORRECCIÓN: lee resultado.esAdmin del JSON del backend (no res.redirected).
+ * CORRECCIÓN: selector del form actualizado a '#formLogin' (ya no tiene action/method nativo).
  */
 import { UsuarioService } from '../services/api.js';
-
+ 
 document.addEventListener('DOMContentLoaded', () => {
-
+ 
     // ── MENSAJES DE QUERY PARAMS ──────────────────────────────────────────────
     const urlParams = new URLSearchParams(window.location.search);
     const msgEl = document.getElementById('loginMessage');
-
+ 
     if (msgEl) {
         if (urlParams.get('registro') === 'ok') {
             msgEl.textContent = '✅ ¡Registro exitoso! Ya puede iniciar sesión.';
@@ -30,37 +28,36 @@ document.addEventListener('DOMContentLoaded', () => {
             msgEl.className = 'auth-message auth-message--success';
         }
     }
-
+ 
     // ── FORMULARIO DE LOGIN ───────────────────────────────────────────────────
-    const formLogin = document.querySelector('.auth-card form');
-
+    // CORRECCIÓN: selector '#formLogin' (el HTML ya no tiene .auth-card form con action)
+    const formLogin = document.getElementById('formLogin');
+ 
     if (formLogin) {
         formLogin.addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            const emailInput     = formLogin.querySelector('input[name="email"]');
+ 
+            const emailInput      = formLogin.querySelector('input[name="email"]');
             const contraseñaInput = formLogin.querySelector('input[name="contraseña"]');
-            const btnSubmit      = formLogin.querySelector('button[type="submit"]');
-
-            const email     = emailInput.value.trim();
+            const btnSubmit       = formLogin.querySelector('button[type="submit"]');
+ 
+            const email      = emailInput.value.trim();
             const contraseña = contraseñaInput.value.trim();
-
+ 
             if (!email || !contraseña) {
                 mostrarMensaje('⚠️ Complete todos los campos.', 'warning');
                 return;
             }
-
-            // Estado de carga
+ 
             btnSubmit.disabled = true;
             btnSubmit.textContent = 'Verificando...';
-
+ 
             const resultado = await UsuarioService.login(email, contraseña);
-
+ 
             btnSubmit.disabled = false;
             btnSubmit.textContent = 'INICIAR SESIÓN';
-
+ 
             if (resultado.ok) {
-                // CORRECCIÓN: redirigimos según esAdmin que viene del JSON
                 if (resultado.esAdmin) {
                     window.location.href = 'interfazAdmin.html';
                 } else {
@@ -72,47 +69,39 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
+ 
     // ── MODAL DE RECUPERACIÓN ─────────────────────────────────────────────────
-    const modal     = document.getElementById('modalRecuperar');
-    const btnAbrir  = document.getElementById('btnAbrirModal') || document.querySelector('.auth-forgot-link');
-    const btnClose  = document.getElementById('btnCloseModal');
+    const modal    = document.getElementById('modalRecuperar');
+    const btnClose = document.getElementById('btnCloseModal');
     const formRecup = document.getElementById('formRecuperacion');
-
-    if (btnAbrir && modal) {
-        btnAbrir.addEventListener('click', (e) => {
-            e.preventDefault();
-            modal.style.display = 'flex';
-        });
-    }
-
+ 
     if (btnClose) {
         btnClose.addEventListener('click', () => {
             modal.style.display = 'none';
         });
     }
-
+ 
     if (modal) {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.style.display = 'none';
         });
     }
-
+ 
     if (formRecup) {
         formRecup.addEventListener('submit', async (e) => {
             e.preventDefault();
             const emailInput = formRecup.querySelector('input[type="email"]');
-            const btnEnviar = formRecup.querySelector('button[type="submit"]');
-            const emailVal = emailInput.value.trim();
-
+            const btnEnviar  = formRecup.querySelector('button[type="submit"]');
+            const emailVal   = emailInput.value.trim();
+ 
             if (!emailVal) { alert('Ingrese su correo electrónico.'); return; }
-
+ 
             btnEnviar.disabled = true;
             btnEnviar.textContent = 'Enviando...';
             const resultado = await UsuarioService.recuperarContraseña(emailVal);
             btnEnviar.disabled = false;
             btnEnviar.textContent = 'ENVIAR ENLACE';
-
+ 
             if (resultado.ok) {
                 modal.style.display = 'none';
                 mostrarMensaje('📧 Enlace de recuperación enviado a su correo.', 'success');
@@ -122,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
+ 
     // ── HELPER ────────────────────────────────────────────────────────────────
     function mostrarMensaje(texto, tipo) {
         if (!msgEl) return;
@@ -130,3 +119,4 @@ document.addEventListener('DOMContentLoaded', () => {
         msgEl.className = `auth-message auth-message--${tipo}`;
     }
 });
+ 
