@@ -59,9 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
  
             if (resultado.ok) {
                 if (resultado.esAdmin) {
-                    window.location.href = 'interfazAdmin.html';
+                    window.location.href = '/frontend/views/interfazAdmin.html';
                 } else {
-                    window.location.href = 'interfazGrafica.html';
+                    // Según su árbol de NetBeans, la vista general es interfazGrafica.html
+                    window.location.href = '/frontend/views/interfazGrafica.html';
                 }
             } else {
                 mostrarMensaje('❌ ' + resultado.error, 'error');

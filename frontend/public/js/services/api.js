@@ -88,26 +88,22 @@ export const UsuarioService = {
      * Inicia sesión.
      * Devuelve { ok: true, esAdmin: bool } o { ok: false, error: string }
      */
+    // Así debería verse la lógica de su fetch dentro de api.js para coincidir con su login.js
     async login(email, contraseña) {
         try {
-            const res = await post('UsuarioController', {
-                accion: 'login',
-                email,
-                contraseña,
-                contrasena: contraseña // Enviamos ambas formas para máxima compatibilidad
+            const response = await fetch('/UsuarioController', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    'accion': 'login',
+                    'email': email,
+                    'contraseña': contraseña
+                })
             });
-
-            const data = await res.json();
-
-            if (data.success) {
-                return { ok: true, esAdmin: data.esAdmin === true };
-            }
-
-            return { ok: false, error: data.error || 'Credenciales incorrectas.' };
-
-        } catch (err) {
-            console.error('Login error:', err);
-            return { ok: false, error: 'No se pudo conectar con el servidor. ¿Tomcat está corriendo?' };
+            const data = await response.json();
+            // Si el servlet mandó success:true, retornamos ok:true junto con el rol
+            return { ok: data.success, esAdmin: data.esAdmin, error: data.error };
+        } catch (error) {
+            return { ok: false, error: "Error de conexión con el servidor" };
         }
     },
 
