@@ -1,6 +1,6 @@
 /**
  * perfil.js — Elixir and Flexx
- * Carga los datos del perfil del usuario logueado desde el backend.
+ * Carga los datos del perfil, gestiona actualizaciones y cierres de sesión.
  */
 import { UsuarioService, PedidoService } from '../services/api.js';
 
@@ -12,10 +12,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const addressStreetEl  = document.getElementById('addressStreetDisplay');
     const addressNeighEl   = document.getElementById('addressNeighbourDisplay');
     const addressCountryEl = document.getElementById('addressCountryDisplay');
-    const btnLogout        = document.getElementById('btnLogout');
+    
+    // Botones de Cierre de Sesión
+    const btnCerrarSesionLocal  = document.getElementById('btnCerrarSesionLocal');
+    const btnCerrarSesionGlobal = document.getElementById('btnCerrarSesionGlobal');
+    
+    // Botón de Edición de Perfil
     const btnEditarPerfil  = document.getElementById('btnEditPerfil') || document.querySelector('.bx-edit');
 
-    // Cargar perfil
+    // Cargar perfil automáticamente al entrar
     cargarPerfil();
 
     async function cargarPerfil() {
@@ -23,8 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const usuario = await UsuarioService.obtenerPerfil();
             renderizarDatos(usuario);
             document.body.style.display = 'block';
-        } catch {
-            // Si no hay sesión activa, redirigir al login
+        } catch (error) {
+            console.error("Error al cargar perfil:", error);
+            // Si no hay sesión activa, redirigir al login principal
             window.location.href = 'login.html?error=sesionExpirada';
         }
     }
@@ -39,24 +45,85 @@ document.addEventListener('DOMContentLoaded', () => {
         if (addressCountryEl) addressCountryEl.textContent = user.pais || 'Colombia';
     }
 
-    // Edición básica de nombre
+    // ── 1. GESTIÓN DE EDICIÓN (Persistida al Backend) ────────────────────────
     if (btnEditarPerfil) {
-        btnEditarPerfil.addEventListener('click', () => {
+        btnEditarPerfil.addEventListener('click', async () => {
             const actual = userNameEl?.textContent || '';
-            const nuevo = prompt('Modifique su nombre:', actual);
-            if (nuevo && nuevo.trim()) {
-                if (userNameEl)    userNameEl.textContent    = nuevo.trim();
-                if (addressNameEl) addressNameEl.textContent = nuevo.trim();
+            const nuevo = prompt('Modifique su nombre completo:', actual);
+            
+            if (nuevo && nuevo.trim() && nuevo.trim() !== actual) {
+                try {
+                    // Actualización visual inmediata (UX limpia)
+                    if (userNameEl)    userNameEl.textContent    = nuevo.trim();
+                    if (addressNameEl) addressNameEl.textContent = nuevo.trim();
+
+                    // Separar de forma básica Nombre y Apellido para enviar al controlador
+                    const partes = nuevo.trim().split(" ");
+                    const nombre = partes[0] || '';
+                    const apellido = partes.slice(1).join(" ") || '';
+
+                    // Petición al backend usando la estructura del backend de Elixir and Flexx
+                    const response = await fetch('/UsuarioController?accion=actualizarPerfil', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `nombre=${encodeURIComponent(nombre)}&apellido=${encodeURIComponent(apellido)}`
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('¡Perfil actualizado correctamente en la Base de Datos! 🔄');
+                    } else {
+                        alert('El servidor no pudo actualizar los datos: ' + (data.error || 'Error desconocido'));
+                        cargarPerfil(); // revierte los cambios visuales si falla
+                    }
+                } catch (error) {
+                    console.error("Error al actualizar perfil:", error);
+                    alert('Hubo un problema de conexión para guardar los cambios.');
+                    cargarPerfil(); 
+                }
             }
         });
     }
 
-    // Cerrar sesión
-    if (btnLogout) {
-        btnLogout.addEventListener('click', async (e) => {
+    // ── 2. CIERRE DE SESIÓN LOCAL ─────────────────────────────────────────────
+    if (btnCerrarSesionLocal) {
+        btnCerrarSesionLocal.addEventListener('click', async (e) => {
             e.preventDefault();
-            if (confirm('¿Desea cerrar sesión?')) {
-                await UsuarioService.logout();
+            try {
+                // Llama al caso "logout" que ya tiene programado en su doPost de Java
+                const response = await fetch('/UsuarioController?accion=logout', { 
+                    method: 'POST' 
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Redirige al login pasándole el parámetro de cierre exitoso
+                    window.location.href = 'login.html?logout=ok';
+                }
+            } catch (error) {
+                console.error("Error en logout local:", error);
+            }
+        });
+    }
+
+    // ── 3. CIERRE DE SESIÓN GLOBAL (Todos los dispositivos) ───────────────────
+    if (btnCerrarSesionGlobal) {
+        btnCerrarSesionGlobal.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (!confirm('¿Está completamente seguro de cerrar sesión en todos los dispositivos conectados?')) return;
+            
+            try {
+                // Llama al caso nuevo "logoutGlobal" que mapeamos en su Servlet
+                const response = await fetch('/UsuarioController?accion=logoutGlobal', { 
+                    method: 'POST' 
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = 'login.html?logout=ok';
+                }
+            } catch (error) {
+                console.error("Error en logout global:", error);
             }
         });
     }
