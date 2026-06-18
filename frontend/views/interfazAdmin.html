@@ -3,167 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - Elixir and Flexx</title>
+    <title>Panel de Control - Elixir and Flexx</title>
     <link rel="stylesheet" href="/frontend/public/css/global.css">
-    <link rel="stylesheet" href="/frontend/public/css/estilos_admin.css"> 
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/frontend/public/css/estilos_admin.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
-<body>
+<body class="admin-body">
 
-    <div class="admin-wrapper">
-
-    <!-- Cabecera -->
-    <header class="admin-header">
-        <h1>⚡ Panel Admin — Elixir and Flexx</h1>
-        <nav class="admin-nav">
-            <a href="interfazCatalogo.html">← Ver tienda</a>
-            <a href="#" id="btnLogout" style="color:#c0392b">Cerrar sesión</a>
-        </nav>
-    </header>
-
-    <!-- Feedback global -->
-    <div id="adminFeedback" class="admin-feedback"></div>
-
-    <!-- Tabs de navegación -->
-    <div class="admin-tabs">
-        <button class="tab-btn active" data-tab="tab-crear" type="button">➕ Nuevo Producto</button>
-        <button class="tab-btn" data-tab="tab-lista" type="button">📦 Inventario</button>
-    </div>
-
-    <!-- ══ TAB: CREAR PRODUCTO ══════════════════════════════════════════════════ -->
-    <div id="tab-crear" class="tab-panel active">
-        <div class="admin-container" style="max-width:100%">
-            <form id="formCrearProducto">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="nombreProducto">Nombre de la Prenda *</label>
-                        <input type="text" id="nombreProducto" placeholder="ej: CONJUNTO DRAGÓN" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="idCategorias">Categoría *</label>
-                        <select id="idCategorias" required>
-                            <option value="">— Seleccionar categoría —</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="precioBase">Precio Base (COP) *</label>
-                        <input type="number" step="1000" id="precioBase" placeholder="ej: 220000" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="material">Material</label>
-                        <input type="text" id="material" placeholder="ej: 100% Algodón fleece 380GSM">
-                    </div>
-
-                    <div class="form-group full">
-                        <label for="descripcion">Descripción</label>
-                        <input type="text" id="descripcion" placeholder="ej: Hoodie oversized con estampado reflectivo...">
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-submit">Registrar Producto</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- ══ TAB: INVENTARIO / TABLA ══════════════════════════════════════════════ -->
-    <div id="tab-lista" class="tab-panel">
-        <div class="tabla-header">
-            <span>Total: <strong id="totalProductos">0</strong> productos</span>
-            <button id="btnRefrescarProductos" class="btn-refrescar" type="button">↺ Refrescar</button>
-        </div>
-
-        <div style="overflow-x:auto;">
-            <table class="tabla-productos" id="tablaProductos">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Precio base</th>
-                        <th>Descuento</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tbodyProductos">
-                    <tr><td colspan="6" style="text-align:center;padding:20px;">Cargando...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-</div>
-
-<!-- ══ MODAL: EDITAR PRODUCTO ════════════════════════════════════════════════ -->
-<div id="modalEditarProducto" class="modal-overlay">
-    <div class="modal-box">
-        <button id="btnCerrarModalEditar" class="btn-cerrar-modal" type="button">✕</button>
-        <h2>Editar Producto</h2>
-
-        <form id="formEditarProducto">
-            <input type="hidden" name="idProducto">
-
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Nombre *</label>
-                    <input type="text" name="nombreProducto" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Categoría</label>
-                    <select name="idCategorias">
-                        <option value="1">Hoodies</option>
-                        <option value="2">Cargo Pants</option>
-                        <option value="3">Sudaderas</option>
-                        <option value="4">Camisetas</option>
-                        <option value="5">Pantalonetas</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Precio Base (COP)</label>
-                    <input type="number" name="precioBase" step="1000">
-                </div>
-
-                <div class="form-group">
-                    <label>Descuento (%)</label>
-                    <input type="number" name="porcentajeDescuento" min="0" max="100" value="0">
-                </div>
-
-                <div class="form-group full">
-                    <label>Descripción</label>
-                    <input type="text" name="descripcion">
-                </div>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar__logo">
+                <h2>ELIXIR & FLEXX</h2>
+                <span>Panel Admin</span>
             </div>
+            
+            <nav class="admin-sidebar__nav">
+                <a href="#" class="nav-item active" data-target="dashboard">
+                    <i class='bx bx-grid-alt'></i> <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-target="productos">
+                    <i class='bx bx-closet'></i> <span>Productos & Stock</span>
+                </a>
+                <a href="#" class="nav-item" data-target="ventas">
+                    <i class='bx bx-receipt'></i> <span>Ventas & Pedidos</span>
+                </a>
+                <a href="#" class="nav-item" data-target="usuarios">
+                    <i class='bx bx-user-voice'></i> <span>Control Usuarios</span>
+                </a>
+            </nav>
 
-            <button type="submit" class="btn-guardar-cambios">Guardar Cambios</button>
-        </form>
+            <div class="admin-sidebar__footer">
+                <button id="btnCerrarSesionLocal" class="btn-logout"><i class='bx bx-log-out'></i> Salir</button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="admin-header__title">
+                    <h1 id="adminSectionTitle">Dashboard General</h1>
+                </div>
+                <div class="admin-header__user">
+                    <span>Administrador</span>
+                    <div class="avatar-mini">A</div>
+                </div>
+            </header>
+
+            <section id="adminDynamicContent" class="admin-content">
+                </section>
+        </main>
     </div>
-</div>
-
-<script>
-    // Manejo de tabs (sin import, para no depender del módulo)
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById(btn.dataset.tab).classList.add('active');
-        });
-    });
-
-    // Logout
-    document.getElementById('btnLogout')?.addEventListener('click', async (e) => {
-        e.preventDefault();
-        if (confirm('¿Desea cerrar sesión?')) {
-            const b = new URLSearchParams({ accion: 'logout' });
-            await fetch('../UsuarioController', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: b });
-            window.location.href = 'login.html?logout=ok';
-        }
-    });
-</script>
 
     <script src="/frontend/public/js/views/admin.js" type="module"></script>
 </body>

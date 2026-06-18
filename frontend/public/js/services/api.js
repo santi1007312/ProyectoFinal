@@ -89,14 +89,14 @@ export const UsuarioService = {
      * Devuelve { ok: true, esAdmin: bool } o { ok: false, error: string }
      */
     // Así debería verse la lógica de su fetch dentro de api.js para coincidir con su login.js
-    async login(email, contraseña) {
+    async login(email, password) {
         try {
             const response = await fetch('/UsuarioController', {
                 method: 'POST',
                 body: new URLSearchParams({
                     'accion': 'login',
                     'email': email,
-                    'contraseña': contraseña
+                    'password': password
                 })
             });
             const data = await response.json();
@@ -117,7 +117,7 @@ export const UsuarioService = {
             const payload = { 
                 accion: 'registro', 
                 ...datos,
-                contrasena: datos.contraseña
+                password: datos.password
             };
 
             const res = await post('UsuarioController', payload);

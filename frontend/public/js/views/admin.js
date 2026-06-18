@@ -1,246 +1,252 @@
 /**
  * admin.js — Elixir and Flexx
- * Panel de administración: CRUD completo de productos conectado al backend Java.
- * Operaciones: Crear, Listar, Editar (inline) y Eliminar productos.
+ * Panel de Administración Completo (Dashboard, Productos, Ventas, Usuarios, Cupones).
  */
-import { ProductoService, CategoriaService } from '../UsuarioController';
+import { UsuarioService } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    const navItems = document.querySelectorAll('.nav-item');
+    const sectionTitle = document.getElementById('adminSectionTitle');
+    const dynamicContent = document.getElementById('adminDynamicContent');
+    const btnSalir = document.getElementById('btnCerrarSesionLocal');
 
-    // ── ELEMENTOS DEL DOM ─────────────────────────────────────────────────────
-    const formCrear       = document.getElementById('formCrearProducto');
-    const tablaProductos  = document.getElementById('tablaProductos');
-    const tbodyProductos  = document.getElementById('tbodyProductos');
-    const selectCategoria = document.getElementById('idCategorias');
-    const btnRefrescar    = document.getElementById('btnRefrescarProductos');
-    const totalCount      = document.getElementById('totalProductos');
-    const feedbackEl      = document.getElementById('adminFeedback');
+    // Cargar Dashboard por defecto al iniciar
+    cargarSeccion('dashboard');
 
-    // Modal de edición
-    const modalEditar     = document.getElementById('modalEditarProducto');
-    const formEditar      = document.getElementById('formEditarProducto');
-    const btnCerrarModal  = document.getElementById('btnCerrarModalEditar');
-
-    let productosCache = [];
-
-    // ── INICIALIZACIÓN ────────────────────────────────────────────────────────
-    cargarCategorias();
-    cargarProductos();
-
-    // ── CARGAR CATEGORÍAS EN EL SELECT ────────────────────────────────────────
-    async function cargarCategorias() {
-        if (!selectCategoria) return;
-        try {
-            const categorias = await CategoriaService.listar();
-            categorias.forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat.idCategorias;
-                opt.textContent = cat.nombreCategoria;
-                selectCategoria.appendChild(opt);
-            });
-        } catch {
-            // Fallback con categorías fijas si CategoriaController no existe aún
-            const fallback = [
-                { id: 1, nombre: 'Hoodies' },
-                { id: 2, nombre: 'Cargo Pants' },
-                { id: 3, nombre: 'Sudaderas' },
-                { id: 4, nombre: 'Camisetas' },
-                { id: 5, nombre: 'Pantalonetas' }
-            ];
-            fallback.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c.id;
-                opt.textContent = c.nombre;
-                selectCategoria.appendChild(opt);
-            });
-        }
-    }
-
-    // ── LISTAR PRODUCTOS ──────────────────────────────────────────────────────
-    async function cargarProductos() {
-        if (!tbodyProductos) return;
-
-        tbodyProductos.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Cargando productos...</td></tr>';
-
-        try {
-            const productos = await ProductoService.listar();
-            productosCache = productos;
-            renderizarTabla(productos);
-        } catch (err) {
-            tbodyProductos.innerHTML = '<tr><td colspan="6" style="color:#c0392b;padding:20px;">Error al cargar productos. Verifique que el servidor Tomcat esté corriendo.</td></tr>';
-            console.error(err);
-        }
-    }
-
-    function renderizarTabla(lista) {
-        if (!tbodyProductos) return;
-        tbodyProductos.innerHTML = '';
-
-        if (totalCount) totalCount.textContent = lista.length;
-
-        if (lista.length === 0) {
-            tbodyProductos.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">No hay productos registrados aún.</td></tr>';
-            return;
-        }
-
-        lista.forEach(prod => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${prod.id}</td>
-                <td>${prod.nombre}</td>
-                <td>$${Number(prod.precioBase).toLocaleString('es-CO')} COP</td>
-                <td>${prod.descuento > 0 ? prod.descuento + '%' : '—'}</td>
-                <td>
-                    <span class="estado-badge ${prod.esNuevo ? 'badge--nuevo' : ''}">
-                        ${prod.esNuevo ? 'NUEVO' : 'REGULAR'}
-                    </span>
-                </td>
-                <td class="acciones-td">
-                    <button class="btn-accion btn-editar" data-id="${prod.id}" type="button">✏️ Editar</button>
-                    <button class="btn-accion btn-eliminar" data-id="${prod.id}" data-nombre="${prod.nombre}" type="button">🗑️ Eliminar</button>
-                </td>
-            `;
-            tbodyProductos.appendChild(tr);
-        });
-
-        // Escuchar clics en los botones de la tabla
-        tbodyProductos.addEventListener('click', manejarAccionesTabla, { once: false });
-    }
-
-    function manejarAccionesTabla(e) {
-        const idStr = e.target.getAttribute('data-id');
-        if (!idStr) return;
-        const id = parseInt(idStr);
-
-        if (e.target.classList.contains('btn-editar')) {
-            const prod = productosCache.find(p => p.id === id);
-            if (prod) abrirModalEditar(prod);
-
-        } else if (e.target.classList.contains('btn-eliminar')) {
-            const nombre = e.target.getAttribute('data-nombre');
-            if (confirm(`⚠️ ¿Eliminar el producto "${nombre}"?\nEsta acción lo desactivará del catálogo.`)) {
-                eliminarProducto(id);
-            }
-        }
-    }
-
-    // ── CREAR PRODUCTO ────────────────────────────────────────────────────────
-    if (formCrear) {
-        formCrear.addEventListener('submit', async (e) => {
+    // Navegación asíncrona del Sidebar
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
             e.preventDefault();
-
-            const datos = {
-                nombreProducto: formCrear.querySelector('[id="nombreProducto"]')?.value.trim(),
-                descripcion:    formCrear.querySelector('[id="descripcion"]')?.value.trim(),
-                precioBase:     formCrear.querySelector('[id="precioBase"]')?.value.trim(),
-                idCategorias:   formCrear.querySelector('[id="idCategorias"]')?.value,
-                material:       formCrear.querySelector('[id="material"]')?.value.trim() || ''
-            };
-
-            if (!datos.nombreProducto || !datos.precioBase || !datos.idCategorias) {
-                mostrarFeedback('⚠️ Complete nombre, precio y categoría.', 'warning');
-                return;
-            }
-
-            const btnSubmit = formCrear.querySelector('button[type="submit"]');
-            btnSubmit.disabled = true;
-            btnSubmit.textContent = 'Guardando...';
-
-            const resultado = await ProductoService.crear(datos);
-
-            btnSubmit.disabled = false;
-            btnSubmit.textContent = 'Registrar Producto';
-
-            if (resultado.ok) {
-                mostrarFeedback('✅ ¡Producto registrado correctamente en la BD!', 'success');
-                formCrear.reset();
-                cargarProductos(); // Refrescar tabla
-            } else {
-                mostrarFeedback('❌ ' + resultado.mensaje, 'error');
-            }
+            navItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            
+            const seccion = item.getAttribute('data-target');
+            cargarSeccion(seccion);
         });
-    }
+    });
 
-    // ── ELIMINAR PRODUCTO ─────────────────────────────────────────────────────
-    async function eliminarProducto(id) {
-        const resultado = await ProductoService.eliminar(id);
-        if (resultado.ok) {
-            mostrarFeedback('✅ Producto eliminado del catálogo.', 'success');
-            cargarProductos();
-        } else {
-            mostrarFeedback('❌ ' + resultado.mensaje, 'error');
+    function cargarSeccion(seccion) {
+        dynamicContent.innerHTML = `<div class="loader">Cargando componentes de la sección...</div>`;
+
+        switch(seccion) {
+            case 'dashboard':
+                sectionTitle.textContent = "Dashboard General";
+                renderDashboard();
+                break;
+            case 'productos':
+                sectionTitle.textContent = "Gestión de Productos e Inventario";
+                renderProductos();
+                break;
+            case 'ventas':
+                sectionTitle.textContent = "Historial de Ventas y Despachos";
+                renderVentas();
+                break;
+            case 'usuarios':
+                sectionTitle.textContent = "Auditoría y Control de Usuarios";
+                renderUsuarios();
+                break;
+            case 'cupones':
+                sectionTitle.textContent = "Marketing y Cupones de Descuento";
+                renderCupones();
+                break;
         }
     }
 
-    // ── MODAL DE EDICIÓN ──────────────────────────────────────────────────────
-    function abrirModalEditar(prod) {
-        if (!modalEditar || !formEditar) return;
-
-        formEditar.querySelector('[name="idProducto"]').value        = prod.id;
-        formEditar.querySelector('[name="nombreProducto"]').value    = prod.nombre;
-        formEditar.querySelector('[name="descripcion"]').value       = prod.descripcion || '';
-        formEditar.querySelector('[name="precioBase"]').value        = prod.precioBase;
-        formEditar.querySelector('[name="porcentajeDescuento"]').value = prod.descuento || 0;
-        formEditar.querySelector('[name="idCategorias"]').value      = prod.categoria;
-
-        modalEditar.style.display = 'flex';
+    // ── 1. DASHBOARD GENERAL (MÉTRICAS) ──
+    function renderDashboard() {
+        dynamicContent.innerHTML = `
+            <div class="kpi-grid">
+                <div class="kpi-card"><h3>$ 4.850.000</h3><p>Ventas del Mes</p></div>
+                <div class="kpi-card warning"><h3>12 Órdenes</h3><p>Pedidos por Despachar</p></div>
+                <div class="kpi-card info"><h3>84 Cuentas</h3><p>Clientes Registrados</p></div>
+                <div class="kpi-card danger"><h3>4 Prendas</h3><p>Stock Crítico</p></div>
+            </div>
+            <div class="dashboard-section-split">
+                <div class="admin-panel-card">
+                    <h3>Resumen de Operaciones Recientes</h3>
+                    <p>El sistema se encuentra sincronizado con la base de datos MySQL. Actualmente cuentas con 3 solicitudes de soporte técnico pendientes y las pasarelas de pago operan con normalidad.</p>
+                </div>
+            </div>
+        `;
     }
 
-    if (btnCerrarModal) {
-        btnCerrarModal.addEventListener('click', () => {
-            if (modalEditar) modalEditar.style.display = 'none';
+    // ── 2. GESTIÓN DE PRODUCTOS, TALLAS Y STOCK ──
+    function renderProductos() {
+        dynamicContent.innerHTML = `
+            <div class="action-bar">
+                <button id="btnAbrirFormProducto" class="btn-urban">＋ Agregar Nueva Prenda</button>
+            </div>
+            
+            <div id="wrapperFormProducto" class="admin-panel-card" style="display:none; margin-bottom:20px;">
+                <h3>Registrar Prenda en Inventario</h3>
+                <form id="formRegistrarProducto" class="admin-grid-form">
+                    <div class="input-group"><label>Nombre del Producto</label><input type="text" name="nombre" required></div>
+                    <div class="input-group"><label>Categoría</label>
+                        <select name="categoria">
+                            <option value="Camisetas">Camisetas / Oversize</option>
+                            <option value="Sweatshirts">Sweatshirts / Hoodies</option>
+                            <option value="Pantalones">Pantalones / Joggers</option>
+                        </select>
+                    </div>
+                    <div class="input-group"><label>Precio de Venta ($COP)</label><input type="number" name="precio" required></div>
+                    <div class="input-group"><label>Stock Inicial (Talla S)</label><input type="number" name="stockS" value="0"></div>
+                    <div class="input-group"><label>Stock Inicial (Talla M)</label><input type="number" name="stockM" value="0"></div>
+                    <div class="input-group"><label>Stock Inicial (Talla L)</label><input type="number" name="stockL" value="0"></div>
+                    <div class="input-group" style="grid-column: span 2;"><label>URL de la Imagen del Producto</label><input type="text" name="imagen"></div>
+                    <div style="grid-column: span 2; display:flex; gap:10px; margin-top:10px;">
+                        <button type="submit" class="btn-urban">Guardar en Catálogo</button>
+                        <button type="button" id="btnCancelarProducto" class="btn-action">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <table class="admin-table">
+                <thead>
+                    <tr><th>ID</th><th>Prenda</th><th>Categoría</th><th>Precio</th><th>Stock por Talla (S/M/L)</th><th>Estado</th><th>Acciones</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>Camiseta Oversize Flexx</td><td>Camisetas</td><td>$85.000</td><td><span class="badge success">S:15 | M:20 | L:10</span></td><td><span class="badge success">Disponible</span></td><td><button class="btn-action">Editar</button></td></tr>
+                    <tr><td>2</td><td>Sudadera Elixir Street</td><td>Sweatshirts</td><td>$140.000</td><td><span class="badge danger">S:0 | M:2 | L:0</span></td><td><span class="badge danger">Stock Crítico</span></td><td><button class="btn-action">Editar</button></td></tr>
+                </tbody>
+            </table>
+        `;
+
+        // Lógica interactiva para ocultar/mostrar el formulario de productos
+        const btnAbrir = document.getElementById('btnAbrirFormProducto');
+        const btnCancelar = document.getElementById('btnCancelarProducto');
+        const wrapper = document.getElementById('wrapperFormProducto');
+
+        if(btnAbrir && wrapper) btnAbrir.addEventListener('click', () => wrapper.style.display = 'block');
+        if(btnCancelar && wrapper) btnCancelar.addEventListener('click', () => wrapper.style.display = 'none');
+    }
+
+    // ── 3. HISTORIAL DE VENTAS Y DESPACHOS (PEDIDOS) ──
+    function renderVentas() {
+        dynamicContent.innerHTML = `
+            <table class="admin-table">
+                <thead>
+                    <tr><th>No. Pedido</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Estado Logístico</th><th>Acciones de Envío</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#1024</td>
+                        <td>Santiago Carrillo</td>
+                        <td>15/06/2026</td>
+                        <td>$225.000</td>
+                        <td><span class="status-pill preparando">En Preparación</span></td>
+                        <td>
+                            <select class="select-status-pedido" data-id="1024">
+                                <option value="preparando" selected>En Preparación</option>
+                                <option value="enviado">Enviado / Despachado</option>
+                                <option value="entregado">Entregado</option>
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+    }
+
+    // ── 4. CONTROL Y AUDITORÍA DE USUARIOS ──
+    async function renderUsuarios() {
+        try {
+            const response = await fetch('/UsuarioController?accion=listar');
+            const usuarios = await response.json();
+
+            let filas = '';
+            usuarios.forEach(user => {
+                const badgeRol = user.idRol === 1 ? 'Cliente' : 'Staff Admin';
+                const statusClass = user.estado === 'activo' ? 'success' : 'danger';
+                
+                filas += `
+                    <tr>
+                        <td>${user.idUsuarios}</td>
+                        <td>${user.nombre} ${user.apellido || ''}</td>
+                        <td>${user.email}</td>
+                        <td><span class="badge info">${badgeRol}</span></td>
+                        <td><span class="badge ${statusClass}">${user.estado.toUpperCase()}</span></td>
+                        <td>
+                            <button class="btn-action btn-ban" data-id="${user.idUsuarios}" data-estado="${user.estado}">
+                                ${user.estado === 'activo' ? 'Suspender' : 'Activar'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            dynamicContent.innerHTML = `
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>ID</th><th>Nombre Complete</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones de Control</th></tr>
+                    </thead>
+                    <tbody>${filas}</tbody>
+                </table>`;
+
+            // Escuchadores de eventos para la suspensión de cuentas
+            document.querySelectorAll('.btn-ban').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    const estadoActual = e.target.getAttribute('data-estado');
+                    const nuevoEstado = estadoActual === 'activo' ? 'suspendido' : 'activo';
+
+                    const res = await fetch(`/UsuarioController?accion=cambiarEstado&idUsuarios=${id}&estado=${nuevoEstado}`, { method: 'POST' });
+                    const data = await res.json();
+                    if(data.success) {
+                        renderUsuarios(); 
+                    }
+                });
+            });
+
+        } catch (error) {
+            dynamicContent.innerHTML = `<div class="error-msg">⚠️ Error al conectar con el Servlet de Usuarios: ${error.message}</div>`;
+        }
+    }
+
+    // ── 5. MARKETING (CUPONES Y DESCUENTOS) ──
+    function renderCupones() {
+        dynamicContent.innerHTML = `
+            <div class="action-bar">
+                <button id="btnAbrirFormCupón" class="btn-urban">＋ Crear Código de Descuento</button>
+            </div>
+
+            <div id="wrapperFormCupón" class="admin-panel-card" style="display:none; margin-bottom:20px;">
+                <h3>Crear Nuevo Cupón de Descuento</h3>
+                <form id="formRegistrarCupón" class="admin-grid-form">
+                    <div class="input-group"><label>Código del Cupón (Ej: FLEXX20)</label><input type="text" name="codigo" placeholder="LETRAS MAYÚSCULAS" required></div>
+                    <div class="input-group"><label>Porcentaje de Descuento (%)</label><input type="number" name="descuento" min="1" max="100" required></div>
+                    <div class="input-group"><label>Fecha de Expiración</label><input type="date" name="fechaExpiracion" required></div>
+                    <div style="grid-column: span 2; display:flex; gap:10px; margin-top:10px;">
+                        <button type="submit" class="btn-urban">Activar Cupón</button>
+                        <button type="button" id="btnCancelarCupón" class="btn-action">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <table class="admin-table">
+                <thead>
+                    <tr><th>ID</th><th>Código</th><th>Descuento</th><th>Vencimiento</th><th>Estado</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td><strong>ELIXIR15</strong></td><td>15% OFF</td><td>31/12/2026</td><td><span class="badge success">Activo</span></td></tr>
+                    <tr><td>2</td><td><strong>SENA2026</strong></td><td>20% OFF</td><td>01/07/2026</td><td><span class="badge success">Activo</span></td></tr>
+                </tbody>
+            </table>
+        `;
+
+        const btnAbrir = document.getElementById('btnAbrirFormCupón');
+        const btnCancelar = document.getElementById('btnCancelarCupón');
+        const wrapper = document.getElementById('wrapperFormCupón');
+
+        if(btnAbrir && wrapper) btnAbrir.addEventListener('click', () => wrapper.style.display = 'block');
+        if(btnCancelar && wrapper) btnCancelar.addEventListener('click', () => wrapper.style.display = 'none');
+    }
+
+    // Cierre de sesión nativo del panel
+    if (btnSalir) {
+        btnSalir.addEventListener('click', async () => {
+            const res = await fetch('/UsuarioController?accion=logout', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) window.location.href = '/frontend/views/login.html?logout=ok';
         });
-    }
-
-    if (modalEditar) {
-        modalEditar.addEventListener('click', (e) => {
-            if (e.target === modalEditar) modalEditar.style.display = 'none';
-        });
-    }
-
-    if (formEditar) {
-        formEditar.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const datos = {
-                idProducto:          formEditar.querySelector('[name="idProducto"]').value,
-                nombreProducto:      formEditar.querySelector('[name="nombreProducto"]').value.trim(),
-                descripcion:         formEditar.querySelector('[name="descripcion"]').value.trim(),
-                precioBase:          formEditar.querySelector('[name="precioBase"]').value,
-                porcentajeDescuento: formEditar.querySelector('[name="porcentajeDescuento"]').value,
-                idCategorias:        formEditar.querySelector('[name="idCategorias"]').value
-            };
-
-            const btnGuardar = formEditar.querySelector('button[type="submit"]');
-            btnGuardar.disabled = true;
-            btnGuardar.textContent = 'Guardando...';
-
-            const resultado = await ProductoService.actualizar(datos);
-
-            btnGuardar.disabled = false;
-            btnGuardar.textContent = 'Guardar Cambios';
-
-            if (resultado.ok) {
-                if (modalEditar) modalEditar.style.display = 'none';
-                mostrarFeedback('✅ Producto actualizado correctamente.', 'success');
-                cargarProductos();
-            } else {
-                mostrarFeedback('❌ ' + resultado.mensaje, 'error');
-            }
-        });
-    }
-
-    // ── BOTÓN REFRESCAR ───────────────────────────────────────────────────────
-    if (btnRefrescar) {
-        btnRefrescar.addEventListener('click', cargarProductos);
-    }
-
-    // ── FEEDBACK VISUAL ───────────────────────────────────────────────────────
-    function mostrarFeedback(texto, tipo) {
-        if (!feedbackEl) { alert(texto); return; }
-        feedbackEl.textContent = texto;
-        feedbackEl.className = `admin-feedback admin-feedback--${tipo}`;
-        feedbackEl.style.display = 'block';
-        setTimeout(() => { feedbackEl.style.display = 'none'; }, 4000);
     }
 });

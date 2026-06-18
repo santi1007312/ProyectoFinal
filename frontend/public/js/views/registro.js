@@ -32,10 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const apellido   = (formRegistro.querySelector('[name="apellido"]')?.value   || '').trim();
         const edad       = (formRegistro.querySelector('[name="edad"]')?.value       || '0').trim();
         const email      = (formRegistro.querySelector('[name="email"]')?.value      || '').trim();
-        const contraseña = (formRegistro.querySelector('[name="contraseña"]')?.value || '').trim();
+        const password = (formRegistro.querySelector('[name="password"]')?.value || '').trim();
         const telefono   = (formRegistro.querySelector('[name="telefono"]')?.value   || '').trim();
  
-        if (!nombre || !email || !contraseña) {
+        if (!nombre || !email || !password) {
             mostrarMensaje('⚠️ Nombre, correo y contraseña son obligatorios.', 'warning');
             return;
         }
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSubmit.textContent = 'Registrando...';
  
         const resultado = await UsuarioService.registrar({
-            nombre, apellido, edad, email, contraseña, telefono
+            nombre, apellido, edad, email, password, telefono
         });
  
         btnSubmit.disabled = false;

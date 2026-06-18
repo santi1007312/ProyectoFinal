@@ -38,13 +38,13 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
  
             const emailInput      = formLogin.querySelector('input[name="email"]');
-            const contraseñaInput = formLogin.querySelector('input[name="contraseña"]');
+            const passwordInput = formLogin.querySelector('input[name="password"]');
             const btnSubmit       = formLogin.querySelector('button[type="submit"]');
  
             const email      = emailInput.value.trim();
-            const contraseña = contraseñaInput.value.trim();
+            const password = passwordInput.value.trim();
  
-            if (!email || !contraseña) {
+            if (!email || !password) {
                 mostrarMensaje('⚠️ Complete todos los campos.', 'warning');
                 return;
             }
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSubmit.disabled = true;
             btnSubmit.textContent = 'Verificando...';
  
-            const resultado = await UsuarioService.login(email, contraseña);
+            const resultado = await UsuarioService.login(email, password);
  
             btnSubmit.disabled = false;
             btnSubmit.textContent = 'INICIAR SESIÓN';
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 mostrarMensaje('❌ ' + resultado.error, 'error');
-                contraseñaInput.value = '';
+                passwordInput.value = '';
             }
         });
     }
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
  
             btnEnviar.disabled = true;
             btnEnviar.textContent = 'Enviando...';
-            const resultado = await UsuarioService.recuperarContraseña(emailVal);
+            const resultado = await UsuarioService.recuperarPassword(emailVal);
             btnEnviar.disabled = false;
             btnEnviar.textContent = 'ENVIAR ENLACE';
  
