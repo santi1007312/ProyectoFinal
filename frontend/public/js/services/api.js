@@ -88,19 +88,20 @@ export const UsuarioService = {
      * Inicia sesión.
      * Devuelve { ok: true, esAdmin: bool } o { ok: false, error: string }
      */
-    // Así debería verse la lógica de su fetch dentro de api.js para coincidir con su login.js
     async login(email, password) {
         try {
-            const response = await fetch('/UsuarioController', {
+            const baseUrl = await getBaseUrl(); // 👈 Recupera el puerto y contexto dinámico
+            const response = await fetch(`${baseUrl}/UsuarioController`, {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams({
                     'accion': 'login',
-                    'email': email,
+                    'email': email.trim(),
                     'password': password
                 })
             });
+            
             const data = await response.json();
-            // Si el servlet mandó success:true, retornamos ok:true junto con el rol
             return { ok: data.success, esAdmin: data.esAdmin, error: data.error };
         } catch (error) {
             return { ok: false, error: "Error de conexión con el servidor" };
@@ -109,17 +110,22 @@ export const UsuarioService = {
 
     /**
      * Registra un nuevo cliente.
-     * Devuelve { ok: boolean, error?: string }
+     * Usa el helper 'post' que ya incluye la baseUrl y el Content-Type correcto.
      */
     async registrar(datos) {
         try {
-            // Enviamos accion: 'registro' y ambas claves de contraseña
+            // Aseguramos que la acción sea 'registro' para que entre al else-if de Java
             const payload = { 
                 accion: 'registro', 
-                ...datos,
-                password: datos.password
+                nombre: datos.nombre,
+                apellido: datos.apellido,
+                edad: datos.edad,
+                telefono: datos.telefono,
+                email: datos.email,     // 👈 Forzamos a que se llame 'email' como pide tu Java
+                password: datos.password // 👈 Forzamos a que se llame 'password' como pide tu Java
             };
 
+            // El helper 'post' ya concatena la URL base automáticamente
             const res = await post('UsuarioController', payload);
             const data = await res.json();
 
