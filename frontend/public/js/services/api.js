@@ -88,9 +88,12 @@ export const UsuarioService = {
      * Inicia sesión.
      * Devuelve { ok: true, esAdmin: bool } o { ok: false, error: string }
      */
+    /**
+     * Inicia sesión de manera segura controlando respuestas de error (401, 500, etc.)
+     */
     async login(email, password) {
         try {
-            const baseUrl = await getBaseUrl(); // 👈 Recupera el puerto y contexto dinámico
+            const baseUrl = await getBaseUrl(); 
             const response = await fetch(`${baseUrl}/UsuarioController`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -101,9 +104,26 @@ export const UsuarioService = {
                 })
             });
             
+            // Si el servidor responde con error (401, 400, etc.) manejamos los datos adecuadamente
+            if (!response.ok) {
+                try {
+                    const errorData = await response.json();
+                    return { ok: false, esAdmin: false, error: errorData.error || "Credenciales incorrectas" };
+                } catch (e) {
+                    // Si el JSON viene vacío o dañado por el error HTTP
+                    if (response.status === 401) {
+                        return { ok: false, esAdmin: false, error: "Correo o contraseña incorrectos." };
+                    }
+                    return { ok: false, esAdmin: false, error: `Error en el servidor (Código: ${response.status})` };
+                }
+            }
+            
+            // Si la respuesta fue exitosa (status 200)
             const data = await response.json();
             return { ok: data.success, esAdmin: data.esAdmin, error: data.error };
+
         } catch (error) {
+            console.error("Error capturado en login service:", error);
             return { ok: false, error: "Error de conexión con el servidor" };
         }
     },

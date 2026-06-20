@@ -150,8 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── 4. CONTROL Y AUDITORÍA DE USUARIOS ──
     async function renderUsuarios() {
         try {
-            const response = await fetch('/UsuarioController?accion=listar');
-            const usuarios = await response.json();
+            const usuarios = await UsuarioService.listarTodos();
 
             let filas = '';
             usuarios.forEach(user => {
@@ -189,9 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const estadoActual = e.target.getAttribute('data-estado');
                     const nuevoEstado = estadoActual === 'activo' ? 'suspendido' : 'activo';
 
-                    const res = await fetch(`/UsuarioController?accion=cambiarEstado&idUsuarios=${id}&estado=${nuevoEstado}`, { method: 'POST' });
-                    const data = await res.json();
-                    if(data.success) {
+                    const resultado = await UsuarioService.cambiarEstado(id, nuevoEstado);
+                    if(resultado.ok) {
                         renderUsuarios(); 
                     }
                 });
@@ -244,9 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cierre de sesión nativo del panel
     if (btnSalir) {
         btnSalir.addEventListener('click', async () => {
-            const res = await fetch('/UsuarioController?accion=logout', { method: 'POST' });
-            const data = await res.json();
-            if (data.success) window.location.href = '/frontend/views/login.html?logout=ok';
+            await UsuarioService.logout();
         });
     }
 });

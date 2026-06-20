@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
  
-        if (contraseña.length < 6) {
+        if (password.length < 6) {
             mostrarMensaje('⚠️ La contraseña debe tener al menos 6 caracteres.', 'warning');
             return;
         }
