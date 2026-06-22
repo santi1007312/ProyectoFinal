@@ -26,7 +26,7 @@ export async function getBaseUrl() {
         } else if (parts.length > 0 && parts[0] !== 'frontend') {
             ctx = '/' + parts[0];
         }
-        url = `${protocol}//${hostname}:${port}${ctx}`;
+        url = `${protocol}//${hostname}:${port}${ctx}`.replace(/\/$/, "");
         sessionStorage.setItem('detected_base_url', url);
         return url;
     }
@@ -41,10 +41,11 @@ export async function getBaseUrl() {
     for (const cand of candidates) {
         try {
             // Hacemos una consulta rápida y ligera para validar cuál contexto de Tomcat responde
-            const res = await fetch(`${cand}/ProductoController?accion=listar`);
+            const res = await fetch(`${cand}/ProductoController?accion=listar`, { method: 'GET'}) ;       
             if (res.status !== 404) {
-                sessionStorage.setItem('detected_base_url', cand);
-                return cand;
+                const cleanCand;
+                sessionStorage.setItem('detected_base_url', cleanCand);
+                return cleanCand;
             }
         } catch (e) {
             // Si hay error de conexión, ignoramos y seguimos
@@ -52,7 +53,7 @@ export async function getBaseUrl() {
     }
 
     // Fallback por defecto si nada responde
-    const defaultUrl = `${protocol}//${hostname}:8080/ElixirAndFlexx`;
+    const defaultUrl = `${protocol}//${hostname}:8080/Backend_de_los_backend`;
     return defaultUrl;
 }
 
@@ -60,7 +61,11 @@ export async function getBaseUrl() {
 async function post(servlet, params) {
     const body = new URLSearchParams(params);
     const baseUrl = await getBaseUrl();
-    const res = await fetch(`${baseUrl}/${servlet}`, {
+    
+    // Quitamos posibles barras repetidas en la URL
+    const url = `${baseUrl}/${servlet}`.replace(/([^:]\/)\/+/g, "$1");
+    
+    const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body,
@@ -73,11 +78,17 @@ async function post(servlet, params) {
 async function get(servlet, params = {}) {
     const query = new URLSearchParams(params).toString();
     const baseUrl = await getBaseUrl();
-    const url = `${baseUrl}/${servlet}${query ? '?' + query : ''}`;
-    const res = await fetch(url, {
+    
+    // Estructuración limpia de la URL de consulta
+    const urlBaseCompleta = `${baseUrl}/${servlet}`.replace(/([^:]\/)\/+/g, "$1");
+    const urlFinal = `${urlBaseCompleta}${query ? '?' + query : ''}`;
+    
+    const res = await fetch(urlFinal, {
+        method: 'GET',
         credentials: 'include'
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
     return res.json();
 }
 
