@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bienvenido - Elixir and Flexx</title>
-    <link rel="stylesheet" href="/frontend/public/css/global.css">
-    <link rel="stylesheet" href="/frontend/public/css/estilos_elixir.css">
+    <link rel="stylesheet" href="../public/css/global.css">
+    <link rel="stylesheet" href="../public/css/estilos_elixir.css">
 </head>
 <body>
     <div class="auth-wrapper">
@@ -13,9 +13,7 @@
             <div id="loginMessage" class="auth-message"></div>
             <h1 class="auth-card__title">BIENVENIDO AL SISTEMA</h1>
             <p class="auth-card__subtitle">INICIA SESION PARA ACCEDER AL CARRITO Y AL SISTEMA</p>
-            
-            <form id="formLogin" action="/UsuarioController" method="POST">
-    
+
                 <input type="hidden" name="accion" value="login">
 
                 <div class="input-group">
@@ -54,6 +52,6 @@
         </div>
     </div>
 
-    <script src="/frontend/public/js/views/login.js" type="module"></script>
+    <script src="../public/js/views/login.js" type="module"></script>
 </body>
 </html>

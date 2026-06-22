@@ -43,7 +43,7 @@ export async function getBaseUrl() {
             // Hacemos una consulta rápida y ligera para validar cuál contexto de Tomcat responde
             const res = await fetch(`${cand}/ProductoController?accion=listar`, { method: 'GET'}) ;       
             if (res.status !== 404) {
-                const cleanCand;
+                const cleanCand = cand.replace(/\/$/, "")
                 sessionStorage.setItem('detected_base_url', cleanCand);
                 return cleanCand;
             }
