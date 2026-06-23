@@ -15,18 +15,20 @@ export async function getBaseUrl() {
     if (url) return url;
 
     const { protocol, hostname, port } = window.location;
-    
-    // Si estás visualizando desde Tomcat directamente
+
+    // SI ESTÁS EN TOMCAT
     if (port !== '5500') {
-        const parts = window.location.pathname.split('/').filter(Boolean);
+        // window.location.pathname suele ser: "/NombreProyecto/frontend/views/login.html"
+        // Al separar por '/' el primer elemento válido [1] es el Context Path (tu proyecto)
+        const pathSegments = window.location.pathname.split('/').filter(Boolean);
+        
         let ctx = '';
-        const idx = parts.indexOf('frontend');
-        if (idx > 0) {
-            ctx = '/' + parts.slice(0, idx).join('/');
-        } else if (parts.length > 0 && parts[0] !== 'frontend') {
-            ctx = '/' + parts[0];
+        // Si el primer segmento NO es frontend, significa que es el nombre de tu proyecto en Tomcat
+        if (pathSegments.length > 0 && pathSegments[0] !== 'frontend') {
+            ctx = '/' + pathSegments[0];
         }
-        url = `${protocol}//${hostname}:${port}${ctx}`.replace(/\/$/, "");
+
+        url = `${protocol}//${hostname}:${port}${ctx}`;
         sessionStorage.setItem('detected_base_url', url);
         return url;
     }
