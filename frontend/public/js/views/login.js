@@ -73,8 +73,16 @@ document.addEventListener('DOMContentLoaded', () => {
  
     // ── MODAL DE RECUPERACIÓN ─────────────────────────────────────────────────
     const modal    = document.getElementById('modalRecuperar');
+    const btnOpen  = document.getElementById('btnOpenModal');
     const btnClose = document.getElementById('btnCloseModal');
     const formRecup = document.getElementById('formRecuperacion');
+ 
+    if (btnOpen) {
+        btnOpen.addEventListener('click', (e) => {
+            e.preventDefault();
+            modal.style.display = 'flex';
+        });
+    }
  
     if (btnClose) {
         btnClose.addEventListener('click', () => {
