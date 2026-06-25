@@ -47,6 +47,20 @@
     background-color: #29292e;
     color: #fff;
 }
+.nav-item-home {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: #a8a8b3;
+    text-decoration: none;
+    padding: 12px;
+    border-radius: 6px;
+    transition: 0.3s;
+}
+.nav-item-home:hover {
+    background-color: #29292e;
+    color: #fff;
+}
 .admin-main {
     flex: 1;
     display: flex;

@@ -39,6 +39,22 @@ document.addEventListener('DOMContentLoaded', () => {
             mostrarMensaje('⚠️ Nombre, correo y contraseña son obligatorios.', 'warning');
             return;
         }
+
+        const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+        if (!nameRegex.test(nombre)) {
+            mostrarMensaje('⚠️ El nombre no debe contener números ni caracteres especiales.', 'warning');
+            return;
+        }
+        if (apellido && !nameRegex.test(apellido)) {
+            mostrarMensaje('⚠️ El apellido no debe contener números ni caracteres especiales.', 'warning');
+            return;
+        }
+
+        const edadVal = parseInt(edad, 10);
+        if (isNaN(edadVal) || edadVal < 0) {
+            mostrarMensaje('⚠️ La edad no puede ser negativa.', 'warning');
+            return;
+        }
  
         if (password.length < 6) {
             mostrarMensaje('⚠️ La contraseña debe tener al menos 6 caracteres.', 'warning');

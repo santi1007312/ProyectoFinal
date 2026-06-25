@@ -2,7 +2,7 @@
  * admin.js — Elixir and Flexx
  * Panel de Administración Completo (Dashboard, Productos, Ventas, Usuarios, Cupones).
  */
-import { UsuarioService } from '../services/api.js';
+import { UsuarioService, ProductoService, PedidoService, CategoriaService } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const navItems = document.querySelectorAll('.nav-item');
@@ -71,30 +71,76 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── 2. GESTIÓN DE PRODUCTOS, TALLAS Y STOCK ──
-    function renderProductos() {
+    async function renderProductos() {
+        dynamicContent.innerHTML = `<div class="loader">Cargando productos...</div>`;
+        
+        let categorias = [];
+        try {
+            categorias = await CategoriaService.listar();
+        } catch (e) {
+            categorias = [
+                { id: 1, nombre: "Camisetas / Oversize" },
+                { id: 2, nombre: "Sweatshirts / Hoodies" },
+                { id: 3, nombre: "Pantalones / Joggers" }
+            ];
+        }
+
+        let productos = [];
+        try {
+            productos = await ProductoService.listar();
+        } catch (e) {
+            console.error("Error al cargar productos:", e);
+        }
+
+        const catMap = {};
+        categorias.forEach(c => {
+            catMap[c.idCategorias || c.id] = c.nombreCategoria || c.nombre;
+        });
+
+        let filas = '';
+        productos.forEach(p => {
+            const catNombre = catMap[p.categoria] || 'General';
+            const precioFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p.precioBase);
+            const imgPreview = p.imagen ? `<img src="${p.imagen}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;margin-right:8px;" onerror="this.src='https://placehold.co/40'">` : '';
+
+            filas += `
+                <tr data-json="${encodeURIComponent(JSON.stringify(p))}">
+                    <td>${p.id}</td>
+                    <td><div style="display:flex;align-items:center;">${imgPreview}<span>${p.nombre}</span></div></td>
+                    <td>${catNombre}</td>
+                    <td>${precioFormatted}</td>
+                    <td>
+                        <button class="btn-action btn-editar-prod" style="margin-right:5px;">Editar</button>
+                        <button class="btn-action btn-eliminar-prod" style="background:#ff4d4d;color:white;border:none;">Desactivar</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        if (productos.length === 0) {
+            filas = `<tr><td colspan="5" style="text-align:center;">No hay productos registrados en el catálogo.</td></tr>`;
+        }
+
         dynamicContent.innerHTML = `
             <div class="action-bar">
                 <button id="btnAbrirFormProducto" class="btn-urban">＋ Agregar Nueva Prenda</button>
             </div>
             
             <div id="wrapperFormProducto" class="admin-panel-card" style="display:none; margin-bottom:20px;">
-                <h3>Registrar Prenda en Inventario</h3>
+                <h3 id="formProductoTitle">Registrar Prenda en Inventario</h3>
                 <form id="formRegistrarProducto" class="admin-grid-form">
+                    <input type="hidden" name="idProducto" value="">
                     <div class="input-group"><label>Nombre del Producto</label><input type="text" name="nombre" required></div>
                     <div class="input-group"><label>Categoría</label>
                         <select name="categoria">
-                            <option value="Camisetas">Camisetas / Oversize</option>
-                            <option value="Sweatshirts">Sweatshirts / Hoodies</option>
-                            <option value="Pantalones">Pantalones / Joggers</option>
+                            ${categorias.map(cat => `<option value="${cat.idCategorias || cat.id}">${cat.nombreCategoria || cat.nombre}</option>`).join('')}
                         </select>
                     </div>
                     <div class="input-group"><label>Precio de Venta ($COP)</label><input type="number" name="precio" required></div>
-                    <div class="input-group"><label>Stock Inicial (Talla S)</label><input type="number" name="stockS" value="0"></div>
-                    <div class="input-group"><label>Stock Inicial (Talla M)</label><input type="number" name="stockM" value="0"></div>
-                    <div class="input-group"><label>Stock Inicial (Talla L)</label><input type="number" name="stockL" value="0"></div>
+                    <div class="input-group"><label>Descripción</label><input type="text" name="descripcion"></div>
                     <div class="input-group" style="grid-column: span 2;"><label>URL de la Imagen del Producto</label><input type="text" name="imagen"></div>
                     <div style="grid-column: span 2; display:flex; gap:10px; margin-top:10px;">
-                        <button type="submit" class="btn-urban">Guardar en Catálogo</button>
+                        <button type="submit" class="btn-urban" id="btnGuardarProducto">Guardar en Catálogo</button>
                         <button type="button" id="btnCancelarProducto" class="btn-action">Cancelar</button>
                     </div>
                 </form>
@@ -102,49 +148,189 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <table class="admin-table">
                 <thead>
-                    <tr><th>ID</th><th>Prenda</th><th>Categoría</th><th>Precio</th><th>Stock por Talla (S/M/L)</th><th>Estado</th><th>Acciones</th></tr>
+                    <tr><th>ID</th><th>Prenda</th><th>Categoría</th><th>Precio</th><th>Acciones</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>1</td><td>Camiseta Oversize Flexx</td><td>Camisetas</td><td>$85.000</td><td><span class="badge success">S:15 | M:20 | L:10</span></td><td><span class="badge success">Disponible</span></td><td><button class="btn-action">Editar</button></td></tr>
-                    <tr><td>2</td><td>Sudadera Elixir Street</td><td>Sweatshirts</td><td>$140.000</td><td><span class="badge danger">S:0 | M:2 | L:0</span></td><td><span class="badge danger">Stock Crítico</span></td><td><button class="btn-action">Editar</button></td></tr>
+                    ${filas}
                 </tbody>
             </table>
         `;
 
-        // Lógica interactiva para ocultar/mostrar el formulario de productos
         const btnAbrir = document.getElementById('btnAbrirFormProducto');
         const btnCancelar = document.getElementById('btnCancelarProducto');
         const wrapper = document.getElementById('wrapperFormProducto');
+        const form = document.getElementById('formRegistrarProducto');
+        const formTitle = document.getElementById('formProductoTitle');
 
-        if(btnAbrir && wrapper) btnAbrir.addEventListener('click', () => wrapper.style.display = 'block');
-        if(btnCancelar && wrapper) btnCancelar.addEventListener('click', () => wrapper.style.display = 'none');
+        if(btnAbrir && wrapper) {
+            btnAbrir.addEventListener('click', () => {
+                form.reset();
+                form.querySelector('[name="idProducto"]').value = '';
+                formTitle.textContent = "Registrar Prenda en Inventario";
+                wrapper.style.display = 'block';
+            });
+        }
+        if(btnCancelar && wrapper) {
+            btnCancelar.addEventListener('click', () => {
+                wrapper.style.display = 'none';
+                form.reset();
+            });
+        }
+
+        // Edit buttons click handler
+        document.querySelectorAll('.btn-editar-prod').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tr = e.target.closest('tr');
+                const p = JSON.parse(decodeURIComponent(tr.getAttribute('data-json')));
+                
+                formTitle.textContent = "Editar Prenda";
+                form.querySelector('[name="idProducto"]').value = p.id;
+                form.querySelector('[name="nombre"]').value = p.nombre;
+                form.querySelector('[name="categoria"]').value = p.categoria;
+                form.querySelector('[name="precio"]').value = p.precioBase;
+                form.querySelector('[name="descripcion"]').value = p.descripcion || '';
+                form.querySelector('[name="imagen"]').value = p.imagen || '';
+                
+                wrapper.style.display = 'block';
+                wrapper.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Delete buttons click handler
+        document.querySelectorAll('.btn-eliminar-prod').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const tr = e.target.closest('tr');
+                const p = JSON.parse(decodeURIComponent(tr.getAttribute('data-json')));
+                
+                if (confirm(`¿Está seguro de desactivar el producto "${p.nombre}" del catálogo?`)) {
+                    const res = await ProductoService.eliminar(p.id);
+                    if (res.ok) {
+                        alert(res.mensaje || 'Producto desactivado con éxito.');
+                        renderProductos();
+                    } else {
+                        alert('Error al desactivar: ' + res.mensaje);
+                    }
+                }
+            });
+        });
+
+        // Form submit handler
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const idProducto = form.querySelector('[name="idProducto"]').value;
+            const nombre = form.querySelector('[name="nombre"]').value.trim();
+            const idCategorias = form.querySelector('[name="categoria"]').value;
+            const precioBase = form.querySelector('[name="precio"]').value;
+            const descripcion = form.querySelector('[name="descripcion"]').value.trim();
+            const imagen = form.querySelector('[name="imagen"]').value.trim();
+
+            if (nombre.match(/^\d+$/)) {
+                alert('⚠️ El nombre de la prenda no puede ser puramente numérico.');
+                return;
+            }
+            if (imagen && imagen.match(/^\d+$/)) {
+                alert('⚠️ La URL de la imagen no puede ser puramente numérica.');
+                return;
+            }
+
+            const payload = {
+                nombreProducto: nombre,
+                idCategorias,
+                precioBase,
+                descripcion,
+                imagen
+            };
+
+            let resultado;
+            if (idProducto) {
+                payload.idProducto = idProducto;
+                resultado = await ProductoService.actualizar(payload);
+            } else {
+                resultado = await ProductoService.crear(payload);
+            }
+
+            if (resultado.ok) {
+                alert('🎉 ' + (resultado.mensaje || 'Prenda guardada con éxito en el catálogo.'));
+                wrapper.style.display = 'none';
+                form.reset();
+                renderProductos();
+            } else {
+                alert('❌ Error al guardar: ' + resultado.mensaje);
+            }
+        });
     }
 
     // ── 3. HISTORIAL DE VENTAS Y DESPACHOS (PEDIDOS) ──
-    function renderVentas() {
+    async function renderVentas() {
+        dynamicContent.innerHTML = `<div class="loader">Cargando pedidos...</div>`;
+
+        let pedidos = [];
+        try {
+            pedidos = await PedidoService.listarTodos();
+        } catch (e) {
+            console.error("Error al listar pedidos:", e);
+        }
+
+        let filas = '';
+        pedidos.forEach(p => {
+            const totalFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p.total);
+            const dateStr = p.fechaPedido ? new Date(p.fechaPedido).toLocaleDateString('es-CO') : 'Reciente';
+
+            let statusClass = 'preparando';
+            if (p.estado === 'enviado') statusClass = 'enviado';
+            if (p.estado === 'entregado') statusClass = 'entregado';
+            if (p.estado === 'cancelado') statusClass = 'cancelado';
+
+            filas += `
+                <tr>
+                    <td>#${p.idPedido}</td>
+                    <td>${p.clienteNombre || p.idUsuarios || 'Cliente'}</td>
+                    <td>${dateStr}</td>
+                    <td>${totalFormatted}</td>
+                    <td><span class="status-pill ${statusClass}" id="status-pill-${p.idPedido}">${p.estado.toUpperCase()}</span></td>
+                    <td>
+                        <select class="select-status-pedido" data-id="${p.idPedido}" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="preparando" ${p.estado === 'preparando' ? 'selected' : ''}>En Preparación</option>
+                            <option value="enviado" ${p.estado === 'enviado' ? 'selected' : ''}>En Enviado / Despachado</option>
+                            <option value="entregado" ${p.estado === 'entregado' ? 'selected' : ''}>Entregado</option>
+                        </select>
+                    </td>
+                </tr>
+            `;
+        });
+
+        if (pedidos.length === 0) {
+            filas = `<tr><td colspan="6" style="text-align:center;">No hay pedidos registrados en el sistema.</td></tr>`;
+        }
+
         dynamicContent.innerHTML = `
             <table class="admin-table">
                 <thead>
                     <tr><th>No. Pedido</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Estado Logístico</th><th>Acciones de Envío</th></tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>#1024</td>
-                        <td>Santiago Carrillo</td>
-                        <td>15/06/2026</td>
-                        <td>$225.000</td>
-                        <td><span class="status-pill preparando">En Preparación</span></td>
-                        <td>
-                            <select class="select-status-pedido" data-id="1024">
-                                <option value="preparando" selected>En Preparación</option>
-                                <option value="enviado">Enviado / Despachado</option>
-                                <option value="entregado">Entregado</option>
-                            </select>
-                        </td>
-                    </tr>
+                    ${filas}
                 </tbody>
             </table>
         `;
+
+        document.querySelectorAll('.select-status-pedido').forEach(select => {
+            select.addEventListener('change', async (e) => {
+                const idPedido = e.target.getAttribute('data-id');
+                const nuevoEstado = e.target.value;
+
+                const res = await PedidoService.actualizarEstado(idPedido, nuevoEstado);
+                if (res.ok) {
+                    const pill = document.getElementById(`status-pill-${idPedido}`);
+                    if (pill) {
+                        pill.textContent = nuevoEstado.toUpperCase();
+                        pill.className = `status-pill ${nuevoEstado}`;
+                    }
+                } else {
+                    alert('Error al actualizar el estado logístico del pedido.');
+                }
+            });
+        });
     }
 
     // ── 4. CONTROL Y AUDITORÍA DE USUARIOS ──
@@ -156,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
             usuarios.forEach(user => {
                 const badgeRol = user.idRol === 1 ? 'Cliente' : 'Staff Admin';
                 const statusClass = user.estado === 'activo' ? 'success' : 'danger';
+                const isAdmin = user.idRol === 2;
                 
                 filas += `
                     <tr>
@@ -165,9 +352,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td><span class="badge info">${badgeRol}</span></td>
                         <td><span class="badge ${statusClass}">${user.estado.toUpperCase()}</span></td>
                         <td>
+                            ${isAdmin ? `
+                            <button class="btn-action btn-ban" disabled style="opacity: 0.5; cursor: not-allowed;" title="El Administrador no puede ser suspendido">
+                                Suspender
+                            </button>
+                            ` : `
                             <button class="btn-action btn-ban" data-id="${user.idUsuarios}" data-estado="${user.estado}">
                                 ${user.estado === 'activo' ? 'Suspender' : 'Activar'}
                             </button>
+                            `}
                         </td>
                     </tr>
                 `;
@@ -176,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dynamicContent.innerHTML = `
                 <table class="admin-table">
                     <thead>
-                        <tr><th>ID</th><th>Nombre Complete</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones de Control</th></tr>
+                        <tr><th>ID</th><th>Nombre Completo</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones de Control</th></tr>
                     </thead>
                     <tbody>${filas}</tbody>
                 </table>`;
@@ -185,8 +378,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.btn-ban').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = e.target.getAttribute('data-id');
+                    if (!id) return;
                     const estadoActual = e.target.getAttribute('data-estado');
                     const nuevoEstado = estadoActual === 'activo' ? 'suspendido' : 'activo';
+
+                    if (nuevoEstado === 'suspendido') {
+                        if (!confirm('¿Está seguro de suspender o borrar el usuario?')) {
+                            return;
+                        }
+                    }
 
                     const resultado = await UsuarioService.cambiarEstado(id, nuevoEstado);
                     if(resultado.ok) {

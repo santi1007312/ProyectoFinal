@@ -62,6 +62,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const nombre = partes[0] || '';
                     const apellido = partes.slice(1).join(" ") || '';
 
+                    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+                    if (!nameRegex.test(nombre)) {
+                        alert('⚠️ El nombre no debe contener números ni caracteres especiales.');
+                        cargarPerfil();
+                        return;
+                    }
+                    if (apellido && !nameRegex.test(apellido)) {
+                        alert('⚠️ El apellido no debe contener números ni caracteres especiales.');
+                        cargarPerfil();
+                        return;
+                    }
+
                     // Petición al backend usando la estructura del backend de Elixir and Flexx
                     const response = await fetch('/UsuarioController?accion=actualizarPerfil', {
                         method: 'POST',
