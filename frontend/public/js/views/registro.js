@@ -55,6 +55,25 @@ document.addEventListener('DOMContentLoaded', () => {
             mostrarMensaje('⚠️ La edad no puede ser negativa.', 'warning');
             return;
         }
+
+        // Validación de Teléfono
+        if (!/^\d{9,}$/.test(telefono)) {
+            mostrarMensaje('⚠️ El número telefónico debe tener un mínimo de 9 caracteres numéricos.', 'warning');
+            return;
+        }
+
+        // Filtro de Email
+        if (email.includes('@')) {
+            const emailParts = email.split('@');
+            if (emailParts.length === 2) {
+                const username = emailParts[0];
+                const hasLetter = /[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(username);
+                if (!hasLetter) {
+                    mostrarMensaje('⚠️ El correo electrónico debe exigir al menos un carácter alfabético en su nombre de usuario.', 'warning');
+                    return;
+                }
+            }
+        }
  
         if (password.length < 6) {
             mostrarMensaje('⚠️ La contraseña debe tener al menos 6 caracteres.', 'warning');

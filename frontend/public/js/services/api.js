@@ -200,6 +200,32 @@ export const UsuarioService = {
     },
 
     /**
+     * Actualiza el perfil del usuario (nombre y apellido).
+     */
+    async actualizarPerfil(nombre, apellido) {
+        try {
+            const res = await post('UsuarioController', { accion: 'actualizarPerfil', nombre, apellido });
+            const data = await res.json();
+            return { ok: data.success === true, error: data.error };
+        } catch (err) {
+            return { ok: false, error: 'Error de conexión con el servidor.' };
+        }
+    },
+
+    /**
+     * Cierra sesión en todos los dispositivos.
+     */
+    async logoutGlobal() {
+        try {
+            const res = await post('UsuarioController', { accion: 'logoutGlobal' });
+            const data = await res.json();
+            return { ok: data.success === true, error: data.error };
+        } catch (err) {
+            return { ok: false, error: 'Error de conexión con el servidor.' };
+        }
+    },
+
+    /**
      * Cierra sesión del servidor y redirige al login.
      */
     async logout() {

@@ -74,15 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
 
-                    // Petición al backend usando la estructura del backend de Elixir and Flexx
-                    const response = await fetch('/UsuarioController?accion=actualizarPerfil', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: `nombre=${encodeURIComponent(nombre)}&apellido=${encodeURIComponent(apellido)}`
-                    });
-
-                    const data = await response.json();
-                    if (data.success) {
+                    // Petición al backend usando el servicio centralizado
+                    const data = await UsuarioService.actualizarPerfil(nombre, apellido);
+                    if (data.ok) {
                         alert('¡Perfil actualizado correctamente en la Base de Datos! 🔄');
                     } else {
                         alert('El servidor no pudo actualizar los datos: ' + (data.error || 'Error desconocido'));
@@ -101,20 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnCerrarSesionLocal) {
         btnCerrarSesionLocal.addEventListener('click', async (e) => {
             e.preventDefault();
-            try {
-                // Llama al caso "logout" que ya tiene programado en su doPost de Java
-                const response = await fetch('/UsuarioController?accion=logout', { 
-                    method: 'POST' 
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Redirige al login pasándole el parámetro de cierre exitoso
-                    window.location.href = 'login.html?logout=ok';
-                }
-            } catch (error) {
-                console.error("Error en logout local:", error);
-            }
+            await UsuarioService.logout();
         });
     }
 
@@ -124,18 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             if (!confirm('¿Está completamente seguro de cerrar sesión en todos los dispositivos conectados?')) return;
             
-            try {
-                // Llama al caso nuevo "logoutGlobal" que mapeamos en su Servlet
-                const response = await fetch('/UsuarioController?accion=logoutGlobal', { 
-                    method: 'POST' 
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    window.location.href = 'login.html?logout=ok';
-                }
-            } catch (error) {
-                console.error("Error en logout global:", error);
+            const data = await UsuarioService.logoutGlobal();
+            if (data.ok) {
+                window.location.href = 'login.html?logout=ok';
+            } else {
+                alert('Error al cerrar sesión global: ' + (data.error || 'Intente de nuevo.'));
             }
         });
     }

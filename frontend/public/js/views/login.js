@@ -48,6 +48,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 mostrarMensaje('⚠️ Complete todos los campos.', 'warning');
                 return;
             }
+
+            if (email.includes('@')) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    mostrarMensaje('⚠️ Correo electrónico no válido.', 'warning');
+                    return;
+                }
+                const emailParts = email.split('@');
+                const username = emailParts[0];
+                const hasLetter = /[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(username);
+                if (!hasLetter) {
+                    mostrarMensaje('⚠️ El correo electrónico debe exigir al menos un carácter alfabético en su nombre de usuario.', 'warning');
+                    return;
+                }
+            } else {
+                if (!/^\d{9,}$/.test(email)) {
+                    mostrarMensaje('⚠️ El número telefónico debe tener un mínimo de 9 caracteres numéricos.', 'warning');
+                    return;
+                }
+            }
  
             btnSubmit.disabled = true;
             btnSubmit.textContent = 'Verificando...';
