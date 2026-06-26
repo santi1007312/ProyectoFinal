@@ -20,6 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Botón de Edición de Perfil
     const btnEditarPerfil  = document.getElementById('btnEditPerfil') || document.querySelector('.bx-edit');
 
+    // Elementos del Panel de Administración
+    const adminPanelContainer = document.getElementById('adminPanelContainer');
+    const btnVolverAlPanel    = document.getElementById('btnVolverAlPanel');
+
     // Cargar perfil automáticamente al entrar
     cargarPerfil();
 
@@ -27,6 +31,18 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const usuario = await UsuarioService.obtenerPerfil();
             renderizarDatos(usuario);
+
+            // Si el usuario es Administrador o Staff (idRol 2 o 3), mostrar botón de retorno al panel
+            if (usuario && (usuario.idRol === 2 || usuario.idRol === 3)) {
+                if (adminPanelContainer) adminPanelContainer.style.display = 'block';
+                if (btnVolverAlPanel) {
+                    btnVolverAlPanel.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        window.location.href = 'interfazAdmin.html';
+                    });
+                }
+            }
+
             document.body.style.display = 'block';
         } catch (error) {
             console.error("Error al cargar perfil:", error);
@@ -64,12 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
                     if (!nameRegex.test(nombre)) {
-                        alert('⚠️ El nombre no debe contener números ni caracteres especiales.');
+                        alert('El nombre no debe contener números ni caracteres especiales.');
                         cargarPerfil();
                         return;
                     }
                     if (apellido && !nameRegex.test(apellido)) {
-                        alert('⚠️ El apellido no debe contener números ni caracteres especiales.');
+                        alert('El apellido no debe contener números ni caracteres especiales.');
                         cargarPerfil();
                         return;
                     }

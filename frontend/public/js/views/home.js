@@ -6,9 +6,9 @@ import { ProductoService } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const launchesGrid = document.getElementById('launchesGrid');
+    const contenedorLanzamientos = document.getElementById('contenedor-lanzamientos');
 
-    if (launchesGrid) {
+    if (contenedorLanzamientos) {
         cargarLanzamientos();
     }
 
@@ -16,9 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const productos = await ProductoService.lanzamientos();
 
-            if (!productos || productos.length === 0) return; // Deja las tarjetas estáticas
+            if (!productos || productos.length === 0) return; // Deja las tarjetas estáticas intactas
 
-            launchesGrid.innerHTML = '';
+            contenedorLanzamientos.innerHTML = '';
 
             productos.forEach(prod => {
                 const card = document.createElement('div');
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.href = `interfazProductoDetalle.html?id=${prod.id}`;
                 });
 
-                launchesGrid.appendChild(card);
+                contenedorLanzamientos.appendChild(card);
             });
 
         } catch (err) {

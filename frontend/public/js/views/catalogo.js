@@ -8,6 +8,7 @@ import { ProductoService } from '../services/api.js';
 document.addEventListener('DOMContentLoaded', () => {
 
     const catalogGrid  = document.getElementById('catalogGrid');
+    const contenedorProductos = document.getElementById('contenedor-productos');
     const buscadorInput = document.getElementById('buscadorCatalogo');
     const filtroSelect = document.getElementById('filtroCategoria');
 
@@ -23,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let todosLosProductos = []; // Cache local para filtrar sin re-fetch
 
-    if (catalogGrid) {
+    if (contenedorProductos) {
         cargarProductos();
     }
 
@@ -66,11 +67,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderizarProductos(lista) {
-        if (!catalogGrid) return;
-        catalogGrid.innerHTML = '';
+        if (!contenedorProductos) return;
+        contenedorProductos.innerHTML = '';
+
+        // Ocultar categorías estáticas si hay búsqueda o filtro activo para enfocar los resultados
+        const termino = (buscadorInput?.value || '').toLowerCase().trim();
+        const categoria = filtroSelect?.value || '';
+        if (catalogGrid) {
+            if (termino || categoria) {
+                catalogGrid.style.display = 'none';
+            } else {
+                catalogGrid.style.display = 'grid';
+            }
+        }
 
         if (lista.length === 0) {
-            catalogGrid.innerHTML = '<p class="catalog-empty">No se encontraron productos para esta búsqueda.</p>';
+            contenedorProductos.innerHTML = '<p class="catalog-empty">No se encontraron productos para esta búsqueda.</p>';
             return;
         }
 
@@ -110,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            catalogGrid.appendChild(card);
+            contenedorProductos.appendChild(card);
         });
     }
 
