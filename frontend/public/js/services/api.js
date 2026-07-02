@@ -401,3 +401,61 @@ export const CategoriaService = {
         return get('CategoriaController', { accion: 'listar' });
     }
 };
+
+// ─── SOPORTE Y PQR ────────────────────────────────────────────────────────────
+export const SoporteService = {
+
+    async crearDevolucion(datos) {
+        try {
+            const res = await post('SoporteController', { accion: 'crearDevolucion', ...datos });
+            return await res.json();
+        } catch {
+            return { ok: false, mensaje: 'Error de conexión.' };
+        }
+    },
+
+    async crearContacto(datos) {
+        try {
+            const res = await post('SoporteController', { accion: 'crearContacto', ...datos });
+            return await res.json();
+        } catch {
+            return { ok: false, mensaje: 'Error de conexión.' };
+        }
+    },
+
+    async listarDevoluciones() {
+        return get('SoporteController', { accion: 'listarDevoluciones' });
+    },
+
+    async listarContactos() {
+        return get('SoporteController', { accion: 'listarContactos' });
+    },
+
+    async actualizarEstadoDevolucion(idDevolucion, estado, motivoRechazo) {
+        try {
+            const res = await post('SoporteController', { 
+                accion: 'actualizarEstadoDevolucion', 
+                idDevolucion, 
+                estado, 
+                motivoRechazo: motivoRechazo || '' 
+            });
+            return await res.json();
+        } catch {
+            return { ok: false };
+        }
+    },
+
+    async actualizarEstadoContacto(idContacto, estado) {
+        try {
+            const res = await post('SoporteController', { 
+                accion: 'actualizarEstadoContacto', 
+                idContacto, 
+                estado 
+            });
+            return await res.json();
+        } catch {
+            return { ok: false };
+        }
+    }
+};
+

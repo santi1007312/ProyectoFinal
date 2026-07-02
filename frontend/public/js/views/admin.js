@@ -2,7 +2,7 @@
  * admin.js — Elixir and Flexx
  * Panel de Administración Completo (Dashboard, Productos, Ventas, Usuarios, Cupones).
  */
-import { UsuarioService, ProductoService, PedidoService, CategoriaService } from '../services/api.js';
+import { UsuarioService, ProductoService, PedidoService, CategoriaService, SoporteService, VarianteService } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const navItems = document.querySelectorAll('.nav-item');
@@ -48,6 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'cupones':
                 sectionTitle.textContent = "Marketing y Cupones de Descuento";
                 renderCupones();
+                break;
+            case 'soporte':
+                sectionTitle.textContent = "Gestión de PQR y Devoluciones";
+                renderSoporte();
                 break;
         }
     }
@@ -97,11 +101,40 @@ document.addEventListener('DOMContentLoaded', () => {
             catMap[c.idCategorias || c.id] = c.nombreCategoria || c.nombre;
         });
 
+        // Cargar variantes para cada producto de forma asíncrona en paralelo
+        const productosConVariantes = await Promise.all(productos.map(async p => {
+            try {
+                const variantes = await VarianteService.listarPorProducto(p.id).catch(() => []);
+                return { ...p, variantes };
+            } catch {
+                return { ...p, variantes: [] };
+            }
+        }));
+
+        function getStockPorTalla(variantes, talla) {
+            const v = (variantes || []).find(varItem => varItem.talla === talla);
+            return v ? v.stock : 0;
+        }
+
         let filas = '';
-        productos.forEach(p => {
+        productosConVariantes.forEach(p => {
             const catNombre = catMap[p.categoria] || 'General';
             const precioFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p.precioBase);
             const imgPreview = p.imagen ? `<img src="${p.imagen}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;margin-right:8px;" onerror="this.src='https://placehold.co/40'">` : '';
+
+            const stockS = getStockPorTalla(p.variantes, 'S');
+            const stockM = getStockPorTalla(p.variantes, 'M');
+            const stockL = getStockPorTalla(p.variantes, 'L');
+            const stockXL = getStockPorTalla(p.variantes, 'XL');
+            const totalStock = stockS + stockM + stockL + stockXL;
+
+            // Formatear desglose con colores para stock agotado
+            const formatStock = (talla, cant) => {
+                if (cant === 0) return `<span class="stock-out-badge">${talla}: 0</span>`;
+                return `${talla}: ${cant}`;
+            };
+
+            const desgloseHtml = `${formatStock('S', stockS)} | ${formatStock('M', stockM)} | ${formatStock('L', stockL)} | ${formatStock('XL', stockXL)}`;
 
             filas += `
                 <tr data-json="${encodeURIComponent(JSON.stringify(p))}">
@@ -109,6 +142,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><div style="display:flex;align-items:center;">${imgPreview}<span>${p.nombre}</span></div></td>
                     <td>${catNombre}</td>
                     <td>${precioFormatted}</td>
+                    <td>
+                        <div class="stock-cell">
+                            <strong>${totalStock}</strong>
+                            <span class="stock-desglose">${desgloseHtml}</span>
+                        </div>
+                    </td>
                     <td>
                         <button class="btn-action btn-editar-prod" style="margin-right:5px;">Editar</button>
                         <button class="btn-action btn-eliminar-prod" style="background:#ff4d4d;color:white;border:none;">Desactivar</button>
@@ -118,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (productos.length === 0) {
-            filas = `<tr><td colspan="5" style="text-align:center;">No hay productos registrados en el catálogo.</td></tr>`;
+            filas = `<tr><td colspan="6" style="text-align:center;">No hay productos registrados en el catálogo.</td></tr>`;
         }
 
         dynamicContent.innerHTML = `
@@ -162,6 +201,40 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="text" name="imagen">
                         <span class="error-msg"></span>
                     </div>
+
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>Stock por Tallas (Cantidad Disponible)</label>
+                        <div class="size-stock-container">
+                            <div class="size-stock-item">
+                                <label>Talla S</label>
+                                <input type="number" name="stock_S" min="0" value="0">
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="size-stock-item">
+                                <label>Talla M</label>
+                                <input type="number" name="stock_M" min="0" value="0">
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="size-stock-item">
+                                <label>Talla L</label>
+                                <input type="number" name="stock_L" min="0" value="0">
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="size-stock-item">
+                                <label>Talla XL</label>
+                                <input type="number" name="stock_XL" min="0" value="0">
+                                <span class="error-msg"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="grid-column: span 2; display: flex; flex-direction: row; align-items: center; gap: 12px; margin-top: 10px;">
+                        <label class="switch-container">
+                            <input type="checkbox" name="esDestacado" id="chkEsDestacado">
+                            <span class="slider round"></span>
+                        </label>
+                        <span style="font-weight: 500; font-size: 0.95rem; color: #e1e1e6;">Marcar como Producto Destacado</span>
+                    </div>
                     
                     <div style="grid-column: span 2; display:flex; gap:10px; margin-top:10px;">
                         <button type="submit" class="btn-urban" id="btnGuardarProducto">Guardar en Catálogo</button>
@@ -172,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <table class="admin-table">
                 <thead>
-                    <tr><th>ID</th><th>Prenda</th><th>Categoría</th><th>Precio</th><th>Acciones</th></tr>
+                    <tr><th>ID</th><th>Prenda</th><th>Categoría</th><th>Precio</th><th>Stock Total</th><th>Acciones</th></tr>
                 </thead>
                 <tbody>
                     ${filas}
@@ -190,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         function mostrarError(inputName, mensaje) {
             const input = form.querySelector(`[name="${inputName}"]`);
             if (input) {
-                const group = input.closest('.input-group');
+                const group = input.closest('.input-group') || input.closest('.size-stock-item');
                 const errorSpan = group.querySelector('.error-msg');
                 if (errorSpan) {
                     errorSpan.textContent = mensaje;
@@ -203,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
         function limpiarError(inputName) {
             const input = form.querySelector(`[name="${inputName}"]`);
             if (input) {
-                const group = input.closest('.input-group');
+                const group = input.closest('.input-group') || input.closest('.size-stock-item');
                 const errorSpan = group.querySelector('.error-msg');
                 if (errorSpan) {
                     errorSpan.style.display = 'none';
@@ -214,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function limpiarTodosLosErrores() {
-            ['nombre', 'precio', 'descripcion', 'imagen'].forEach(name => limpiarError(name));
+            ['nombre', 'precio', 'descripcion', 'imagen', 'stock_S', 'stock_M', 'stock_L', 'stock_XL'].forEach(name => limpiarError(name));
         }
 
         // Real-time dynamic validations as user types
@@ -242,6 +315,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        ['stock_S', 'stock_M', 'stock_L', 'stock_XL'].forEach(name => {
+            const input = form.querySelector(`[name="${name}"]`);
+            if (input) {
+                input.addEventListener('input', () => {
+                    const val = parseInt(input.value);
+                    if (!isNaN(val) && val >= 0) {
+                        limpiarError(name);
+                    } else {
+                        mostrarError(name, 'El stock no puede ser negativo');
+                    }
+                });
+            }
+        });
+
         if(btnAbrir && wrapper) {
             btnAbrir.addEventListener('click', () => {
                 form.reset();
@@ -249,6 +336,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 form.querySelector('[name="idProducto"]').value = '';
                 formTitle.textContent = "Registrar Prenda en Inventario";
                 wrapper.style.display = 'block';
+                form.querySelector('[name="esDestacado"]').checked = false;
+                form.querySelector('[name="stock_S"]').value = 0;
+                form.querySelector('[name="stock_M"]').value = 0;
+                form.querySelector('[name="stock_L"]').value = 0;
+                form.querySelector('[name="stock_XL"]').value = 0;
             });
         }
         if(btnCancelar && wrapper) {
@@ -273,6 +365,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 form.querySelector('[name="precio"]').value = p.precioBase;
                 form.querySelector('[name="descripcion"]').value = p.descripcion || '';
                 form.querySelector('[name="imagen"]').value = p.imagen || '';
+                form.querySelector('[name="esDestacado"]').checked = p.esDestacado === true;
+
+                const stockS = getStockPorTalla(p.variantes, 'S');
+                const stockM = getStockPorTalla(p.variantes, 'M');
+                const stockL = getStockPorTalla(p.variantes, 'L');
+                const stockXL = getStockPorTalla(p.variantes, 'XL');
+
+                form.querySelector('[name="stock_S"]').value = stockS;
+                form.querySelector('[name="stock_M"]').value = stockM;
+                form.querySelector('[name="stock_L"]').value = stockL;
+                form.querySelector('[name="stock_XL"]').value = stockXL;
                 
                 wrapper.style.display = 'block';
                 wrapper.scrollIntoView({ behavior: 'smooth' });
@@ -306,6 +409,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const precioBase = form.querySelector('[name="precio"]').value;
             const descripcion = form.querySelector('[name="descripcion"]').value.trim();
             const imagen = form.querySelector('[name="imagen"]').value.trim();
+            const esDestacado = form.querySelector('[name="esDestacado"]').checked;
+
+            const stockS = parseInt(form.querySelector('[name="stock_S"]').value) || 0;
+            const stockM = parseInt(form.querySelector('[name="stock_M"]').value) || 0;
+            const stockL = parseInt(form.querySelector('[name="stock_L"]').value) || 0;
+            const stockXL = parseInt(form.querySelector('[name="stock_XL"]').value) || 0;
 
             let hayError = false;
 
@@ -353,6 +462,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 limpiarError('imagen');
             }
 
+            // Validar Stocks
+            ['stock_S', 'stock_M', 'stock_L', 'stock_XL'].forEach(stockField => {
+                const val = parseInt(form.querySelector(`[name="${stockField}"]`).value);
+                if (isNaN(val) || val < 0) {
+                    mostrarError(stockField, 'El stock no puede ser negativo.');
+                    hayError = true;
+                } else {
+                    limpiarError(stockField);
+                }
+            });
+
             if (hayError) {
                 return; // Detener el envío del formulario
             }
@@ -362,18 +482,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 idCategorias,
                 precioBase,
                 descripcion,
-                imagen
+                imagen,
+                esDestacado: esDestacado ? 'true' : 'false'
             };
 
             let resultado;
+            let targetIdProducto = idProducto;
+
             if (idProducto) {
                 payload.idProducto = idProducto;
                 resultado = await ProductoService.actualizar(payload);
             } else {
                 resultado = await ProductoService.crear(payload);
+                if (resultado.ok && resultado.idProducto) {
+                    targetIdProducto = resultado.idProducto;
+                }
             }
 
             if (resultado.ok) {
+                // Sincronizar variantes de stock por talla (S, M, L, XL)
+                let variantesActuales = [];
+                if (idProducto) {
+                    try {
+                        variantesActuales = await VarianteService.listarPorProducto(idProducto).catch(() => []);
+                    } catch (err) {
+                        console.error('Error cargando variantes para actualizar:', err);
+                    }
+                }
+
+                const sizes = [
+                    { name: 'S', value: stockS },
+                    { name: 'M', value: stockM },
+                    { name: 'L', value: stockL },
+                    { name: 'XL', value: stockXL }
+                ];
+
+                const variantsPromises = sizes.map(async sizeInfo => {
+                    const existing = variantesActuales.find(v => v.talla === sizeInfo.name);
+                    if (existing) {
+                        if (existing.stock !== sizeInfo.value) {
+                            return VarianteService.actualizar({
+                                idVariantes: existing.idVariantes,
+                                talla: sizeInfo.name,
+                                color: existing.color || 'Único',
+                                stock: sizeInfo.value,
+                                sku: existing.sku || `SKU-${targetIdProducto}-${sizeInfo.name}`,
+                                stockMinimo: existing.stockMinimo || 0
+                            });
+                        }
+                    } else {
+                        return VarianteService.crear({
+                            idProducto: targetIdProducto,
+                            talla: sizeInfo.name,
+                            color: 'Único',
+                            stock: sizeInfo.value,
+                            sku: `SKU-${targetIdProducto}-${sizeInfo.name}`,
+                            stockMinimo: 0
+                        });
+                    }
+                });
+
+                await Promise.all(variantsPromises);
+
                 alert('🎉 ' + (resultado.mensaje || 'Prenda guardada con éxito en el catálogo.'));
                 wrapper.style.display = 'none';
                 form.reset();
@@ -561,6 +731,316 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if(btnAbrir && wrapper) btnAbrir.addEventListener('click', () => wrapper.style.display = 'block');
         if(btnCancelar && wrapper) btnCancelar.addEventListener('click', () => wrapper.style.display = 'none');
+    }
+
+    // ── 5. GESTIÓN DE PQR Y DEVOLUCIONES ──
+    async function renderSoporte() {
+        dynamicContent.innerHTML = `<div class="loader">Cargando solicitudes de soporte...</div>`;
+
+        // Pestañas (Tabs) HTML y estructura base
+        dynamicContent.innerHTML = `
+            <div class="admin-tabs" style="display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid #29292e; padding-bottom: 10px;">
+                <button class="tab-btn active" data-tab="devoluciones" style="background: transparent; border: none; color: #fff; padding: 10px 20px; font-weight: bold; cursor: pointer; border-bottom: 3px solid #04d361;">Solicitudes de Devolución</button>
+                <button class="tab-btn" data-tab="contacto" style="background: transparent; border: none; color: #a8a8b3; padding: 10px 20px; font-weight: bold; cursor: pointer;">Mensajes de Contacto</button>
+            </div>
+
+            <!-- Contenido Pestaña 1: Devoluciones -->
+            <div id="tabContentDevoluciones" class="tab-pane-content" style="display: block;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Solicitante</th>
+                            <th>Motivo / Descripción</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="devolucionesTableBody">
+                        <tr><td colspan="5" style="text-align:center;">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Contenido Pestaña 2: Contacto -->
+            <div id="tabContentContacto" class="tab-pane-content" style="display: none;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Teléfono</th>
+                            <th>Comentario</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contactosTableBody">
+                        <tr><td colspan="7" style="text-align:center;">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modal de rechazo / Ver detalle -->
+            <div id="soporteModal" class="admin-panel-card" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+                <h3 id="soporteModalTitle">Acción de Soporte</h3>
+                <div id="soporteModalBody" style="margin-top: 15px; font-size: 0.9rem; color: #e1e1e6; line-height: 1.6;"></div>
+                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                    <button id="btnSoporteModalSubmit" class="btn-urban">Confirmar</button>
+                    <button id="btnSoporteModalClose" class="btn-action">Cerrar</button>
+                </div>
+            </div>
+            <div id="soporteModalOverlay" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index:999;"></div>
+        `;
+
+        // Lógica de Tabs
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.style.color = '#a8a8b3';
+                    t.style.borderBottom = 'none';
+                });
+                tab.classList.add('active');
+                tab.style.color = '#fff';
+                tab.style.borderBottom = '3px solid #04d361';
+
+                const targetTab = tab.getAttribute('data-tab');
+                if (targetTab === 'devoluciones') {
+                    document.getElementById('tabContentDevoluciones').style.display = 'block';
+                    document.getElementById('tabContentContacto').style.display = 'none';
+                } else {
+                    document.getElementById('tabContentDevoluciones').style.display = 'none';
+                    document.getElementById('tabContentContacto').style.display = 'block';
+                }
+            });
+        });
+
+        // Cargar tablas dinámicas
+        await cargarTablasSoporte();
+
+        async function cargarTablasSoporte() {
+            try {
+                const [devoluciones, contactos] = await Promise.all([
+                    SoporteService.listarDevoluciones(),
+                    SoporteService.listarContactos()
+                ]);
+
+                // Render Devoluciones
+                const devBody = document.getElementById('devolucionesTableBody');
+                if (devBody) {
+                    devBody.innerHTML = '';
+                    if (devoluciones.length === 0) {
+                        devBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No hay solicitudes de devolución registradas.</td></tr>`;
+                    } else {
+                        devoluciones.forEach(d => {
+                            const dateStr = d.fecha ? new Date(d.fecha).toLocaleDateString('es-CO') : 'Reciente';
+                            
+                            let badgeClass = 'badge success';
+                            if (d.estado === 'pendiente') badgeClass = 'badge info';
+                            if (d.estado === 'rechazado') badgeClass = 'badge danger';
+
+                            let rowActions = '';
+                            if (d.estado === 'pendiente') {
+                                rowActions = `
+                                    <button class="btn-action btn-aprobar-dev" data-id="${d.idDevolucion}" style="background:#04d361;color:#fff;margin-right:5px;">Aprobar</button>
+                                    <button class="btn-action btn-rechazar-dev" data-id="${d.idDevolucion}" style="background:#ff4d4d;color:#fff;margin-right:5px;">Rechazar</button>
+                                `;
+                            }
+                            rowActions += `<button class="btn-action btn-ver-dev" data-id="${d.idDevolucion}">Ver Detalle</button>`;
+
+                            // Muestra de entrada: [Fecha] | [Correo] | [Tipo de Solicitud]
+                            devBody.innerHTML += `
+                                <tr data-json="${encodeURIComponent(JSON.stringify(d))}">
+                                    <td>${dateStr}</td>
+                                    <td>
+                                        <div style="font-weight:bold;">${d.nombre || 'Cliente'}</div>
+                                        <div style="font-size:0.8rem;color:#888;">${d.email || ''}</div>
+                                    </td>
+                                    <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.motivo}</td>
+                                    <td><span class="${badgeClass}">${d.estado.toUpperCase()}</span></td>
+                                    <td>${rowActions}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                }
+
+                // Render Contactos
+                const conBody = document.getElementById('contactosTableBody');
+                if (conBody) {
+                    conBody.innerHTML = '';
+                    if (contactos.length === 0) {
+                        conBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No hay mensajes de contacto registrados.</td></tr>`;
+                    } else {
+                        contactos.forEach(c => {
+                            const dateStr = c.fecha ? new Date(c.fecha).toLocaleDateString('es-CO') : 'Reciente';
+                            
+                            let badgeClass = 'badge success';
+                            if (c.estado === 'pendiente') badgeClass = 'badge info';
+                            if (c.estado === 'archivado') badgeClass = 'badge danger';
+
+                            let rowActions = '';
+                            if (c.estado === 'pendiente') {
+                                rowActions = `
+                                    <button class="btn-action btn-responder-con" data-id="${c.idContacto}" style="background:#04d361;color:#fff;margin-right:5px;">Leído</button>
+                                    <button class="btn-action btn-archivar-con" data-id="${c.idContacto}" style="background:#777;color:#fff;">Archivar</button>
+                                `;
+                            } else if (c.estado === 'leido_respondido') {
+                                rowActions = `<button class="btn-action btn-archivar-con" data-id="${c.idContacto}" style="background:#777;color:#fff;">Archivar</button>`;
+                            } else {
+                                rowActions = '<span style="font-size:0.8rem;color:#888;">Archivado</span>';
+                            }
+
+                            conBody.innerHTML += `
+                                <tr data-json="${encodeURIComponent(JSON.stringify(c))}">
+                                    <td>${dateStr}</td>
+                                    <td>${c.nombre}</td>
+                                    <td>${c.email}</td>
+                                    <td>${c.telefono || '-'}</td>
+                                    <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.comentario}</td>
+                                    <td><span class="${badgeClass}">${c.estado.toUpperCase()}</span></td>
+                                    <td>${rowActions}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                }
+
+                // Vincular eventos
+                configurarAccionesDevoluciones();
+                configurarAccionesContactos();
+
+            } catch (err) {
+                console.error("Error al cargar tablas de soporte:", err);
+            }
+        }
+
+        // Modal Helpers
+        const modal = document.getElementById('soporteModal');
+        const overlay = document.getElementById('soporteModalOverlay');
+        const modalTitle = document.getElementById('soporteModalTitle');
+        const modalBody = document.getElementById('soporteModalBody');
+        const modalSubmit = document.getElementById('btnSoporteModalSubmit');
+        const modalClose = document.getElementById('btnSoporteModalClose');
+
+        function abrirModal(title, bodyHtml, onSubmit = null) {
+            modalTitle.textContent = title;
+            modalBody.innerHTML = bodyHtml;
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+
+            if (onSubmit) {
+                modalSubmit.style.display = 'block';
+                const newSubmit = modalSubmit.cloneNode(true);
+                modalSubmit.parentNode.replaceChild(newSubmit, modalSubmit);
+                newSubmit.addEventListener('click', async () => {
+                    await onSubmit();
+                    cerrarModal();
+                });
+            } else {
+                modalSubmit.style.display = 'none';
+            }
+        }
+
+        function cerrarModal() {
+            modal.style.display = 'none';
+            overlay.style.display = 'none';
+        }
+
+        if (modalClose) modalClose.addEventListener('click', cerrarModal);
+        if (overlay) overlay.addEventListener('click', cerrarModal);
+
+        function configurarAccionesDevoluciones() {
+            document.querySelectorAll('.btn-aprobar-dev').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-id');
+                    if (confirm('¿Está seguro de aprobar esta solicitud de devolución?')) {
+                        const res = await SoporteService.actualizarEstadoDevolucion(id, 'aprobado');
+                        if (res.ok) {
+                            alert('Aprobado con éxito.');
+                            await cargarTablasSoporte();
+                        } else {
+                            alert('Error al actualizar estado.');
+                        }
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-rechazar-dev').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-id');
+                    const formHtml = `
+                        <p>Escribe el motivo del rechazo para la solicitud de devolución:</p>
+                        <textarea id="motivoRechazoInput" rows="4" style="width:100%; background:#19191c; border:1px solid #29292e; color:#fff; padding:10px; box-sizing:border-box;" placeholder="Ej: No cumple con los días límites establecidos..."></textarea>
+                    `;
+                    abrirModal('Rechazar Solicitud de Devolución', formHtml, async () => {
+                        const motivo = document.getElementById('motivoRechazoInput').value.trim();
+                        if (!motivo) {
+                            alert('Debe especificar un motivo.');
+                            return;
+                        }
+                        const res = await SoporteService.actualizarEstadoDevolucion(id, 'rechazado', motivo);
+                        if (res.ok) {
+                            alert('Rechazado con éxito.');
+                            await cargarTablasSoporte();
+                        } else {
+                            alert('Error al actualizar estado.');
+                        }
+                    });
+                });
+            });
+
+            document.querySelectorAll('.btn-ver-dev').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tr = btn.closest('tr');
+                    const d = JSON.parse(decodeURIComponent(tr.getAttribute('data-json')));
+                    const detailHtml = `
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <div><strong>Solicitante:</strong> ${d.nombre || 'Cliente'}</div>
+                            <div><strong>Correo:</strong> ${d.email || ''}</div>
+                            <div><strong>Fecha de Solicitud:</strong> ${d.fecha ? new Date(d.fecha).toLocaleString() : 'Reciente'}</div>
+                            <div><strong>Estado:</strong> ${d.estado.toUpperCase()}</div>
+                            ${d.motivoRechazo ? `<div><strong>Motivo del Rechazo:</strong> <span style="color:#f75a68;">${d.motivoRechazo}</span></div>` : ''}
+                            <hr style="border-color:#29292e;">
+                            <div><strong>Detalles e Información:</strong></div>
+                            <div style="background:#202024; padding:15px; border-radius:4px; border:1px solid #29292e; white-space:pre-wrap;">${d.motivo}</div>
+                        </div>
+                    `;
+                    abrirModal('Detalle Completo de Solicitud', detailHtml);
+                });
+            });
+        }
+
+        function configurarAccionesContactos() {
+            document.querySelectorAll('.btn-responder-con').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-id');
+                    const res = await SoporteService.actualizarEstadoContacto(id, 'leido_respondido');
+                    if (res.ok) {
+                        alert('Mensaje marcado como Leído / Respondido.');
+                        await cargarTablasSoporte();
+                    } else {
+                        alert('Error al actualizar.');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-archivar-con').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-id');
+                    const res = await SoporteService.actualizarEstadoContacto(id, 'archivado');
+                    if (res.ok) {
+                        alert('Mensaje archivado con éxito.');
+                        await cargarTablasSoporte();
+                    } else {
+                        alert('Error al actualizar.');
+                    }
+                });
+            });
+        }
     }
 
     // Cierre de sesión nativo del panel

@@ -57,25 +57,29 @@
             
             <!-- FORMULARIO DE DEVOLUCIÓN (Oculto por defecto, se despliega con JS) -->
             <div id="formDevolucionContainer" class="form-container">
-                <form class="support-form" id="formDevolucion">
+                <form class="support-form" id="formDevolucion" novalidate>
                     <h2 class="support-form__title">Formulario de Devolución</h2>
                     <div class="support-form__grid">
                         <div class="support-form__group">
                             <label class="support-form__label">Nombre</label>
-                            <input type="text" class="support-form__input" placeholder="Tu nombre completo" required>
+                            <input type="text" name="nombre" class="support-form__input" placeholder="Tu nombre completo">
+                            <span class="error-msg" style="color: #ff3333; font-size: 0.75rem; display: none; margin-top: 4px; font-weight: bold;"></span>
                         </div>
                         <div class="support-form__group">
                             <label class="support-form__label">Cédula o Tarjeta de Identidad</label>
-                            <input type="text" class="support-form__input" placeholder="Número de documento" required>
+                            <input type="text" name="documento" class="support-form__input" placeholder="Número de documento">
+                            <span class="error-msg" style="color: #ff3333; font-size: 0.75rem; display: none; margin-top: 4px; font-weight: bold;"></span>
                         </div>
                     </div>
                     <div class="support-form__group">
                         <label class="support-form__label">Correo electrónico</label>
-                        <input type="email" class="support-form__input" placeholder="tu@correo.com" required>
+                        <input type="email" name="email" class="support-form__input" placeholder="tu@correo.com">
+                        <span class="error-msg" style="color: #ff3333; font-size: 0.75rem; display: none; margin-top: 4px; font-weight: bold;"></span>
                     </div>
                     <div class="support-form__group">
                         <label class="support-form__label">Descripción del porqué la devolución</label>
-                        <textarea class="support-form__textarea" rows="4" placeholder="Detalla los motivos del cambio o devolución del producto..." required></textarea>
+                        <textarea name="motivo" class="support-form__textarea" rows="4" placeholder="Detalla los motivos del cambio o devolución del producto..."></textarea>
+                        <span class="error-msg" style="color: #ff3333; font-size: 0.75rem; display: none; margin-top: 4px; font-weight: bold;"></span>
                     </div>
                     <button type="submit" class="support-form__btn-submit">Enviar Solicitud</button>
                 </form>
@@ -86,24 +90,28 @@
         <section id="sectionContacto" class="support-section">
             <h1 class="support-section__title support-section__title--left">CONTACTANOS</h1>
             
-            <form class="support-form" id="formContacto">
+            <form class="support-form" id="formContacto" novalidate>
                 <div class="support-form__grid">
                     <div class="support-form__group">
                         <label class="support-form__label">Nombre</label>
-                        <input type="text" class="support-form__input" value="Santiago Carrillo rivera" required>
+                        <input type="text" name="nombre" class="support-form__input" value="Santiago Carrillo rivera">
+                        <span class="error-msg" style="color: #ff3333; font-size: 0.75rem; display: none; margin-top: 4px; font-weight: bold;"></span>
                     </div>
                     <div class="support-form__group">
                         <label class="support-form__label">Correo electrónico *</label>
-                        <input type="email" class="support-form__input" value="carrilloriverasantiago@gmail.com" required>
+                        <input type="email" name="email" class="support-form__input" value="carrilloriverasantiago@gmail.com">
+                        <span class="error-msg" style="color: #ff3333; font-size: 0.75rem; display: none; margin-top: 4px; font-weight: bold;"></span>
                     </div>
                 </div>
                 <div class="support-form__group">
                     <label class="support-form__label">Número de teléfono</label>
-                    <input type="tel" class="support-form__input" placeholder="Número de teléfono">
+                    <input type="tel" name="telefono" class="support-form__input" placeholder="Número de teléfono">
+                    <span class="error-msg" style="color: #ff3333; font-size: 0.75rem; display: none; margin-top: 4px; font-weight: bold;"></span>
                 </div>
                 <div class="support-form__group">
                     <label class="support-form__label">Comentario</label>
-                    <textarea class="support-form__textarea" rows="5" placeholder="Comentario"></textarea>
+                    <textarea name="comentario" class="support-form__textarea" rows="5" placeholder="Comentario"></textarea>
+                    <span class="error-msg" style="color: #ff3333; font-size: 0.75rem; display: none; margin-top: 4px; font-weight: bold;"></span>
                 </div>
                 <button type="submit" class="support-form__btn-submit support-form__btn-submit--left">Enviar</button>
             </form>
