@@ -46,7 +46,15 @@
 
     <main class="title-view">
         <div class="title-view__header">
-            <span class="title-view__badge">SOLO SENA</span>
+            <button class="title-carousel-btn" id="prevTitleBtn" aria-label="Anterior">
+                <i class="bx bx-chevron-left"></i>
+            </button>
+            <div class="title-carousel-text-wrapper">
+                <span class="title-view__badge title-carousel-text" id="carouselTitle">SOLO SENA</span>
+            </div>
+            <button class="title-carousel-btn" id="nextTitleBtn" aria-label="Siguiente">
+                <i class="bx bx-chevron-right"></i>
+            </button>
         </div>
     </main>
 
@@ -98,9 +106,17 @@
             </div>
         </section>
 
+        <!-- Botón de acción al pie de la sección -->
+        <div class="seccion-tallas-footer">
+            <a href="interfazCatalogo.html" class="btn-ir-comprar">
+                IR A COMPRAR <i class="bx bx-right-arrow-alt"></i>
+            </a>
+        </div>
+
     </main>
 
     <!-- CORRECCIÓN: se agrega main.js para que el dropdown funcione (igual que en las demás vistas) -->
     <script src="../public/js/main.js" type="module"></script>
+    <script src="../public/js/views/tallas.js" type="module"></script>
 </body>
 </html>

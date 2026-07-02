@@ -1,88 +1,119 @@
 /**
  * catalogo.js — Elixir and Flexx
- * Carga los productos reales desde ProductoController y los muestra en el grid.
- * Si el backend no responde, muestra las tarjetas estáticas del HTML como fallback.
+ * Carga los productos reales desde ProductoController y controla la navegación
+ * dinámica de categorías (vista principal de menú de categorías vs vista secundaria de productos filtrados).
  */
 import { ProductoService } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const catalogGrid  = document.getElementById('catalogGrid');
+    // Contenedores del DOM
+    const catalogGrid = document.getElementById('catalogGrid');
+    const productosSeccion = document.getElementById('productosSeccion');
+    const categoriaTitulo = document.getElementById('categoriaTitulo');
     const contenedorProductos = document.getElementById('contenedor-productos');
-    const buscadorInput = document.getElementById('buscadorCatalogo');
-    const filtroSelect = document.getElementById('filtroCategoria');
+    const btnVolver = document.getElementById('btnVolverCategorias');
 
-    // Mapa de categorías (ID → nombre) — sincronizado con tu BD
+    // Mapa de categorías (ID → Nombre comercial)
     const CATEGORIAS = {
         1: 'Hoodies',
-        2: 'Cargo Pants',
+        2: 'Camisas',
         3: 'Sudaderas',
-        4: 'Camisetas',
-        5: 'Pantalonetas',
-        6: 'Zapatos'
+        4: 'Zapatos',
+        5: 'Hoodies y Sudadera',
+        6: 'Pantalonetas',
+        7: 'Conjuntos',
+        8: 'Edición Limitada'
     };
 
-    let todosLosProductos = []; // Cache local para filtrar sin re-fetch
+    let todosLosProductos = []; // Caché local para filtrados instantáneos
 
-    if (contenedorProductos) {
-        cargarProductos();
-    }
+    // Cargar productos al iniciar
+    cargarProductos();
 
     async function cargarProductos() {
         try {
             const urlParams = new URLSearchParams(window.location.search);
             const queryBusqueda = urlParams.get('buscar');
             const queryCategoria = urlParams.get('categoria');
-            
+
+            // Listamos productos (con búsqueda si aplica)
             const params = queryBusqueda ? { q: queryBusqueda } : {};
             const productos = await ProductoService.listar(params);
+            todosLosProductos = productos || [];
 
-            if (queryBusqueda && buscadorInput) {
-                buscadorInput.value = queryBusqueda;
-            }
+            // Vincular evento de clic a las tarjetas de categorías principales
+            document.querySelectorAll('#catalogGrid .category-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const catId = card.getAttribute('data-id');
+                    
+                    // Modificar la URL sin refrescar la página
+                    const url = new URL(window.location);
+                    url.searchParams.set('categoria', catId);
+                    window.history.pushState({}, '', url);
 
-            if (queryCategoria && filtroSelect) {
-                filtroSelect.value = queryCategoria;
-            }
+                    mostrarCategoria(catId);
+                });
+            });
 
-            if (!productos || productos.length === 0) {
-                todosLosProductos = [];
-                renderizarProductos([]);
-                return;
-            }
-
-            todosLosProductos = productos;
-            
-            // Si hay filtros en la URL al cargar la página, aplicamos el filtrado dinámico
-            if (queryCategoria || queryBusqueda) {
-                filtrar();
+            // Determinar la vista inicial según los query params
+            if (queryCategoria) {
+                mostrarCategoria(queryCategoria);
+            } else if (queryBusqueda) {
+                mostrarBusquedaGeneral(queryBusqueda);
             } else {
-                renderizarProductos(productos);
+                mostrarVistaMenuCategorias();
             }
 
         } catch (err) {
-            // Si falla, el catálogo estático del HTML sigue visible
-            console.warn('Modo sin servidor — mostrando catálogo local:', err.message);
+            console.warn('Error al cargar productos desde el servidor:', err.message);
         }
     }
 
+    // ── 1. MOSTRAR VISTA INICIAL (MENÚ DE CATEGORÍAS) ────────────────────────
+    function mostrarVistaMenuCategorias() {
+        if (catalogGrid) catalogGrid.style.display = 'grid';
+        if (productosSeccion) productosSeccion.style.display = 'none';
+
+        // Remover cualquier mensaje previo de "no resultados"
+        const msgPrevio = document.getElementById('mensaje-no-resultados');
+        if (msgPrevio) msgPrevio.remove();
+    }
+
+    // ── 2. MOSTRAR VISTA DE PRODUCTOS FILTRADOS POR CATEGORÍA ────────────────
+    function mostrarCategoria(catId) {
+        if (catalogGrid) catalogGrid.style.display = 'none';
+        if (productosSeccion) productosSeccion.style.display = 'block';
+
+        const nombreCat = CATEGORIAS[catId] || 'Productos';
+        if (categoriaTitulo) categoriaTitulo.textContent = nombreCat.toUpperCase();
+
+        // Filtrar del listado en memoria
+        const productosFiltrados = todosLosProductos.filter(p => String(p.categoria) === String(catId));
+        renderizarProductos(productosFiltrados);
+    }
+
+    // ── 3. MOSTRAR RESULTADOS DE BÚSQUEDA GENERAL ────────────────────────────
+    function mostrarBusquedaGeneral(query) {
+        if (catalogGrid) catalogGrid.style.display = 'none';
+        if (productosSeccion) productosSeccion.style.display = 'block';
+
+        if (categoriaTitulo) categoriaTitulo.textContent = `BÚSQUEDA: "${query.toUpperCase()}"`;
+        renderizarProductos(todosLosProductos);
+    }
+
+    // ── 4. RENDERIZAR LA CUADRÍCULA DE PRODUCTOS ─────────────────────────────
     function renderizarProductos(lista) {
         if (!contenedorProductos) return;
         contenedorProductos.innerHTML = '';
 
-        // Ocultar categorías estáticas si hay búsqueda o filtro activo para enfocar los resultados
-        const termino = (buscadorInput?.value || '').toLowerCase().trim();
-        const categoria = filtroSelect?.value || '';
-        if (catalogGrid) {
-            if (termino || categoria) {
-                catalogGrid.style.display = 'none';
-            } else {
-                catalogGrid.style.display = 'grid';
-            }
-        }
+        // Limpiar mensaje previo de resultados vacíos
+        const msgPrevio = document.getElementById('mensaje-no-resultados');
+        if (msgPrevio) msgPrevio.remove();
 
         if (lista.length === 0) {
-            contenedorProductos.innerHTML = '<p class="catalog-empty">No se encontraron productos para esta búsqueda.</p>';
+            contenedorProductos.innerHTML = '<p class="catalog-empty">No se encontraron prendas registradas en esta categoría.</p>';
             return;
         }
 
@@ -95,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const nombreCategoria = CATEGORIAS[prod.categoria] || 'Ropa';
             const precioFormateado = Number(prod.precioBase).toLocaleString('es-CO');
             const precioFinalFmt   = Number(prod.precioFinal || prod.precioBase).toLocaleString('es-CO');
-
             const tieneDescuento = prod.descuento > 0;
 
             card.innerHTML = `
@@ -121,37 +151,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `;
-
             contenedorProductos.appendChild(card);
         });
     }
 
-    // ── BUSCADOR EN TIEMPO REAL ───────────────────────────────────────────────
-    if (buscadorInput) {
-        buscadorInput.addEventListener('input', filtrar);
-    }
+    // ── 5. EVENTO CLIC DEL BOTÓN "VOLVER" ────────────────────────────────────
+    if (btnVolver) {
+        btnVolver.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Limpiar los query params del URL sin refrescar la página
+            const url = new URL(window.location);
+            url.searchParams.delete('categoria');
+            url.searchParams.delete('buscar');
+            window.history.pushState({}, '', url);
 
-    if (filtroSelect) {
-        filtroSelect.addEventListener('change', filtrar);
-    }
-
-    function filtrar() {
-        const termino   = (buscadorInput?.value || '').toLowerCase().trim();
-        const categoria = filtroSelect?.value || '';
-
-        let resultado = todosLosProductos;
-
-        if (termino) {
-            resultado = resultado.filter(p =>
-                p.nombre.toLowerCase().includes(termino) ||
-                (p.descripcion || '').toLowerCase().includes(termino)
-            );
-        }
-
-        if (categoria) {
-            resultado = resultado.filter(p => String(p.categoria) === categoria);
-        }
-
-        renderizarProductos(resultado);
+            mostrarVistaMenuCategorias();
+        });
     }
 });

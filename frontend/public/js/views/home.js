@@ -1,56 +1,65 @@
 /**
  * home.js — Elixir and Flexx
- * Carga los últimos 3 lanzamientos desde ProductoController para el home.
+ * Gestiona el comportamiento de Nuevos Lanzamientos y el enrutamiento de categorías.
  */
 import { ProductoService } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const contenedorLanzamientos = document.getElementById('contenedor-lanzamientos');
+    const launchesGrid = document.getElementById('launchesGrid');
 
-    if (contenedorLanzamientos) {
-        cargarLanzamientos();
-    }
+    cargarConjuntos();
+    configurarCategorias();
 
-    async function cargarLanzamientos() {
+    async function cargarConjuntos() {
+        if (!launchesGrid) return;
         try {
-            const productos = await ProductoService.lanzamientos();
+            // Obtener todos los productos del backend
+            const productos = await ProductoService.listar();
 
-            if (!productos || productos.length === 0) return; // Deja las tarjetas estáticas intactas
+            // Filtrar los productos pertenecientes a la categoría 7 ("CONJUNTOS")
+            const conjuntos = (productos || []).filter(p => Number(p.categoria) === 7);
 
-            contenedorLanzamientos.innerHTML = '';
+            // Obtener las tarjetas conceptuales estáticas ya presentes en el HTML
+            const cards = launchesGrid.querySelectorAll('.launches-card');
 
-            productos.forEach(prod => {
-                const card = document.createElement('div');
-                card.className = 'launches-card';
-
-                const imgSrc = prod.imagenPrincipal || prod.imagen || '../public/images/34.webp';
-                const precio = Number(prod.precioFinal || prod.precioBase).toLocaleString('es-CO');
-
-                card.innerHTML = `
-                    <img
-                        src="${imgSrc}"
-                        alt="${prod.nombre}"
-                        class="launches-card__img"
-                        onerror="this.src='../public/images/34.webp'"
-                    >
-                    <div class="launches-card__info">
-                        <h4>${prod.nombre}</h4>
-                        <p>$${precio} COP</p>
-                        ${prod.descuento > 0 ? `<span class="launches-card__discount">-${prod.descuento}% OFF</span>` : ''}
-                    </div>
-                `;
-
-                card.style.cursor = 'pointer';
-                card.addEventListener('click', () => {
-                    window.location.href = `interfazProductoDetalle.html?id=${prod.id}`;
-                });
-
-                contenedorLanzamientos.appendChild(card);
+            cards.forEach((card, index) => {
+                // Asociamos cada tarjeta estática a un producto real del backend (por índice)
+                const prod = conjuntos[index] || conjuntos[0];
+                if (prod) {
+                    card.style.cursor = 'pointer';
+                    card.addEventListener('click', () => {
+                        window.location.href = `interfazProductoDetalle.html?id=${prod.id}`;
+                    });
+                }
             });
 
         } catch (err) {
-            console.warn('Cargando lanzamientos en modo local:', err.message);
+            console.warn('Error al cargar conjuntos reales. Conservando vista conceptual:', err.message);
         }
+    }
+
+    function configurarCategorias() {
+        const categoryCards = document.querySelectorAll('.tarjeta-categoria');
+        const categoriasMap = {
+            'HOODIES': 1,
+            'SUDADERAS': 3,
+            'CAMISAS': 2,
+            'CONJUNTO HOODIE Y SUDADERA': 5
+        };
+        categoryCards.forEach(card => {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', (e) => {
+                const titleEl = card.querySelector('.info-categoria h3');
+                if (titleEl) {
+                    const text = titleEl.textContent.replace('→', '').trim();
+                    const catId = categoriasMap[text];
+                    if (catId) {
+                        e.preventDefault();
+                        window.location.href = `interfazCatalogo.html?categoria=${catId}`;
+                    }
+                }
+            });
+        });
     }
 });

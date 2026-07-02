@@ -94,6 +94,7 @@
             </div>
     
             <div class="launches-section__grid" id="launchesGrid">
+                <!-- Se poblará dinámicamente con los productos de la categoría 'CONJUNTOS' (ID 7) -->
                 <div class="launches-card">
                     <img src="../public/images/8e281690b314c15d3997f211f95c8783.jpg" alt="Collection #19" class="launches-card__img">
                     <div class="launches-card__info">
@@ -118,11 +119,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Contenedor para Lanzamientos Dinámicos -->
-            <div class="launches-section__grid" id="contenedor-lanzamientos" style="margin-top: 30px;">
-                <!-- Los lanzamientos dinámicos se cargarán aquí -->
-            </div>
         </section>
 
         <section class="seccion-categorias-home">
@@ -131,45 +127,54 @@
             </div>
     
             <div class="grid-categorias-home">
-                <div class="tarjeta-categoria">
-                    <div class="caja-img-cat fondo-azul">
-                        <img src="../public/images/34.webp" alt="Hoodies"> </div>
-                    <div class="info-categoria">
-                        <h3>HOODIES <span>→</span></h3>
+                <a href="interfazCatalogo.html?categoria=1" style="text-decoration: none; color: inherit;">
+                    <div class="tarjeta-categoria">
+                        <div class="caja-img-cat fondo-azul">
+                            <img src="../public/images/34.webp" alt="Hoodies">
+                        </div>
+                        <div class="info-categoria">
+                            <h3>HOODIES <span>→</span></h3>
+                        </div>
                     </div>
-                </div>
+                </a>
 
-                <div class="tarjeta-categoria">
-                    <div class="caja-img-cat fondo-azul">
-                        <img src="../public/images/pantalones-para-hombre-60070463-51897_5.jpg" alt="Sudaderas">
+                <a href="interfazCatalogo.html?categoria=3" style="text-decoration: none; color: inherit;">
+                    <div class="tarjeta-categoria">
+                        <div class="caja-img-cat fondo-azul">
+                            <img src="../public/images/pantalones-para-hombre-60070463-51897_5.jpg" alt="Sudaderas">
+                        </div>
+                        <div class="info-categoria">
+                            <h3>SUDADERAS <span>→</span></h3>
+                        </div>
                     </div>
-                    <div class="info-categoria">
-                        <h3>SUDADERAS <span>→</span></h3>
-                    </div>
-                </div>
+                </a>
 
-                <div class="tarjeta-categoria">
-                    <div class="caja-img-cat fondo-azul">
-                        <img src="../public/images/pngtree-isolated-regular-plain-white-t-shirt-png-image_13029534.png" alt="Camisas">
+                <a href="interfazCatalogo.html?categoria=2" style="text-decoration: none; color: inherit;">
+                    <div class="tarjeta-categoria">
+                        <div class="caja-img-cat fondo-azul">
+                            <img src="../public/images/pngtree-isolated-regular-plain-white-t-shirt-png-image_13029534.png" alt="Camisas">
+                        </div>
+                        <div class="info-categoria">
+                            <h3>CAMISAS <span>→</span></h3>
+                        </div>
                     </div>
-                    <div class="info-categoria">
-                        <h3>CAMISAS <span>→</span></h3>
-                    </div>
-                </div>
+                </a>
 
-                <div class="tarjeta-categoria">
-                    <div class="caja-img-cat fondo-azul">
-                        <img src="../public/images/conjunto-en-algodon-perchado-buso-y-sudadera-prendas-comodas-para-el-frio.jpg" alt="Conjunto">
+                <a href="interfazCatalogo.html?categoria=5" style="text-decoration: none; color: inherit;">
+                    <div class="tarjeta-categoria">
+                        <div class="caja-img-cat fondo-azul">
+                            <img src="../public/images/conjunto-en-algodon-perchado-buso-y-sudadera-prendas-comodas-para-el-frio.jpg" alt="Conjunto">
+                        </div>
+                        <div class="info-categoria">
+                            <h3>CONJUNTO HOODIE Y SUDADERA <span>→</span></h3>
+                        </div>
                     </div>
-                    <div class="info-categoria">
-                        <h3>CONJUNTO HOODIE Y SUDADERA <span>→</span></h3>
-                    </div>
-                </div>
+                </a>
             </div>
 
-        <div class="contenedor-ver-todo">
-            <a href="interfazCatalogo.html" class="btn-ver-todo">Ver todo</a>
-        </div>
+            <div class="contenedor-ver-todo">
+                <a href="interfazCatalogo.html" class="btn-ver-todo">Ver todo</a>
+            </div>
         </section>
     </main>
 

@@ -191,3 +191,39 @@
     border-radius: 4px;
     cursor: pointer;
 }
+
+/* Errores de Validación del Formulario de Registro */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.input-group input {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(4, 211, 97, 0.4);
+}
+
+.error-msg {
+    display: none;
+    color: #f75a68;
+    font-size: 0.75rem;
+    margin-top: 5px;
+    font-weight: 500;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

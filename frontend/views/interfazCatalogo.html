@@ -50,88 +50,95 @@
             <h1 class="catalog-view__title">CATALOGO</h1>
         </div>
 
+        <!-- Vista Inicial: Menú de Categorías Principales (Grid) -->
         <section class="catalog-grid" id="catalogGrid">
             
-            <a href="#" class="category-card">
+            <div class="category-card" data-id="1" style="cursor: pointer;">
                 <div class="category-card__img-wrapper">
                     <img src="../public/images/34.webp" alt="Hoodies" class="category-card__img">
                 </div>
                 <div class="category-card__info">
                     <h3 class="category-card__name">HOODIES <span class="category-card__arrow">&gt;</span></h3>
                 </div>
-            </a>
+            </div>
 
-            <a href="#" class="category-card">
+            <div class="category-card" data-id="2" style="cursor: pointer;">
                 <div class="category-card__img-wrapper">
                     <img src="../public/images/pngtree-isolated-regular-plain-white-t-shirt-png-image_13029534.png" alt="Camisas" class="category-card__img">
                 </div>
                 <div class="category-card__info">
                     <h3 class="category-card__name">CAMISAS <span class="category-card__arrow">&gt;</span></h3>
                 </div>
-            </a>
+            </div>
 
-            <a href="#" class="category-card">
+            <div class="category-card" data-id="3" style="cursor: pointer;">
                 <div class="category-card__img-wrapper">
                     <img src="../public/images/pantalones-para-hombre-60070463-51897_5.jpg" alt="Sudaderas" class="category-card__img">
                 </div>
                 <div class="category-card__info">
                     <h3 class="category-card__name">SUDADERAS <span class="category-card__arrow">&gt;</span></h3>
                 </div>
-            </a>
+            </div>
 
-            <a href="#" class="category-card">
+            <div class="category-card" data-id="4" style="cursor: pointer;">
                 <div class="category-card__img-wrapper">
                     <img src="../public/images/QUE116250027-0-1.webp" alt="Zapatos" class="category-card__img">
                 </div>
                 <div class="category-card__info">
                     <h3 class="category-card__name">ZAPATOS <span class="category-card__arrow">&gt;</span></h3>
                 </div>
-            </a>
+            </div>
 
-            <a href="#" class="category-card">
+            <div class="category-card" data-id="5" style="cursor: pointer;">
                 <div class="category-card__img-wrapper">
                     <img src="../public/images/conjunto-en-algodon-perchado-buso-y-sudadera-prendas-comodas-para-el-frio.jpg" alt="Hoodies y Sudadera" class="category-card__img">
                 </div>
                 <div class="category-card__info">
                     <h3 class="category-card__name">HOODIES Y SUDADERA <span class="category-card__arrow">&gt;</span></h3>
                 </div>
-            </a>
+            </div>
 
-            <a href="#" class="category-card">
+            <div class="category-card" data-id="6" style="cursor: pointer;">
                 <div class="category-card__img-wrapper">
                     <img src="../public/images/HOMBRE-PANTALONETA-80012322-AZUL-790_1.webp" alt="Pantalonetas" class="category-card__img">
                 </div>
                 <div class="category-card__info">
                     <h3 class="category-card__name">PANTALONETAS <span class="category-card__arrow">&gt;</span></h3>
                 </div>
-            </a>
+            </div>
 
-            <a href="#" class="category-card">
+            <div class="category-card" data-id="7" style="cursor: pointer;">
                 <div class="category-card__img-wrapper">
                     <img src="../public/images/17c9a5a2386aa59499c42255bad0260a.jpg" alt="Conjuntos" class="category-card__img">
                 </div>
                 <div class="category-card__info">
                     <h3 class="category-card__name">CONJUNTOS <span class="category-card__arrow">&gt;</span></h3>
                 </div>
-            </a>
+            </div>
 
-            <a href="#" class="category-card">
+            <div class="category-card" data-id="8" style="cursor: pointer;">
                 <div class="category-card__img-wrapper">
                     <img src="../public/images/icono-de-la-edición-limitada-35885010.webp" alt="Edición Limitada" class="category-card__img">
                 </div>
                 <div class="category-card__info">
                     <h3 class="category-card__name">EDICION LIMITADA <span class="category-card__arrow">&gt;</span></h3>
                 </div>
-            </a>
+            </div>
 
         </section>
 
-        <!-- Sección de Productos Dinámicos -->
-        <div class="catalog-view__header" style="margin-top: 60px;">
-            <h2 class="catalog-view__title">NUESTROS PRODUCTOS</h2>
-        </div>
-        <section class="catalog-grid" id="contenedor-productos">
-            <!-- Los productos dinámicos se cargarán aquí -->
+        <!-- Vista Secundaria: Cuadrícula de Productos de la Categoría Seleccionada -->
+        <section class="seccion-productos-categoria" id="productosSeccion" style="display: none;">
+            <div class="productos-categoria__header">
+                <button class="btn-volver" id="btnVolverCategorias">
+                    <i class="bx bx-left-arrow-alt"></i> VOLVER AL MENÚ
+                </button>
+                <h2 class="productos-categoria__title" id="categoriaTitulo">CATEGORÍA</h2>
+            </div>
+            
+            <div class="catalog-grid" id="contenedor-productos">
+                <!-- Los productos dinámicos filtrados se cargarán aquí -->
+            </div>
         </section>
     </main>
     <script src="../public/js/main.js" type="module"></script>

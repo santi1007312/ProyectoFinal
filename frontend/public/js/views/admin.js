@@ -128,17 +128,41 @@ document.addEventListener('DOMContentLoaded', () => {
             
             <div id="wrapperFormProducto" class="admin-panel-card" style="display:none; margin-bottom:20px;">
                 <h3 id="formProductoTitle">Registrar Prenda en Inventario</h3>
-                <form id="formRegistrarProducto" class="admin-grid-form">
+                <form id="formRegistrarProducto" class="admin-grid-form" novalidate>
                     <input type="hidden" name="idProducto" value="">
-                    <div class="input-group"><label>Nombre del Producto</label><input type="text" name="nombre" required></div>
-                    <div class="input-group"><label>Categoría</label>
+                    
+                    <div class="input-group">
+                        <label>Nombre del Producto</label>
+                        <input type="text" name="nombre">
+                        <span class="error-msg"></span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Categoría</label>
                         <select name="categoria">
                             ${categorias.map(cat => `<option value="${cat.idCategorias || cat.id}">${cat.nombreCategoria || cat.nombre}</option>`).join('')}
                         </select>
+                        <span class="error-msg"></span>
                     </div>
-                    <div class="input-group"><label>Precio de Venta ($COP)</label><input type="number" name="precio" required></div>
-                    <div class="input-group"><label>Descripción</label><input type="text" name="descripcion"></div>
-                    <div class="input-group" style="grid-column: span 2;"><label>URL de la Imagen del Producto</label><input type="text" name="imagen"></div>
+                    
+                    <div class="input-group">
+                        <label>Precio de Venta ($COP)</label>
+                        <input type="number" name="precio">
+                        <span class="error-msg"></span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Descripción</label>
+                        <input type="text" name="descripcion">
+                        <span class="error-msg"></span>
+                    </div>
+                    
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>URL de la Imagen del Producto</label>
+                        <input type="text" name="imagen">
+                        <span class="error-msg"></span>
+                    </div>
+                    
                     <div style="grid-column: span 2; display:flex; gap:10px; margin-top:10px;">
                         <button type="submit" class="btn-urban" id="btnGuardarProducto">Guardar en Catálogo</button>
                         <button type="button" id="btnCancelarProducto" class="btn-action">Cancelar</button>
@@ -162,9 +186,66 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('formRegistrarProducto');
         const formTitle = document.getElementById('formProductoTitle');
 
+        // Helper functions for showing/hiding validation errors
+        function mostrarError(inputName, mensaje) {
+            const input = form.querySelector(`[name="${inputName}"]`);
+            if (input) {
+                const group = input.closest('.input-group');
+                const errorSpan = group.querySelector('.error-msg');
+                if (errorSpan) {
+                    errorSpan.textContent = mensaje;
+                    errorSpan.style.display = 'block';
+                    input.style.borderColor = '#f75a68';
+                }
+            }
+        }
+
+        function limpiarError(inputName) {
+            const input = form.querySelector(`[name="${inputName}"]`);
+            if (input) {
+                const group = input.closest('.input-group');
+                const errorSpan = group.querySelector('.error-msg');
+                if (errorSpan) {
+                    errorSpan.style.display = 'none';
+                    errorSpan.textContent = '';
+                    input.style.borderColor = '';
+                }
+            }
+        }
+
+        function limpiarTodosLosErrores() {
+            ['nombre', 'precio', 'descripcion', 'imagen'].forEach(name => limpiarError(name));
+        }
+
+        // Real-time dynamic validations as user types
+        const inputsAValidar = ['nombre', 'precio', 'descripcion', 'imagen'];
+        inputsAValidar.forEach(name => {
+            const input = form.querySelector(`[name="${name}"]`);
+            if (input) {
+                input.addEventListener('input', () => {
+                    const val = input.value.trim();
+                    if (val !== '') {
+                        if (name === 'precio') {
+                            const num = Number(val);
+                            if (num >= 50000) {
+                                limpiarError(name);
+                            } else {
+                                mostrarError(name, 'El precio mínimo de registro es de $50,000');
+                            }
+                        } else {
+                            limpiarError(name);
+                        }
+                    } else {
+                        mostrarError(name, 'Este campo es obligatorio');
+                    }
+                });
+            }
+        });
+
         if(btnAbrir && wrapper) {
             btnAbrir.addEventListener('click', () => {
                 form.reset();
+                limpiarTodosLosErrores();
                 form.querySelector('[name="idProducto"]').value = '';
                 formTitle.textContent = "Registrar Prenda en Inventario";
                 wrapper.style.display = 'block';
@@ -174,6 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnCancelar.addEventListener('click', () => {
                 wrapper.style.display = 'none';
                 form.reset();
+                limpiarTodosLosErrores();
             });
         }
 
@@ -183,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tr = e.target.closest('tr');
                 const p = JSON.parse(decodeURIComponent(tr.getAttribute('data-json')));
                 
+                limpiarTodosLosErrores();
                 formTitle.textContent = "Editar Prenda";
                 form.querySelector('[name="idProducto"]').value = p.id;
                 form.querySelector('[name="nombre"]').value = p.nombre;
@@ -224,13 +307,54 @@ document.addEventListener('DOMContentLoaded', () => {
             const descripcion = form.querySelector('[name="descripcion"]').value.trim();
             const imagen = form.querySelector('[name="imagen"]').value.trim();
 
-            if (nombre.match(/^\d+$/)) {
-                alert('⚠️ El nombre de la prenda no puede ser puramente numérico.');
-                return;
+            let hayError = false;
+
+            // Validar Nombre del Producto
+            if (!nombre) {
+                mostrarError('nombre', 'El nombre del producto es obligatorio.');
+                hayError = true;
+            } else if (nombre.match(/^\d+$/)) {
+                mostrarError('nombre', 'El nombre de la prenda no puede ser puramente numérico.');
+                hayError = true;
+            } else {
+                limpiarError('nombre');
             }
-            if (imagen && imagen.match(/^\d+$/)) {
-                alert('⚠️ La URL de la imagen no puede ser puramente numérica.');
-                return;
+
+            // Validar Precio
+            if (!precioBase) {
+                mostrarError('precio', 'El precio de venta es obligatorio.');
+                hayError = true;
+            } else {
+                const precioNum = Number(precioBase);
+                if (precioNum < 50000) {
+                    mostrarError('precio', 'El precio mínimo de registro es de $50,000 COP.');
+                    hayError = true;
+                } else {
+                    limpiarError('precio');
+                }
+            }
+
+            // Validar Descripción
+            if (!descripcion) {
+                mostrarError('descripcion', 'La descripción es obligatoria.');
+                hayError = true;
+            } else {
+                limpiarError('descripcion');
+            }
+
+            // Validar Imagen
+            if (!imagen) {
+                mostrarError('imagen', 'La URL de la imagen es obligatoria.');
+                hayError = true;
+            } else if (imagen.match(/^\d+$/)) {
+                mostrarError('imagen', 'La URL de la imagen no puede ser puramente numérica.');
+                hayError = true;
+            } else {
+                limpiarError('imagen');
+            }
+
+            if (hayError) {
+                return; // Detener el envío del formulario
             }
 
             const payload = {
