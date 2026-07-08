@@ -92,24 +92,6 @@ body {
     transform: translateY(-5px);
 }
 
-/* MEDIA QUERIES MODULARES */
-@media (max-width: 1100px) {
-    .catalog-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
-}
-
-@media (max-width: 1024px) {
-    .catalog-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-    }
-    .catalog-view__title {
-        font-size: 1.8rem;
-    }
-}
-
 /* Vista de Productos de Categoría Seleccionada */
 .seccion-productos-categoria {
     margin-top: 20px;
@@ -167,6 +149,73 @@ body {
     border-left: 4px solid var(--color-red-vibrant, #ff0000);
     padding-left: 15px;
     line-height: 1;
+}
+
+/* Contenedor principal del banner */
+.banner-inspiracional {
+  width: 100vw; /* Ocupa el 100% del ancho de la pantalla */
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  margin-top: 40px; /* Espaciado con los catálogos de arriba */
+  overflow: hidden;
+}
+
+.banner-contenido {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centra el texto y la imagen horizontalmente */
+  width: 100%;
+}
+
+/* Estilos para el texto superior */
+.banner-texto {
+  font-family: 'Arial', sans-serif; /* Puedes cambiarla por la fuente de tu web */
+  font-size: 2.5rem; /* Letra grande */
+  font-weight: 700; /* Gruesa pero estilizada (no tan pesada como un 900) */
+  text-transform: uppercase; /* Fuerza las mayúsculas */
+  letter-spacing: 2px; /* Un pequeño espacio entre letras para darle elegancia */
+  color: #111; /* Color oscuro con presencia */
+  margin-bottom: 20px; /* Separación entre el texto y la imagen */
+  text-align: center;
+  padding: 0 20px; /* Evita que el texto toque los bordes en celulares */
+}
+
+/* Contenedor de la imagen para asegurar el ancho total */
+.banner-imagen-contenedor {
+  width: 100%;
+  height: auto;
+  max-height: 500px; /* Limita la altura máxima para que no tape toda la pantalla al bajar */
+  overflow: hidden;
+}
+
+/* La imagen se adapta al 100% del ancho disponible */
+.banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ajusta la imagen para que llene el espacio sin deformarse */
+  object-position: center; /* Centra el enfoque de la imagen */
+  display: block;
+}
+
+/* MEDIA QUERIES MODULARES */
+@media (max-width: 1100px) {
+    .catalog-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .catalog-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    .catalog-view__title {
+        font-size: 1.8rem;
+    }
 }
 
 @keyframes fadeIn {

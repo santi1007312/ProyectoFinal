@@ -263,6 +263,24 @@ export const ProductoService = {
         }
     },
 
+    async crearConForm(formData) {
+        try {
+            const baseUrl = await getBaseUrl();
+            const url = `${baseUrl}/ProductoController`.replace(/([^:]\/)\/+/g, "$1");
+            formData.append('accion', 'crear');
+            const res = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            });
+            const json = await res.json();
+            return { ok: json.status === 'success', mensaje: json.mensaje || json.status, idProducto: json.idProducto };
+        } catch (err) {
+            console.error(err);
+            return { ok: false, mensaje: 'Error de conexión.' };
+        }
+    },
+
     async eliminar(id) {
         try {
             const res = await post('ProductoController', { accion: 'eliminar', idProducto: id });
@@ -279,6 +297,24 @@ export const ProductoService = {
             const json = await res.json();
             return { ok: json.status === 'success', mensaje: json.mensaje };
         } catch {
+            return { ok: false, mensaje: 'Error de conexión.' };
+        }
+    },
+
+    async actualizarConForm(formData) {
+        try {
+            const baseUrl = await getBaseUrl();
+            const url = `${baseUrl}/ProductoController`.replace(/([^:]\/)\/+/g, "$1");
+            formData.append('accion', 'actualizar');
+            const res = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            });
+            const json = await res.json();
+            return { ok: json.status === 'success', mensaje: json.mensaje };
+        } catch (err) {
+            console.error(err);
             return { ok: false, mensaje: 'Error de conexión.' };
         }
     }

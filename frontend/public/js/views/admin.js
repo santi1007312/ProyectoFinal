@@ -57,25 +57,74 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── 1. DASHBOARD GENERAL (MÉTRICAS) ──
-    function renderDashboard() {
-        dynamicContent.innerHTML = `
-            <div class="kpi-grid">
-                <div class="kpi-card"><h3>$ 4.850.000</h3><p>Ventas del Mes</p></div>
-                <div class="kpi-card warning"><h3>12 Órdenes</h3><p>Pedidos por Despachar</p></div>
-                <div class="kpi-card info"><h3>84 Cuentas</h3><p>Clientes Registrados</p></div>
-                <div class="kpi-card danger"><h3>4 Prendas</h3><p>Stock Crítico</p></div>
-            </div>
-            <div class="dashboard-section-split">
-                <div class="admin-panel-card">
-                    <h3>Resumen de Operaciones Recientes</h3>
-                    <p>El sistema se encuentra sincronizado con la base de datos MySQL. Actualmente cuentas con 3 solicitudes de soporte técnico pendientes y las pasarelas de pago operan con normalidad.</p>
+    async function renderDashboard() {
+        dynamicContent.innerHTML = `<div class="loader">Cargando métricas del dashboard...</div>`;
+        try {
+            const data = await PedidoService.obtenerMetricas();
+            
+            // Formatear Ventas del Mes en pesos colombianos sin decimales
+            const ventasFormatted = new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                maximumFractionDigits: 0
+            }).format(data.ventasMes || 0);
+
+            const ordenesCount = data.totalPedidos || 0;
+            const usuariosCount = data.totalUsuarios || 0;
+            const criticoCount = data.stockCriticoCount || 0;
+
+            let tablaCriticosHtml = '';
+            if (data.listaStockCritico && data.listaStockCritico.length > 0) {
+                data.listaStockCritico.forEach(item => {
+                    tablaCriticosHtml += `
+                        <tr>
+                            <td>${item.nombre}</td>
+                            <td><span class="badge-talla">${item.talla}</span></td>
+                            <td>${item.color}</td>
+                            <td><strong style="color: #ff4d4d;">${item.stock}</strong></td>
+                            <td><code>${item.sku}</code></td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tablaCriticosHtml = `<tr><td colspan="5" style="text-align:center; color:#2ecc71; padding: 15px;">🎉 ¡Todo el inventario está en niveles óptimos! No hay stock crítico.</td></tr>`;
+            }
+
+            dynamicContent.innerHTML = `
+                <div class="kpi-grid">
+                    <div class="kpi-card"><h3>${ventasFormatted}</h3><p>Ventas del Mes</p></div>
+                    <div class="kpi-card warning"><h3>${ordenesCount} Órdenes</h3><p>Total Pedidos</p></div>
+                    <div class="kpi-card info"><h3>${usuariosCount} Cuentas</h3><p>Clientes Registrados</p></div>
+                    <div class="kpi-card danger"><h3>${criticoCount} Prendas</h3><p>Stock Crítico (&lt; 5)</p></div>
                 </div>
-            </div>
-        `;
+                <div class="dashboard-section-split">
+                    <div class="admin-panel-card" style="width: 100%;">
+                        <h3 style="color: #ff4d4d; display: flex; align-items: center; gap: 8px;">
+                            <i class='bx bx-error-circle'></i> Alerta de Stock Crítico (&lt; 5 unidades)
+                        </h3>
+                        <p style="margin-bottom: 15px; font-size: 0.9rem; color: #a6a6a6;">
+                            Las siguientes variantes de prendas tienen menos de 5 unidades en inventario. Se recomienda reabastecer a la brevedad.
+                        </p>
+                        <table class="admin-table">
+                            <thead>
+                                <tr><th>Prenda</th><th>Talla</th><th>Color</th><th>Stock Actual</th><th>SKU</th></tr>
+                            </thead>
+                            <tbody>
+                                ${tablaCriticosHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        } catch (e) {
+            console.error("Error al cargar métricas de dashboard:", e);
+            dynamicContent.innerHTML = `<div class="error-msg">Error al cargar las métricas del dashboard.</div>`;
+        }
     }
 
-    // ── 2. GESTIÓN DE PRODUCTOS, TALLAS Y STOCK ──
+    // ── GESTIÓN DE PRODUCTOS, TALLAS Y STOCK ──
     async function renderProductos() {
+        let imagenesSeleccionadas = [];
         dynamicContent.innerHTML = `<div class="loader">Cargando productos...</div>`;
         
         let categorias = [];
@@ -197,9 +246,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     
                     <div class="input-group" style="grid-column: span 2;">
-                        <label>URL de la Imagen del Producto</label>
-                        <input type="text" name="imagen">
+                        <label>Seleccionar Imagen(es) del Producto</label>
+                        <input type="file" name="imagen" accept="image/*" multiple>
                         <span class="error-msg"></span>
+                    </div>
+
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>Colores Disponibles</label>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 5px;">
+                            <label style="display: flex; align-items: center; gap: 5px; color: #e1e1e6;"><input type="checkbox" name="color_option" value="Negro" checked> Negro</label>
+                            <label style="display: flex; align-items: center; gap: 5px; color: #e1e1e6;"><input type="checkbox" name="color_option" value="Blanco"> Blanco</label>
+                            <label style="display: flex; align-items: center; gap: 5px; color: #e1e1e6;"><input type="checkbox" name="color_option" value="Gris"> Gris</label>
+                            <label style="display: flex; align-items: center; gap: 5px; color: #e1e1e6;"><input type="checkbox" name="color_option" value="Rojo"> Rojo</label>
+                            <label style="display: flex; align-items: center; gap: 5px; color: #e1e1e6;"><input type="checkbox" name="color_option" value="Azul"> Azul</label>
+                            <label style="display: flex; align-items: center; gap: 5px; color: #e1e1e6;"><input type="checkbox" name="color_option" value="Verde"> Verde</label>
+                            <label style="display: flex; align-items: center; gap: 5px; color: #e1e1e6;"><input type="checkbox" name="color_option" value="Café"> Café</label>
+                        </div>
+                        <span class="error-msg" id="colorErrorMsg"></span>
                     </div>
 
                     <div class="input-group" style="grid-column: span 2;">
@@ -329,10 +392,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        const fileInput = form.querySelector('[name="imagen"]');
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                imagenesSeleccionadas = [...imagenesSeleccionadas, ...files];
+                console.log("Imágenes acumuladas:", imagenesSeleccionadas);
+                if (imagenesSeleccionadas.length > 0) {
+                    limpiarError('imagen');
+                }
+            });
+        }
+
         if(btnAbrir && wrapper) {
             btnAbrir.addEventListener('click', () => {
                 form.reset();
                 limpiarTodosLosErrores();
+                imagenesSeleccionadas = [];
                 form.querySelector('[name="idProducto"]').value = '';
                 formTitle.textContent = "Registrar Prenda en Inventario";
                 wrapper.style.display = 'block';
@@ -341,12 +417,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 form.querySelector('[name="stock_M"]').value = 0;
                 form.querySelector('[name="stock_L"]').value = 0;
                 form.querySelector('[name="stock_XL"]').value = 0;
+                // Reset checkboxes to Negro default
+                form.querySelectorAll('[name="color_option"]').forEach(cb => {
+                    cb.checked = cb.value === 'Negro';
+                });
             });
         }
         if(btnCancelar && wrapper) {
             btnCancelar.addEventListener('click', () => {
                 wrapper.style.display = 'none';
                 form.reset();
+                imagenesSeleccionadas = [];
                 limpiarTodosLosErrores();
             });
         }
@@ -358,14 +439,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const p = JSON.parse(decodeURIComponent(tr.getAttribute('data-json')));
                 
                 limpiarTodosLosErrores();
+                imagenesSeleccionadas = [];
                 formTitle.textContent = "Editar Prenda";
                 form.querySelector('[name="idProducto"]').value = p.id;
                 form.querySelector('[name="nombre"]').value = p.nombre;
                 form.querySelector('[name="categoria"]').value = p.categoria;
                 form.querySelector('[name="precio"]').value = p.precioBase;
                 form.querySelector('[name="descripcion"]').value = p.descripcion || '';
-                form.querySelector('[name="imagen"]').value = p.imagen || '';
+                // Clear the file input (cannot set value programmatically)
+                form.querySelector('[name="imagen"]').value = '';
                 form.querySelector('[name="esDestacado"]').checked = p.esDestacado === true;
+
+                // Pre-fill color checkboxes from product variants
+                const coloresDeVariantes = [...new Set((p.variantes || []).map(v => v.color).filter(Boolean))];
+                form.querySelectorAll('[name="color_option"]').forEach(cb => {
+                    cb.checked = coloresDeVariantes.includes(cb.value);
+                });
 
                 const stockS = getStockPorTalla(p.variantes, 'S');
                 const stockM = getStockPorTalla(p.variantes, 'M');
@@ -408,7 +497,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const idCategorias = form.querySelector('[name="categoria"]').value;
             const precioBase = form.querySelector('[name="precio"]').value;
             const descripcion = form.querySelector('[name="descripcion"]').value.trim();
-            const imagen = form.querySelector('[name="imagen"]').value.trim();
             const esDestacado = form.querySelector('[name="esDestacado"]').checked;
 
             const stockS = parseInt(form.querySelector('[name="stock_S"]').value) || 0;
@@ -452,14 +540,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Validar Imagen
-            if (!imagen) {
-                mostrarError('imagen', 'La URL de la imagen es obligatoria.');
-                hayError = true;
-            } else if (imagen.match(/^\d+$/)) {
-                mostrarError('imagen', 'La URL de la imagen no puede ser puramente numérica.');
+            if (!idProducto && imagenesSeleccionadas.length === 0) {
+                mostrarError('imagen', 'Debes seleccionar al menos una imagen para registrar la prenda.');
                 hayError = true;
             } else {
                 limpiarError('imagen');
+            }
+
+            // Validar Colores
+            const coloresSeleccionados = Array.from(form.querySelectorAll('[name="color_option"]:checked')).map(cb => cb.value);
+            const colorErrorSpan = document.getElementById('colorErrorMsg');
+            if (coloresSeleccionados.length === 0) {
+                if (colorErrorSpan) {
+                    colorErrorSpan.textContent = 'Debes seleccionar al menos un color.';
+                    colorErrorSpan.style.display = 'block';
+                }
+                hayError = true;
+            } else {
+                if (colorErrorSpan) {
+                    colorErrorSpan.style.display = 'none';
+                }
             }
 
             // Validar Stocks
@@ -477,76 +577,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 return; // Detener el envío del formulario
             }
 
-            const payload = {
-                nombreProducto: nombre,
-                idCategorias,
-                precioBase,
-                descripcion,
-                imagen,
-                esDestacado: esDestacado ? 'true' : 'false'
-            };
+            // Crear FormData
+            const formData = new FormData();
+            if (idProducto) {
+                formData.append('idProducto', idProducto);
+            }
+            formData.append('nombreProducto', nombre);
+            formData.append('idCategorias', idCategorias);
+            formData.append('precioBase', precioBase);
+            formData.append('descripcion', descripcion);
+            formData.append('esDestacado', esDestacado ? 'true' : 'false');
+            
+            // Adjuntar stocks
+            formData.append('stock_S', stockS);
+            formData.append('stock_M', stockM);
+            formData.append('stock_L', stockL);
+            formData.append('stock_XL', stockXL);
+            
+            // Adjuntar colores seleccionados
+            coloresSeleccionados.forEach(color => {
+                formData.append('colores', color);
+            });
+            
+            // Adjuntar imágenes acumuladas
+            imagenesSeleccionadas.forEach(archivo => {
+                formData.append('imagenes', archivo);
+            });
 
             let resultado;
-            let targetIdProducto = idProducto;
-
             if (idProducto) {
-                payload.idProducto = idProducto;
-                resultado = await ProductoService.actualizar(payload);
+                resultado = await ProductoService.actualizarConForm(formData);
             } else {
-                resultado = await ProductoService.crear(payload);
-                if (resultado.ok && resultado.idProducto) {
-                    targetIdProducto = resultado.idProducto;
-                }
+                resultado = await ProductoService.crearConForm(formData);
             }
 
             if (resultado.ok) {
-                // Sincronizar variantes de stock por talla (S, M, L, XL)
-                let variantesActuales = [];
-                if (idProducto) {
-                    try {
-                        variantesActuales = await VarianteService.listarPorProducto(idProducto).catch(() => []);
-                    } catch (err) {
-                        console.error('Error cargando variantes para actualizar:', err);
-                    }
-                }
-
-                const sizes = [
-                    { name: 'S', value: stockS },
-                    { name: 'M', value: stockM },
-                    { name: 'L', value: stockL },
-                    { name: 'XL', value: stockXL }
-                ];
-
-                const variantsPromises = sizes.map(async sizeInfo => {
-                    const existing = variantesActuales.find(v => v.talla === sizeInfo.name);
-                    if (existing) {
-                        if (existing.stock !== sizeInfo.value) {
-                            return VarianteService.actualizar({
-                                idVariantes: existing.idVariantes,
-                                talla: sizeInfo.name,
-                                color: existing.color || 'Único',
-                                stock: sizeInfo.value,
-                                sku: existing.sku || `SKU-${targetIdProducto}-${sizeInfo.name}`,
-                                stockMinimo: existing.stockMinimo || 0
-                            });
-                        }
-                    } else {
-                        return VarianteService.crear({
-                            idProducto: targetIdProducto,
-                            talla: sizeInfo.name,
-                            color: 'Único',
-                            stock: sizeInfo.value,
-                            sku: `SKU-${targetIdProducto}-${sizeInfo.name}`,
-                            stockMinimo: 0
-                        });
-                    }
-                });
-
-                await Promise.all(variantsPromises);
-
                 alert('🎉 ' + (resultado.mensaje || 'Prenda guardada con éxito en el catálogo.'));
                 wrapper.style.display = 'none';
                 form.reset();
+                imagenesSeleccionadas = [];
                 renderProductos();
             } else {
                 alert('❌ Error al guardar: ' + resultado.mensaje);

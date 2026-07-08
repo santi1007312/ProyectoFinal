@@ -60,9 +60,17 @@
 
         <!-- Columna Derecha: Información y Opciones de Compra -->
         <div class="product-info-panel">
+            <!-- Fecha de Lanzamiento -->
+            <div id="productReleaseContainer" class="release-date-badge" style="display: none;">
+                <span class="release-icon">🚀</span> <span id="productReleaseDate"></span>
+            </div>
+
             <h1 id="productDetailName" class="product-title">Cargando prenda...</h1>
             <p id="productDetailPrice" class="product-price">$0,00 COP</p>
             
+            <!-- Descripción del Producto -->
+            <p id="productDetailDesc" class="product-description"></p>
+
             <hr class="divider">
 
             <!-- Selector de Color -->
@@ -81,12 +89,45 @@
                 </div>
             </div>
 
+            <!-- Selector de Cantidad -->
+            <div class="quantity-section">
+                <div id="cartStatusText" class="cart-status-text">Cantidad (0 en el carrito)</div>
+                <div class="quantity-selector">
+                    <button type="button" id="btnDecrement" class="qty-btn">-</button>
+                    <span id="qtyDisplay" class="qty-display">1</span>
+                    <button type="button" id="btnIncrement" class="qty-btn">+</button>
+                </div>
+            </div>
+
             <!-- Botón de Acción -->
             <div class="action-container">
                 <button id="btnAddToCart" class="btn-add-cart">Añadir al carrito</button>
             </div>
         </div>
     </main>
+
+    <!-- MODAL DE CONFIRMACIÓN FLOTANTE -->
+    <div id="cartModal" class="floating-modal" style="display: none;">
+        <div class="floating-modal-content">
+            <div class="floating-modal-header">
+                <span class="header-title">✓ Artículo agregado a tu carrito</span>
+                <button id="btnCloseModal" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="floating-modal-product-row">
+                <img id="modalProductImg" src="" alt="Producto" class="modal-product-thumb">
+                <div class="modal-product-info">
+                    <div id="modalProductTitle" class="modal-product-title"></div>
+                    <div class="modal-product-meta">Color: <span id="modalProductColor"></span></div>
+                    <div class="modal-product-meta">Talla: <span id="modalProductTalla"></span></div>
+                </div>
+            </div>
+            <button id="btnModalViewCart" class="modal-btn modal-btn-dark">Ver carrito (0)</button>
+            <button id="btnModalCheckout" class="modal-btn modal-btn-light">Pagar pedido</button>
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="#" id="lnkModalContinue" class="modal-continue-link">Seguir comprando</a>
+            </div>
+        </div>
+    </div>
 
     <!-- Lógica de interconexión -->
     <script src="../public/js/main.js" type="module"></script>

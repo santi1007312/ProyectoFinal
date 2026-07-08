@@ -62,9 +62,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    let cantidadSeleccionada = 1;
+    const qtyDisplay = document.getElementById('qtyDisplay');
+    const btnDecrement = document.getElementById('btnDecrement');
+    const btnIncrement = document.getElementById('btnIncrement');
+
     function inicializarVista(prod, variantes) {
         if (nameEl)  nameEl.textContent  = prod.nombre;
-        if (descEl)  descEl.textContent  = prod.descripcion || '';
+        if (descEl)  {
+            // Hacer la descripción obligatoria y clara
+            descEl.textContent  = prod.descripcion || 'Esta prenda cuenta con un diseño exclusivo, confeccionada con los mejores materiales de alta calidad.';
+            descEl.style.display = 'block';
+        }
         if (imgEl) {
             imgEl.src = prod.imagenPrincipal || prod.imagen || '../public/images/34.webp';
             imgEl.onerror = () => { imgEl.src = '../public/images/34.webp'; };
@@ -72,6 +81,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const precio = Number(prod.precioFinal || prod.precioBase).toLocaleString('es-CO');
         if (priceEl) priceEl.textContent = `$${precio} COP`;
+
+        // Renderizar fecha de lanzamiento
+        const releaseContainer = document.getElementById('productReleaseContainer');
+        const releaseDateEl = document.getElementById('productReleaseDate');
+        if (releaseContainer && releaseDateEl) {
+            if (prod.esNuevo) {
+                releaseDateEl.textContent = `Lanzamiento: ${prod.esNuevo}`;
+                releaseContainer.style.display = 'block';
+            } else {
+                releaseContainer.style.display = 'none';
+            }
+        }
 
         // Extraer colores y tallas únicos desde las variantes reales
         const coloresUnicos = [...new Set(variantes.map(v => v.color).filter(Boolean))];
@@ -84,16 +105,33 @@ document.addEventListener('DOMContentLoaded', () => {
         renderizarColores(colores);
         renderizarTallas(tallas);
         actualizarVarianteSeleccionada();
+        actualizarTextoCarrito();
     }
 
     function inicializarVistaSimple(prod) {
         if (nameEl)  nameEl.textContent  = prod.nombre;
-        if (descEl)  descEl.textContent  = prod.descripcion || '';
+        if (descEl)  {
+            descEl.textContent  = prod.descripcion || 'Esta prenda cuenta con un diseño exclusivo, confeccionada con los mejores materiales de alta calidad.';
+            descEl.style.display = 'block';
+        }
         if (imgEl)   imgEl.src = prod.imagen;
         if (priceEl) priceEl.textContent = `$${Number(prod.precioFinal || prod.precioBase).toLocaleString('es-CO')} COP`;
 
+        // Renderizar fecha de lanzamiento
+        const releaseContainer = document.getElementById('productReleaseContainer');
+        const releaseDateEl = document.getElementById('productReleaseDate');
+        if (releaseContainer && releaseDateEl) {
+            if (prod.esNuevo) {
+                releaseDateEl.textContent = `Lanzamiento: ${prod.esNuevo}`;
+                releaseContainer.style.display = 'block';
+            } else {
+                releaseContainer.style.display = 'none';
+            }
+        }
+
         renderizarColores(prod.colores || ['Negro']);
         renderizarTallas(prod.tallas  || ['S', 'M', 'L', 'XL']);
+        actualizarTextoCarrito();
     }
 
     function renderizarColores(colores) {
@@ -102,8 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const mapaColoreCSS = {
             'Negro': '#111111',
-            'Blanco': '#f0f0f0',
-            'Gris': '#555555',
+            'Blanco': '#ffffff',
+            'Gris': '#888888',
             'Rojo': '#CC0000',
             'Azul': '#1a3c8f',
             'Verde': '#1a6b2c',
@@ -114,6 +152,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const ball = document.createElement('div');
             ball.className = `color-ball ${index === 0 ? 'active' : ''}`;
             ball.style.backgroundColor = mapaColoreCSS[col] || '#333';
+            ball.style.width = '24px';
+            ball.style.height = '24px';
+            ball.style.borderRadius = '50%';
+            ball.style.cursor = 'pointer';
+            if (col === 'Blanco') {
+                ball.style.border = '1px solid #ccc';
+            } else {
+                ball.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+            }
             ball.title = col;
 
             if (index === 0) {
@@ -127,6 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 colorSeleccionado = col;
                 if (colorDisplay) colorDisplay.textContent = col;
                 actualizarVarianteSeleccionada();
+                // Reset quantity to 1 when changing selection
+                cantidadSeleccionada = 1;
+                if (qtyDisplay) qtyDisplay.textContent = cantidadSeleccionada;
             });
 
             colorContainer.appendChild(ball);
@@ -154,6 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 tallaSeleccionada = talla;
                 if (tallaDisplay) tallaDisplay.textContent = talla;
                 actualizarVarianteSeleccionada();
+                // Reset quantity to 1 when changing selection
+                cantidadSeleccionada = 1;
+                if (qtyDisplay) qtyDisplay.textContent = cantidadSeleccionada;
             });
 
             tallaContainer.appendChild(box);
@@ -177,6 +230,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ── TEXTO DE ESTADO DINÁMICO EN EL CARRITO ───────────────────────────────
+    function actualizarTextoCarrito() {
+        if (!productoActual) return;
+        const carrito = CarritoService.obtenerLocal();
+        const totalEnCarrito = carrito
+            .filter(item => item.id === productoActual.id)
+            .reduce((sum, item) => sum + item.cantidad, 0);
+        
+        const cartStatusText = document.getElementById('cartStatusText');
+        if (cartStatusText) {
+            cartStatusText.textContent = `Cantidad (${totalEnCarrito} en el carrito)`;
+        }
+    }
+
+    // ── CONFIGURACIÓN DEL SELECTOR DE CANTIDAD ───────────────────────────────
+    if (btnDecrement && qtyDisplay) {
+        btnDecrement.addEventListener('click', () => {
+            if (cantidadSeleccionada > 1) {
+                cantidadSeleccionada--;
+                qtyDisplay.textContent = cantidadSeleccionada;
+            }
+        });
+    }
+
+    if (btnIncrement && qtyDisplay) {
+        btnIncrement.addEventListener('click', () => {
+            const variante = variantesDisp.find(v => v.color === colorSeleccionado && v.talla === tallaSeleccionada);
+            const stockMax = variante ? variante.stock : 10;
+            if (cantidadSeleccionada < stockMax) {
+                cantidadSeleccionada++;
+                qtyDisplay.textContent = cantidadSeleccionada;
+            } else {
+                alert(`Límite alcanzado: Solo hay ${stockMax} unidades disponibles de esta variante.`);
+            }
+        });
+    }
+
     // ── AGREGAR AL CARRITO ────────────────────────────────────────────────────
     if (btnAdd) {
         btnAdd.addEventListener('click', async () => {
@@ -188,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 precio: productoActual.precioFinal || productoActual.precioBase,
                 color:  colorSeleccionado,
                 talla:  tallaSeleccionada,
-                cantidad: 1,
+                cantidad: cantidadSeleccionada,
                 imagen: productoActual.imagenPrincipal || productoActual.imagen || '../public/images/34.webp'
             };
 
@@ -196,20 +286,68 @@ document.addEventListener('DOMContentLoaded', () => {
             btnAdd.textContent = 'Agregando...';
 
             const idVar = idVarianteSeleccionada || 1; // fallback si no hay variantes cargadas
-            await CarritoService.agregar(idVar, 1, itemLocal);
+            await CarritoService.agregar(idVar, cantidadSeleccionada, itemLocal);
 
             btnAdd.disabled = false;
             btnAdd.textContent = 'AGREGAR AL CARRITO';
 
-            // Feedback visual antes de redirigir
-            if (btnFeedback) {
-                btnFeedback.textContent = '✅ ¡Prenda agregada!';
-                btnFeedback.style.display = 'block';
-            }
+            // Actualizar texto del selector
+            actualizarTextoCarrito();
 
-            setTimeout(() => {
-                window.location.href = 'interfazCarrito.html';
-            }, 800);
+            // Desplegar modal flotante superior derecho
+            const cartModal = document.getElementById('cartModal');
+            if (cartModal) {
+                document.getElementById('modalProductImg').src = itemLocal.imagen;
+                const mTitle = document.getElementById('modalProductTitle');
+                if (mTitle) {
+                    mTitle.textContent = itemLocal.nombre.toUpperCase();
+                    mTitle.style.fontWeight = 'bold';
+                }
+                document.getElementById('modalProductColor').textContent = itemLocal.color;
+                document.getElementById('modalProductTalla').textContent = itemLocal.talla;
+
+                const carrito = CarritoService.obtenerLocal();
+                const totalUnits = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+                
+                const btnViewCart = document.getElementById('btnModalViewCart');
+                if (btnViewCart) {
+                    btnViewCart.textContent = `Ver carrito (${totalUnits})`;
+                }
+
+                cartModal.style.display = 'block';
+            }
+        });
+    }
+
+    // EVENTOS DEL MODAL FLOTANTE
+    const cartModal = document.getElementById('cartModal');
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    const lnkModalContinue = document.getElementById('lnkModalContinue');
+    const btnModalViewCart = document.getElementById('btnModalViewCart');
+    const btnModalCheckout = document.getElementById('btnModalCheckout');
+
+    if (btnCloseModal && cartModal) {
+        btnCloseModal.addEventListener('click', () => {
+            cartModal.style.display = 'none';
+        });
+    }
+
+    if (lnkModalContinue && cartModal) {
+        lnkModalContinue.addEventListener('click', (e) => {
+            e.preventDefault();
+            cartModal.style.display = 'none';
+        });
+    }
+
+    if (btnModalViewCart) {
+        btnModalViewCart.addEventListener('click', () => {
+            window.location.href = 'interfazCarrito.html';
+        });
+    }
+
+    if (btnModalCheckout) {
+        btnModalCheckout.addEventListener('click', () => {
+            window.location.href = 'interfazCarrito.html?checkout=true';
         });
     }
 });

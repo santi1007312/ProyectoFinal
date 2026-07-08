@@ -24,6 +24,38 @@ document.addEventListener('DOMContentLoaded', () => {
  
     const formRegistro = document.getElementById('formRegistro') || document.querySelector('.auth-card form');
     if (!formRegistro) return;
+
+    const edadInput = formRegistro.querySelector('[name="edad"]');
+    const edadErrorSpan = document.getElementById('edadErrorMsg');
+
+    function validarEdad(valStr) {
+        if (!valStr) {
+            return '⚠️ La edad es obligatoria.';
+        }
+        const valNum = parseInt(valStr, 10);
+        if (isNaN(valNum)) {
+            return '⚠️ La edad debe ser un número.';
+        }
+        if (valNum < 13) {
+            return '⚠️ Debes tener al menos 13 años para registrarte.';
+        }
+        if (valStr.trim().length > 2 || valNum >= 100) {
+            return '⚠️ La edad debe tener como máximo 2 dígitos (rango 13-99 años).';
+        }
+        return '';
+    }
+
+    if (edadInput && edadErrorSpan) {
+        edadInput.addEventListener('input', () => {
+            const errorMsg = validarEdad(edadInput.value);
+            if (errorMsg) {
+                edadErrorSpan.textContent = errorMsg;
+                edadErrorSpan.style.display = 'block';
+            } else {
+                edadErrorSpan.style.display = 'none';
+            }
+        });
+    }
  
     formRegistro.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -50,10 +82,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const edadVal = parseInt(edad, 10);
-        if (isNaN(edadVal) || edadVal < 0) {
-            mostrarMensaje('⚠️ La edad no puede ser negativa.', 'warning');
+        const edadError = validarEdad(edad);
+        if (edadError) {
+            if (edadErrorSpan) {
+                edadErrorSpan.textContent = edadError;
+                edadErrorSpan.style.display = 'block';
+            } else {
+                mostrarMensaje(edadError, 'warning');
+            }
+            edadInput?.focus();
             return;
+        } else {
+            if (edadErrorSpan) edadErrorSpan.style.display = 'none';
         }
 
         // Validación de Teléfono
