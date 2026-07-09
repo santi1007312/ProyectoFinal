@@ -541,4 +541,36 @@ export const ProveedorService = {
     }
 };
 
+export const OrdenCompraService = {
+    async listar() {
+        const baseUrl = await getBaseUrl();
+        const res = await fetch(`${baseUrl}/api/ordenes-compra`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+    },
+
+    async crear(datos) {
+        const baseUrl = await getBaseUrl();
+        const res = await fetch(`${baseUrl}/api/ordenes-compra`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos),
+            credentials: 'include'
+        });
+        return res.json();
+    },
+
+    async marcarRecibido(idOrdenCompra) {
+        const baseUrl = await getBaseUrl();
+        const res = await fetch(`${baseUrl}/api/ordenes-compra/${idOrdenCompra}/recibir`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        return res.json();
+    }
+};
+
 

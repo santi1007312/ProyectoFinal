@@ -2,7 +2,7 @@
  * admin.js — Elixir and Flexx
  * Panel de Administración Completo (Dashboard, Productos, Ventas, Usuarios, Cupones).
  */
-import { UsuarioService, ProductoService, PedidoService, CategoriaService, SoporteService, VarianteService, ProveedorService } from '../services/api.js';
+import { UsuarioService, ProductoService, PedidoService, CategoriaService, SoporteService, VarianteService, ProveedorService, getBaseUrl, OrdenCompraService } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const navItems = document.querySelectorAll('.nav-item');
@@ -601,28 +601,62 @@ document.addEventListener('DOMContentLoaded', () => {
             // Adjuntar colores seleccionados
             coloresSeleccionados.forEach(color => {
                 formData.append('colores', color);
+                formData.append('color_option', color);
             });
             
             // Adjuntar imágenes acumuladas
             imagenesSeleccionadas.forEach(archivo => {
                 formData.append('imagenes', archivo);
+                formData.append('imagen', archivo);
             });
 
-            let resultado;
-            if (idProducto) {
-                resultado = await ProductoService.actualizarConForm(formData);
-            } else {
-                resultado = await ProductoService.crearConForm(formData);
-            }
+            try {
+                formData.append('accion', idProducto ? 'actualizar' : 'crear');
 
-            if (resultado.ok) {
-                alert('🎉 ' + (resultado.mensaje || 'Prenda guardada con éxito en el catálogo.'));
-                wrapper.style.display = 'none';
-                form.reset();
-                imagenesSeleccionadas = [];
-                renderProductos();
-            } else {
-                alert('❌ Error al guardar: ' + resultado.mensaje);
+                console.log("Enviando prenda al servidor con datos:");
+                for (let [key, val] of formData.entries()) {
+                    if (val instanceof File) {
+                        console.log(`- ${key}: [Archivo] ${val.name} (${val.size} bytes)`);
+                    } else {
+                        console.log(`- ${key}: ${val}`);
+                    }
+                }
+
+                const baseUrl = await getBaseUrl();
+                const url = `${baseUrl}/ProductoController`.replace(/([^:]\/)\/+/g, "$1");
+                const method = 'POST';
+
+                console.log(`Realizando petición fetch a URL: ${url} [MÉTODO: ${method}]`);
+
+                const res = await fetch(url, {
+                    method: method,
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                if (!res.ok) {
+                    const textError = await res.text();
+                    console.error("Error HTTP " + res.status + " al guardar prenda:", textError);
+                    alert("Error HTTP " + res.status + " del servidor: " + textError);
+                    return;
+                }
+
+                const json = await res.json();
+                console.log("Respuesta JSON del servidor para prenda:", json);
+
+                if (json.status === 'success') {
+                    alert('🎉 ' + (json.mensaje || 'Prenda guardada con éxito en el catálogo.'));
+                    wrapper.style.display = 'none';
+                    form.reset();
+                    imagenesSeleccionadas = [];
+                    renderProductos();
+                } else {
+                    console.error("Error devuelto por el controlador al guardar prenda:", json.mensaje || json);
+                    alert('❌ Error al guardar: ' + (json.mensaje || 'Ocurrió un error.'));
+                }
+            } catch (error) {
+                console.error('Excepción detectada al intentar guardar la prenda:', error);
+                alert('Excepción detectada en JS al intentar guardar la prenda: ' + error.message);
             }
         });
     }
@@ -1119,7 +1153,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── 6. GESTIÓN DE PROVEEDORES (MÓDULO COMPLETO) ──
     async function renderProveedores() {
         dynamicContent.innerHTML = `
-            <section id="sec-proveedores">
+            <div class="admin-tabs" style="display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid #29292e; padding-bottom: 10px;">
+                <button class="tab-btn-prov active" data-tab-prov="listado" style="background: transparent; border: none; color: #fff; padding: 10px 20px; font-weight: bold; cursor: pointer; border-bottom: 3px solid #04d361;">Directorio de Proveedores</button>
+                <button class="tab-btn-prov" data-tab-prov="realizar-pedido" style="background: transparent; border: none; color: #a8a8b3; padding: 10px 20px; font-weight: bold; cursor: pointer;">Realizar Pedido de Mercancía</button>
+                <button class="tab-btn-prov" data-tab-prov="historial" style="background: transparent; border: none; color: #a8a8b3; padding: 10px 20px; font-weight: bold; cursor: pointer;">Historial de Pedidos</button>
+            </div>
+
+            <!-- Sub-tab 1: Directorio -->
+            <div id="subContentListado" class="sub-tab-content" style="display: block;">
                 <div class="action-bar" style="margin-bottom: 20px;">
                     <button id="btnAbrirFormProveedor" class="btn-urban">＋ Registrar Proveedor</button>
                 </div>
@@ -1201,9 +1242,68 @@ document.addEventListener('DOMContentLoaded', () => {
                         <tr><td colspan="7" style="text-align:center;">Cargando proveedores...</td></tr>
                     </tbody>
                 </table>
-            </section>
+            </div>
+
+            <!-- Sub-tab 2: Realizar Pedido -->
+            <div id="subContentRealizarPedido" class="sub-tab-content" style="display: none;">
+                <div class="admin-panel-card">
+                    <h3>Realizar Pedido de Mercancía a Proveedor</h3>
+                    <form id="formRealizarPedido" class="admin-grid-form" style="margin-top: 15px;">
+                        <div class="input-group">
+                            <label>Proveedor</label>
+                            <select name="idProveedor" id="pedidoProveedor" style="padding: 10px; border-radius: 4px; background: #1f1f23; color: #fff; border: 1px solid #29292e;" required>
+                                <option value="">-- Seleccione Proveedor --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Producto a Abastecer</label>
+                            <select id="pedidoProducto" style="padding: 10px; border-radius: 4px; background: #1f1f23; color: #fff; border: 1px solid #29292e;" required>
+                                <option value="">-- Seleccione Producto --</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group" id="costoUnitarioGroup" style="display: none;">
+                            <label>Costo Unitario por Prenda ($COP)</label>
+                            <input type="number" id="pedidoCosto" min="0" placeholder="Ej: 25000" style="padding: 10px; border-radius: 4px; background: #1f1f23; color: #fff; border: 1px solid #29292e;">
+                        </div>
+
+                        <div class="input-group" id="pedidoVariantesContainer" style="grid-column: span 2; display: none;">
+                            <label style="font-weight: bold; margin-bottom: 10px; display: block; color: #04d361;">Cantidades por Talla/Color</label>
+                            <div id="variantesStockInputs" class="size-stock-container" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <!-- JS inyectará los inputs aquí -->
+                            </div>
+                        </div>
+
+                        <div style="grid-column: span 2; display: flex; gap: 10px; margin-top: 15px;">
+                            <button type="submit" class="btn-urban" id="btnEnviarPedido" style="background: #04d361; color: #fff; border: none;">Enviar Pedido</button>
+                            <button type="button" class="btn-action" id="btnResetPedido">Limpiar Formulario</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sub-tab 3: Historial de Pedidos -->
+            <div id="subContentHistorial" class="sub-tab-content" style="display: none;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID Pedido</th>
+                            <th>Proveedor</th>
+                            <th>Fecha</th>
+                            <th>Total ($COP)</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historialPedidosTableBody">
+                        <tr><td colspan="6" style="text-align:center;">Cargando historial de pedidos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         `;
 
+        // ── VARIABLES PARA PROVEEDORES ──
         const btnAbrir = document.getElementById('btnAbrirFormProveedor');
         const btnCancelar = document.getElementById('btnCancelarProveedor');
         const wrapper = document.getElementById('wrapperFormProveedor');
@@ -1334,6 +1434,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function validarCampo(input) {
+            if (input.type === 'hidden' || input.id === 'provId') {
+                return true;
+            }
             const id = input.id.replace('prov', '').toLowerCase();
             const val = input.value.trim();
 
@@ -1365,44 +1468,324 @@ document.addEventListener('DOMContentLoaded', () => {
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            let formValido = true;
+            console.log("Enviando formulario de proveedores...");
 
+            let formValido = true;
             form.querySelectorAll('input, select').forEach(input => {
-                if (!validarCampo(input)) {
-                    formValido = false;
+                if (input.type !== 'hidden' && input.id !== 'provId') {
+                    const val = input.value.trim();
+                    if (!val) {
+                        mostrarError(input.name, 'Este campo es obligatorio.');
+                        formValido = false;
+                    } else {
+                        limpiarError(input.name);
+                    }
                 }
             });
 
-            if (!formValido) return;
-
-            const id = document.getElementById('provId').value;
-            const payload = {
-                nitProveedor: document.getElementById('provNit').value.trim(),
-                nombreEmpresa: document.getElementById('provEmpresa').value.trim(),
-                nombreContacto: document.getElementById('provContacto').value.trim(),
-                telefono: document.getElementById('provTelefono').value.trim(),
-                correo: document.getElementById('provCorreo').value.trim(),
-                direccion: document.getElementById('provDireccion').value.trim(),
-                categoriaInsumo: document.getElementById('provInsumo').value
-            };
-
-            let res;
-            if (id) {
-                res = await ProveedorService.actualizar(id, payload);
-            } else {
-                res = await ProveedorService.crear(payload);
+            if (!formValido) {
+                console.warn("Formulario inválido. Abortando envío.");
+                return;
             }
 
-            if (res.success) {
-                alert('Proveedor guardado con éxito.');
-                wrapper.style.display = 'none';
-                form.reset();
-                cargarTablasProveedores();
-            } else {
-                alert('Error al guardar: ' + (res.error || 'Ocurrió un error.'));
+            try {
+                const id = document.getElementById('provId').value;
+                const payload = {
+                    nitProveedor: document.getElementById('provNit').value.trim(),
+                    nombreEmpresa: document.getElementById('provEmpresa').value.trim(),
+                    nombreContacto: document.getElementById('provContacto').value.trim(),
+                    telefono: document.getElementById('provTelefono').value.trim(),
+                    correo: document.getElementById('provCorreo').value.trim(),
+                    direccion: document.getElementById('provDireccion').value.trim(),
+                    categoriaInsumo: document.getElementById('provInsumo').value
+                };
+
+                const baseUrl = await getBaseUrl();
+                const url = id 
+                    ? `${baseUrl}/api/proveedores/${id}`.replace(/([^:]\/)\/+/g, "$1")
+                    : `${baseUrl}/api/proveedores`.replace(/([^:]\/)\/+/g, "$1");
+                const method = id ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+
+                if (!res.ok) {
+                    const textError = await res.text();
+                    alert("Error HTTP " + res.status + " del servidor: " + textError);
+                    return;
+                }
+
+                const json = await res.json();
+                if (json.success) {
+                    alert('Proveedor guardado con éxito.');
+                    wrapper.style.display = 'none';
+                    form.reset();
+                    cargarTablasProveedores();
+                } else {
+                    alert('Error del servidor: ' + (json.error || 'Ocurrió un error inesperado al guardar.'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Excepción detectada en JS al intentar guardar el proveedor: ' + error.message);
             }
         });
 
+        // ── CONTROL DE SUB-PESTAÑAS DE PROVEEDORES ──
+        function cambiarSubPestanaProv(pestana) {
+            document.querySelectorAll('.tab-btn-prov').forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.color = '#a8a8b3';
+                btn.style.borderBottom = 'none';
+                
+                if (btn.getAttribute('data-tab-prov') === pestana) {
+                    btn.classList.add('active');
+                    btn.style.color = '#fff';
+                    btn.style.borderBottom = '3px solid #04d361';
+                }
+            });
+
+            document.querySelectorAll('.sub-tab-content').forEach(div => {
+                div.style.display = 'none';
+            });
+
+            if (pestana === 'listado') {
+                document.getElementById('subContentListado').style.display = 'block';
+                cargarTablasProveedores();
+            } else if (pestana === 'realizar-pedido') {
+                document.getElementById('subContentRealizarPedido').style.display = 'block';
+                cargarSelectsPedido();
+            } else if (pestana === 'historial') {
+                document.getElementById('subContentHistorial').style.display = 'block';
+                cargarHistorialPedidos();
+            }
+        }
+
+        document.querySelectorAll('.tab-btn-prov').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.getAttribute('data-tab-prov');
+                cambiarSubPestanaProv(tab);
+            });
+        });
+
+        // ── FORMULARIO Y LÓGICA DE PEDIDOS DE MERCANCÍA ──
+        async function cargarSelectsPedido() {
+            const selectProv = document.getElementById('pedidoProveedor');
+            const selectProd = document.getElementById('pedidoProducto');
+            if (!selectProv || !selectProd) return;
+
+            selectProv.innerHTML = '<option value="">Cargando proveedores...</option>';
+            selectProd.innerHTML = '<option value="">Cargando productos...</option>';
+
+            try {
+                const [proveedores, productos] = await Promise.all([
+                    ProveedorService.listar().catch(() => []),
+                    ProductoService.listar().catch(() => [])
+                ]);
+
+                // Poblar proveedores activos
+                selectProv.innerHTML = '<option value="">-- Seleccione Proveedor --</option>' +
+                    proveedores.filter(p => p.estado === 1).map(p => `<option value="${p.idProveedor}">${p.nombreEmpresa}</option>`).join('');
+
+                // Poblar productos
+                selectProd.innerHTML = '<option value="">-- Seleccione Producto --</option>' +
+                    productos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+
+            } catch (err) {
+                console.error("Error al cargar selectores de pedido:", err);
+                selectProv.innerHTML = '<option value="">Error al cargar</option>';
+                selectProd.innerHTML = '<option value="">Error al cargar</option>';
+            }
+        }
+
+        const selectProd = document.getElementById('pedidoProducto');
+        if (selectProd) {
+            selectProd.addEventListener('change', async (e) => {
+                const idProducto = e.target.value;
+                const container = document.getElementById('pedidoVariantesContainer');
+                const inputsDiv = document.getElementById('variantesStockInputs');
+                const costGroup = document.getElementById('costoUnitarioGroup');
+                
+                if (!idProducto) {
+                    container.style.display = 'none';
+                    costGroup.style.display = 'none';
+                    return;
+                }
+                
+                inputsDiv.innerHTML = '<div class="loader">Cargando variantes de tallas...</div>';
+                container.style.display = 'block';
+                costGroup.style.display = 'block';
+                
+                try {
+                    const variants = await VarianteService.listarPorProducto(idProducto).catch(() => []);
+                    const tallasInteres = ['S', 'M', 'L', 'XL'];
+                    const filtered = variants.filter(v => tallasInteres.includes(v.talla));
+                    
+                    if (filtered.length === 0) {
+                        inputsDiv.innerHTML = '<div style="color: #ff4d4d; padding: 10px;">Este producto no tiene variantes registradas de tallas S, M, L o XL.</div>';
+                    } else {
+                        inputsDiv.innerHTML = filtered.map(v => `
+                            <div class="size-stock-item" style="flex: 1; min-width: 140px; margin-bottom: 10px;">
+                                <label style="font-weight: 500; font-size: 0.85rem; display:block; margin-bottom: 5px;">Talla ${v.talla} (${v.color})</label>
+                                <input type="number" class="cant-talla-input" name="cant_${v.idVariantes}" data-id-variante="${v.idVariantes}" min="0" value="0" style="padding: 10px; border-radius: 4px; background: #19191c; color: #fff; border: 1px solid #29292e; width: 100%;">
+                            </div>
+                        `).join('');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    inputsDiv.innerHTML = '<div style="color: #ff4d4d;">Error al cargar variantes.</div>';
+                }
+            });
+        }
+
+        const formPedido = document.getElementById('formRealizarPedido');
+        if (formPedido) {
+            formPedido.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const idProveedor = document.getElementById('pedidoProveedor').value;
+                const costoUnitario = parseFloat(document.getElementById('pedidoCosto').value) || 0;
+                
+                if (!idProveedor) {
+                    alert('Por favor seleccione un proveedor.');
+                    return;
+                }
+                if (costoUnitario <= 0) {
+                    alert('Por favor ingrese un costo unitario válido (mayor a 0).');
+                    return;
+                }
+                
+                const inputs = formPedido.querySelectorAll('.cant-talla-input');
+                const items = [];
+                let totalCantidad = 0;
+                
+                inputs.forEach(input => {
+                    const idVar = parseInt(input.getAttribute('data-id-variante'));
+                    const cant = parseInt(input.value) || 0;
+                    if (cant > 0) {
+                        items.push({ idVariantes: idVar, cantidad: cant, costoUnitario: costoUnitario });
+                        totalCantidad += cant;
+                    }
+                });
+                
+                if (items.length === 0 || totalCantidad === 0) {
+                    alert('Debe pedir al menos 1 prenda en alguna talla.');
+                    return;
+                }
+                
+                const itemsStr = items.map(item => `${item.idVariantes}:${item.cantidad}:${item.costoUnitario}`).join('|');
+                const subtotal = totalCantidad * costoUnitario;
+                
+                const payload = {
+                    idProveedor: idProveedor,
+                    subtotal: subtotal,
+                    items: itemsStr
+                };
+                
+                try {
+                    const result = await OrdenCompraService.crear(payload);
+                    if (result.success) {
+                        alert('🎉 Pedido de mercancía enviado correctamente al proveedor en estado Pendiente.');
+                        formPedido.reset();
+                        document.getElementById('pedidoVariantesContainer').style.display = 'none';
+                        document.getElementById('costoUnitarioGroup').style.display = 'none';
+                        cambiarSubPestanaProv('historial');
+                    } else {
+                        alert('Error al enviar el pedido: ' + (result.error || 'Ocurrió un error.'));
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error de conexión al enviar el pedido.');
+                }
+            });
+
+            const btnReset = document.getElementById('btnResetPedido');
+            if (btnReset) {
+                btnReset.addEventListener('click', () => {
+                    formPedido.reset();
+                    document.getElementById('pedidoVariantesContainer').style.display = 'none';
+                    document.getElementById('costoUnitarioGroup').style.display = 'none';
+                });
+            }
+        }
+
+        // ── LOGICA DE RECEPCION Y HISTORIAL DE PEDIDOS ──
+        async function cargarHistorialPedidos() {
+            const tableBody = document.getElementById('historialPedidosTableBody');
+            if (!tableBody) return;
+            
+            try {
+                const ordenes = await OrdenCompraService.listar();
+                let filas = '';
+                
+                ordenes.forEach(o => {
+                    const totalFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(o.subtotal);
+                    const dateStr = o.fechaPedido ? new Date(o.fechaPedido).toLocaleDateString('es-CO') + ' ' + new Date(o.fechaPedido).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : 'Reciente';
+                    
+                    let badgeClass = 'badge info'; // Pendiente
+                    if (o.estadoOrden === 'Recibido') badgeClass = 'badge success';
+                    
+                    let accionBtn = '';
+                    if (o.estadoOrden === 'Pendiente') {
+                        accionBtn = `<button class="btn-action btn-recibir-pedido" data-id="${o.idOrdenCompra}" style="background: #04d361; color: #fff; border:none;"><i class='bx bx-check-double'></i> Marcar como Recibido</button>`;
+                    } else {
+                        accionBtn = `<span style="font-size:0.85rem; color:#888;">Entregado & Stock Sumado</span>`;
+                    }
+                    
+                    filas += `
+                        <tr>
+                            <td><strong>OC-${o.idOrdenCompra}</strong></td>
+                            <td>${o.nombreProveedor}</td>
+                            <td>${dateStr}</td>
+                            <td>${totalFormatted}</td>
+                            <td><span class="${badgeClass}">${o.estadoOrden.toUpperCase()}</span></td>
+                            <td>${accionBtn}</td>
+                        </tr>
+                    `;
+                });
+                
+                if (ordenes.length === 0) {
+                    filas = `<tr><td colspan="6" style="text-align:center;">No hay pedidos de mercancía registrados.</td></tr>`;
+                }
+                
+                tableBody.innerHTML = filas;
+                
+                document.querySelectorAll('.btn-recibir-pedido').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = btn.getAttribute('data-id');
+                        if (confirm(`¿Confirma que ha recibido la mercancía de la orden OC-${id}? Esto sumará automáticamente las unidades al stock y registrará el ingreso en el Kárdex.`)) {
+                            btn.disabled = true;
+                            btn.textContent = 'Procesando...';
+                            
+                            try {
+                                const result = await OrdenCompraService.marcarRecibido(id);
+                                if (result.success) {
+                                    alert('🎉 Inventario actualizado con éxito. El estado de la orden es ahora Recibido.');
+                                    cargarHistorialPedidos();
+                                } else {
+                                    alert('Error al marcar como recibido: ' + (result.error || 'Ocurrió un error.'));
+                                    btn.disabled = false;
+                                    btn.textContent = 'Marcar como Recibido';
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                alert('Error de conexión.');
+                                btn.disabled = false;
+                                btn.textContent = 'Marcar como Recibido';
+                            }
+                        }
+                    });
+                });
+                
+            } catch (err) {
+                console.error(err);
+                tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ff4d4d;">⚠️ Error al cargar el historial.</td></tr>`;
+            }
+        }
+
+        // Cargar directorio de proveedores por defecto
         cargarTablasProveedores();
     }
 

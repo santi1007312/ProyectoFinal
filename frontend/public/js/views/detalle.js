@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const releaseDateEl = document.getElementById('productReleaseDate');
         if (releaseContainer && releaseDateEl) {
             if (prod.esNuevo) {
-                releaseDateEl.textContent = `Lanzamiento: ${prod.esNuevo}`;
+                releaseDateEl.textContent = formatearFechaLanzamiento(prod.esNuevo);
                 releaseContainer.style.display = 'block';
             } else {
                 releaseContainer.style.display = 'none';
@@ -109,6 +109,26 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarTextoCarrito();
     }
 
+    function formatearFechaLanzamiento(fecha) {
+        if (!fecha) return '';
+        if (/^\d{2}\/\d{2}\/\d{2}$/.test(fecha)) {
+            return fecha;
+        }
+        try {
+            const valorNumerico = Number(fecha);
+            const d = !isNaN(valorNumerico) && String(fecha).trim() !== '' ? new Date(valorNumerico) : new Date(fecha);
+            if (!isNaN(d.getTime())) {
+                const dia = String(d.getDate()).padStart(2, '0');
+                const mes = String(d.getMonth() + 1).padStart(2, '0');
+                const anio = String(d.getFullYear()).slice(-2);
+                return `${dia}/${mes}/${anio}`;
+            }
+        } catch (err) {
+            console.error("Error formateando fecha:", err);
+        }
+        return fecha;
+    }
+
     function inicializarVistaSimple(prod) {
         if (nameEl)  nameEl.textContent  = prod.nombre;
         if (descEl)  {
@@ -123,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const releaseDateEl = document.getElementById('productReleaseDate');
         if (releaseContainer && releaseDateEl) {
             if (prod.esNuevo) {
-                releaseDateEl.textContent = `Lanzamiento: ${prod.esNuevo}`;
+                releaseDateEl.textContent = formatearFechaLanzamiento(prod.esNuevo);
                 releaseContainer.style.display = 'block';
             } else {
                 releaseContainer.style.display = 'none';
