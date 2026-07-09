@@ -98,38 +98,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── BOTÓN PAGAR → crea el pedido real en el backend ──────────────────────
+    // ── BOTÓN PAGAR → Redirige a la vista de checkout ──────────────────────
     if (btnPagar) {
-        btnPagar.addEventListener('click', async () => {
+        btnPagar.addEventListener('click', () => {
             if (carrito.length === 0) {
                 alert('El carrito está vacío.');
                 return;
             }
 
-            const direccion = direccionInput?.value.trim() || 'Sin dirección especificada';
-            const total = carrito.reduce((acc, p) => acc + (p.precio * p.cantidad), 0);
+            // Guardar en checkout temporal
+            localStorage.setItem('elixir_checkout_items', JSON.stringify(carrito));
+            localStorage.setItem('elixir_checkout_source', 'cart');
 
-            btnPagar.disabled = true;
-            btnPagar.textContent = 'Procesando...';
-
-            const resultado = await PedidoService.crear(total, direccion);
-
-            if (resultado.ok) {
-                // Limpiar carrito tras compra exitosa
-                CarritoService.limpiarLocal();
-                alert(`✅ ¡Pedido #${resultado.idPedido} creado exitosamente!\nTotal: $${total.toLocaleString('es-CO')} COP\nPronto recibirás tu pedido.`);
-                window.location.href = 'interfazPedidos.html';
-            } else {
-                btnPagar.disabled = false;
-                btnPagar.textContent = 'PAGAR PEDIDO';
-                // Si el backend retorna 401 (no autenticado), redirigir al login
-                if (resultado.mensaje && resultado.mensaje.includes('sesion')) {
-                    alert('⚠️ Debes iniciar sesión para realizar un pedido.');
-                    window.location.href = 'login.html';
-                } else {
-                    alert('❌ No se pudo procesar el pedido: ' + (resultado.mensaje || 'error del servidor.'));
-                }
-            }
+            // Redirigir a checkout.html
+            window.location.href = 'checkout.html';
         });
     }
 

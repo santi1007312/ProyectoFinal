@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const colorDisplay    = document.getElementById('selectedColorDisplay');
     const tallaDisplay    = document.getElementById('selectedTallaDisplay');
     const btnAdd          = document.getElementById('btnAddToCart');
+    const btnBuyNow       = document.getElementById('btnBuyNow');
     const btnFeedback     = document.getElementById('addCartFeedback');
 
     let productoActual  = null;
@@ -183,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Renderizar Tallas
     function renderizarTallas(tallas) {
         if (!tallaContainer) return;
         tallaContainer.innerHTML = '';
@@ -319,6 +321,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (btnBuyNow) {
+        btnBuyNow.addEventListener('click', () => {
+            if (!productoActual) return;
+
+            const itemLocal = {
+                idVariante: idVarianteSeleccionada || 1,
+                id:     productoActual.id,
+                nombre: productoActual.nombre,
+                precio: productoActual.precioFinal || productoActual.precioBase,
+                color:  colorSeleccionado,
+                talla:  tallaSeleccionada,
+                cantidad: cantidadSeleccionada,
+                imagen: productoActual.imagenPrincipal || productoActual.imagen || '../public/images/34.webp'
+            };
+
+            localStorage.setItem('elixir_checkout_items', JSON.stringify([itemLocal]));
+            localStorage.setItem('elixir_checkout_source', 'direct');
+            window.location.href = 'checkout.html';
+        });
+    }
+
     // EVENTOS DEL MODAL FLOTANTE
     const cartModal = document.getElementById('cartModal');
     const btnCloseModal = document.getElementById('btnCloseModal');
@@ -347,7 +370,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnModalCheckout) {
         btnModalCheckout.addEventListener('click', () => {
-            window.location.href = 'interfazCarrito.html?checkout=true';
+            const items = CarritoService.obtenerLocal();
+            if (items.length === 0) {
+                alert('El carrito está vacío.');
+                return;
+            }
+            localStorage.setItem('elixir_checkout_items', JSON.stringify(items));
+            localStorage.setItem('elixir_checkout_source', 'cart');
+            window.location.href = 'checkout.html';
         });
     }
 });

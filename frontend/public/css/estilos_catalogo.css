@@ -177,7 +177,7 @@ body {
   font-weight: 700; /* Gruesa pero estilizada (no tan pesada como un 900) */
   text-transform: uppercase; /* Fuerza las mayúsculas */
   letter-spacing: 2px; /* Un pequeño espacio entre letras para darle elegancia */
-  color: #111; /* Color oscuro con presencia */
+  color: #ffffff; /* Color oscuro con presencia */
   margin-bottom: 20px; /* Separación entre el texto y la imagen */
   text-align: center;
   padding: 0 20px; /* Evita que el texto toque los bordes en celulares */
@@ -187,7 +187,7 @@ body {
 .banner-imagen-contenedor {
   width: 100%;
   height: auto;
-  max-height: 500px; /* Limita la altura máxima para que no tape toda la pantalla al bajar */
+  max-height: 1000px; /* Limita la altura máxima para que no tape toda la pantalla al bajar */
   overflow: hidden;
 }
 

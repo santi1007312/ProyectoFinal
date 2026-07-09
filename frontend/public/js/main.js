@@ -148,12 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const { productos, categorias } = data;
         resultsContainer.innerHTML = '';
 
-        if ((!productos || productos.length === 0) && (!categorias || categorias.length === 0)) {
-            resultsContainer.innerHTML = `<div class="search-results__empty">No se encontraron resultados para su búsqueda.</div>`;
-            resultsContainer.classList.add('is-active');
-            return;
-        }
-
         resultsContainer.classList.add('is-active');
 
         // Columna de Productos
@@ -165,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (productos && productos.length > 0) {
             productos.forEach(p => {
                 const item = document.createElement('a');
-                item.href = `interfazProductoDetalle.html?id=${p.id}`;
+                item.href = `checkout.html?id=${p.id}`;
                 item.className = 'search-product-item';
                 
                 const priceFmt = Number(p.precio).toLocaleString('es-CO');

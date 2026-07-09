@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         lista.forEach(prod => {
             const card = document.createElement('a');
-            card.href  = `interfazProductoDetalle.html?id=${prod.id}`;
+            card.href  = `checkout.html?id=${prod.id}`;
             card.className = 'category-card';
 
             const imgSrc = prod.imagenPrincipal || prod.imagen || '../public/images/34.webp';

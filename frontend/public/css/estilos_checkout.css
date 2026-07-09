@@ -1,0 +1,722 @@
+/* ==========================================================================
+   ESTILOS DE LA VISTA DE CHECKOUT - ELIXIR AND FLEXX (DARK MODE)
+   ========================================================================== */
+
+body {
+    background-color: #0b0b0b;
+    color: #ffffff;
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Título de la vista */
+.title-view {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 40px 10px 40px;
+}
+
+.title-view__header {
+    text-align: left;
+}
+
+.title-view__badge {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: var(--color-gray-light, #aaaaaa);
+    text-transform: uppercase;
+}
+
+/* Contenedor del Layout Principal */
+.checkout-layout-container {
+    max-width: 1400px;
+    margin: 0 auto 80px auto;
+    padding: 0 40px;
+    box-sizing: border-box;
+}
+
+.checkout-layout {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 50px;
+    align-items: start;
+}
+
+/* --------------------------------------------------------------------------
+   COLUMNA IZQUIERDA: Formularios y Métodos
+   -------------------------------------------------------------------------- */
+.checkout-col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+}
+
+.checkout-section {
+    background-color: #121212;
+    border: 1px solid #222222;
+    border-radius: 8px;
+    padding: 25px;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #222222;
+    padding-bottom: 12px;
+    color: #ffffff;
+}
+
+/* Tarjeta de Dirección de Envío Guardada */
+.saved-address-card {
+    background-color: #181818;
+    border: 1px solid #333333;
+    border-radius: 6px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.address-details {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.address-icon {
+    font-size: 1.5rem;
+    color: #1a73e8;
+    margin-top: 3px;
+}
+
+.address-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #e0e0e0;
+}
+
+.address-text strong {
+    color: #ffffff;
+    font-size: 0.95rem;
+}
+
+.btn-modify-address {
+    background-color: transparent;
+    color: #ffffff;
+    border: 1px solid #444444;
+    padding: 10px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-modify-address:hover {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+}
+
+/* Métodos de Pago Dinámicos */
+.payment-methods-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.payment-method-box {
+    background-color: #181818;
+    border: 1px solid #222222;
+    border-radius: 6px;
+    padding: 18px;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.payment-method-box.active {
+    border-color: #1a73e8;
+    background-color: #151b26;
+}
+
+.payment-radio-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+}
+
+.payment-radio-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.custom-radio {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #555555;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    transition: border-color 0.2s ease;
+}
+
+.payment-radio-container input:checked ~ .custom-radio {
+    border-color: #1a73e8;
+}
+
+.custom-radio::after {
+    content: '';
+    position: absolute;
+    display: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1a73e8;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.payment-radio-container input:checked ~ .custom-radio::after {
+    display: block;
+}
+
+.payment-title-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.payment-title-text i {
+    font-size: 1.25rem;
+}
+
+/* Subformularios condicionales */
+.payment-subform {
+    margin-top: 15px;
+    border-top: 1px solid #333333;
+    padding-top: 15px;
+}
+
+.payment-info-desc {
+    font-size: 0.85rem;
+    color: #aaaaaa;
+    line-height: 1.5;
+}
+
+/* Inputs y Selects */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #aaaaaa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.checkout-input, .checkout-select {
+    background-color: #111111;
+    border: 1px solid #333333;
+    color: #ffffff;
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    width: 100%;
+}
+
+.checkout-input::placeholder {
+    color: #555555;
+}
+
+.checkout-input:focus, .checkout-select:focus {
+    border-color: #1a73e8;
+}
+
+.checkout-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 15px;
+    padding-right: 40px;
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+}
+
+/* Error de validación */
+.error-msg {
+    font-size: 0.75rem;
+    color: #ff3333;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+.error-input {
+    border-color: #ff3333 !important;
+}
+
+/* Dirección de Facturación */
+.billing-options-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.billing-radio-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    padding: 5px 0;
+}
+
+.billing-radio-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.billing-radio-container input:checked ~ .custom-radio {
+    border-color: #1a73e8;
+}
+
+.billing-radio-container input:checked ~ .custom-radio::after {
+    display: block;
+}
+
+.billing-option-label {
+    font-size: 0.9rem;
+    color: #e0e0e0;
+}
+
+/* Accordion de Facturación */
+.billing-address-accordion {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+}
+
+.billing-address-accordion.open {
+    max-height: 1000px;
+    transition: max-height 0.6s cubic-bezier(1, 0, 1, 0);
+}
+
+.billing-form-inner {
+    background-color: #181818;
+    border: 1px solid #222222;
+    border-radius: 6px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+/* Botón pagar ahora */
+.payment-action-block {
+    margin-top: 10px;
+}
+
+.btn-pay-now-large {
+    width: 100%;
+    background-color: #1a73e8;
+    color: #ffffff;
+    border: 1px solid #1a73e8;
+    padding: 18px;
+    font-size: 1.05rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-pay-now-large:hover {
+    background-color: #155cb4;
+    border-color: #155cb4;
+}
+
+.btn-pay-now-large:disabled {
+    background-color: #333333;
+    border-color: #444444;
+    color: #888888;
+    cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   COLUMNA DERECHA: Resumen de Compra Fijo
+   -------------------------------------------------------------------------- */
+.checkout-col-right {
+    position: sticky;
+    top: 30px;
+}
+
+.order-summary-sticky {
+    background-color: #121212;
+    border: 1px solid #222222;
+    border-radius: 8px;
+    padding: 25px;
+}
+
+.summary-header {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    color: #ffffff;
+    border-bottom: 1px solid #222222;
+    padding-bottom: 12px;
+}
+
+/* Lista de productos */
+.summary-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Estilo barra scroll para lista resumen */
+.summary-items-list::-webkit-scrollbar {
+    width: 5px;
+}
+.summary-items-list::-webkit-scrollbar-track {
+    background: #111111;
+}
+.summary-items-list::-webkit-scrollbar-thumb {
+    background: #333333;
+    border-radius: 2px;
+}
+
+.summary-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.summary-item-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.summary-item-img-wrapper {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+}
+
+.summary-item-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #222222;
+}
+
+.summary-item-qty-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background-color: #1a73e8;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 1.5px solid #121212;
+}
+
+.summary-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.summary-item-name {
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.summary-item-meta {
+    font-size: 0.75rem;
+    color: #aaaaaa;
+    margin: 0;
+}
+
+.summary-item-price {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+}
+
+.summary-divider {
+    border: 0;
+    border-top: 1px solid #222222;
+    margin: 25px 0;
+}
+
+/* Bloque totales */
+.summary-totals-block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.summary-label {
+    color: #aaaaaa;
+}
+
+.summary-value {
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.shipping-free {
+    color: #2ecc71;
+    font-weight: bold;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.inner-divider {
+    margin: 10px 0;
+}
+
+.total-highlight-row {
+    font-size: 1.15rem;
+    margin-top: 5px;
+}
+
+.summary-total-label {
+    color: #ffffff;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.summary-total-price {
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 1.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   MODAL DE EDICIÓN DE DIRECCIÓN
+   -------------------------------------------------------------------------- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-container {
+    background-color: #121212;
+    border: 1px solid #333333;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 600px;
+    padding: 30px;
+    box-sizing: border-box;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalFadeIn 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #222222;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.modal-close-icon {
+    background: none;
+    border: none;
+    color: #aaaaaa;
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease;
+    padding: 0;
+    margin: 0;
+}
+
+.modal-close-icon:hover {
+    color: #ffffff;
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    border-top: 1px solid #222222;
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.btn-modal-cancel {
+    background-color: transparent;
+    color: #ffffff;
+    border: 1px solid #444444;
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-modal-cancel:hover {
+    background-color: #222222;
+}
+
+.btn-modal-save {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #ffffff;
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-modal-save:hover {
+    background-color: #dddddd;
+    border-color: #dddddd;
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIVIDAD
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+    .checkout-layout {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    
+    .checkout-col-right {
+        position: static;
+    }
+
+    .title-view {
+        padding: 20px 20px 0 20px;
+    }
+
+    .checkout-layout-container {
+        padding: 0 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .form-row-2, .form-row-3 {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    
+    .saved-address-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-modify-address {
+        width: 100%;
+        text-align: center;
+    }
+}

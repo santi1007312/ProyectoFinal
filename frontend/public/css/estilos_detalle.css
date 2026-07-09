@@ -203,9 +203,12 @@ header {
     font-weight: bold;
 }
 
-/* Botón Añadir al Carrito */
+/* Botón Añadir al Carrito y Compra Directa */
 .action-container {
     margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .btn-add-cart {
@@ -225,6 +228,29 @@ header {
 .btn-add-cart:hover {
     background-color: #ffffff;
     color: #000000;
+}
+
+.btn-buy-now {
+    width: 100%;
+    background-color: #1a73e8;
+    color: white;
+    border: 1px solid #1a73e8;
+    padding: 18px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s, border-color 0.3s, transform 0.1s;
+}
+
+.btn-buy-now:hover {
+    background-color: #155cb4;
+    border-color: #155cb4;
+}
+
+.btn-buy-now:active {
+    transform: scale(0.98);
 }
 
 /* ==========================================================================
