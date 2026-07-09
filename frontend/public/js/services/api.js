@@ -495,3 +495,50 @@ export const SoporteService = {
     }
 };
 
+// ─── PROVEEDORES ──────────────────────────────────────────────────────────────
+export const ProveedorService = {
+    async listar() {
+        const baseUrl = await getBaseUrl();
+        const res = await fetch(`${baseUrl}/api/proveedores`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+    },
+
+    async crear(datos) {
+        const baseUrl = await getBaseUrl();
+        const res = await fetch(`${baseUrl}/api/proveedores`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos),
+            credentials: 'include'
+        });
+        return res.json();
+    },
+
+    async actualizar(id, datos) {
+        const baseUrl = await getBaseUrl();
+        const res = await fetch(`${baseUrl}/api/proveedores/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos),
+            credentials: 'include'
+        });
+        return res.json();
+    },
+
+    async cambiarEstado(id, nuevoEstado) {
+        const baseUrl = await getBaseUrl();
+        const res = await fetch(`${baseUrl}/api/proveedores/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado: nuevoEstado }),
+            credentials: 'include'
+        });
+        return res.json();
+    }
+};
+
+

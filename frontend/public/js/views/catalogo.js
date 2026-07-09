@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.addEventListener('click', (e) => {
                     e.preventDefault();
                     const catId = card.getAttribute('data-id');
-                    
+
                     // Modificar la URL sin refrescar la página
                     const url = new URL(window.location);
                     url.searchParams.set('categoria', catId);
@@ -119,13 +119,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         lista.forEach(prod => {
             const card = document.createElement('a');
-            card.href  = `checkout.html?id=${prod.id}`;
+            card.href = `interfazProductoDetalle.html?id=${prod.id}`;
             card.className = 'category-card';
 
             const imgSrc = prod.imagenPrincipal || prod.imagen || '../public/images/34.webp';
             const nombreCategoria = CATEGORIAS[prod.categoria] || 'Ropa';
             const precioFormateado = Number(prod.precioBase).toLocaleString('es-CO');
-            const precioFinalFmt   = Number(prod.precioFinal || prod.precioBase).toLocaleString('es-CO');
+            const precioFinalFmt = Number(prod.precioFinal || prod.precioBase).toLocaleString('es-CO');
             const tieneDescuento = prod.descuento > 0;
 
             card.innerHTML = `
@@ -144,10 +144,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="category-card__category">${nombreCategoria}</p>
                     <div class="category-card__price">
                         ${tieneDescuento
-                            ? `<span class="price-original">$${precioFormateado}</span>
+                    ? `<span class="price-original">$${precioFormateado}</span>
                                <span class="price-final">$${precioFinalFmt} COP</span>`
-                            : `<span class="price-final">$${precioFormateado} COP</span>`
-                        }
+                    : `<span class="price-final">$${precioFormateado} COP</span>`
+                }
                     </div>
                 </div>
             `;
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnVolver) {
         btnVolver.addEventListener('click', (e) => {
             e.preventDefault();
-            
+
             // Limpiar los query params del URL sin refrescar la página
             const url = new URL(window.location);
             url.searchParams.delete('categoria');

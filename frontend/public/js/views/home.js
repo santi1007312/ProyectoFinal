@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (prod) {
                     card.style.cursor = 'pointer';
                     card.addEventListener('click', () => {
-                        window.location.href = `checkout.html?id=${prod.id}`;
+                        window.location.href = `interfazProductoDetalle.html?id=${prod.id}`;
                     });
                 }
             });

@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cerrarBuscador();
             }
         });
-        
+
         // Cerrar al hacer clic fuera del contenedor de búsqueda
         document.addEventListener('click', (e) => {
             if (overlay.classList.contains('is-active')) {
@@ -148,6 +148,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const { productos, categorias } = data;
         resultsContainer.innerHTML = '';
 
+        if ((!productos || productos.length === 0) && (!categorias || categorias.length === 0)) {
+            resultsContainer.innerHTML = `<div class="search-results__empty">No se encontraron resultados para su búsqueda.</div>`;
+            resultsContainer.classList.add('is-active');
+            return;
+        }
+
         resultsContainer.classList.add('is-active');
 
         // Columna de Productos
@@ -155,13 +161,13 @@ document.addEventListener('DOMContentLoaded', () => {
         prodCol.innerHTML = `<h4 class="search-results__column-title">Productos</h4>`;
         const prodList = document.createElement('div');
         prodList.className = 'search-results__products-list';
-        
+
         if (productos && productos.length > 0) {
             productos.forEach(p => {
                 const item = document.createElement('a');
-                item.href = `checkout.html?id=${p.id}`;
+                item.href = `interfazProductoDetalle.html?id=${p.id}`;
                 item.className = 'search-product-item';
-                
+
                 const priceFmt = Number(p.precio).toLocaleString('es-CO');
                 const imgUrl = p.imagen || '../public/images/34.webp';
 

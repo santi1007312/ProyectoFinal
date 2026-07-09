@@ -2,7 +2,7 @@
  * admin.js — Elixir and Flexx
  * Panel de Administración Completo (Dashboard, Productos, Ventas, Usuarios, Cupones).
  */
-import { UsuarioService, ProductoService, PedidoService, CategoriaService, SoporteService, VarianteService } from '../services/api.js';
+import { UsuarioService, ProductoService, PedidoService, CategoriaService, SoporteService, VarianteService, ProveedorService } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const navItems = document.querySelectorAll('.nav-item');
@@ -52,6 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'soporte':
                 sectionTitle.textContent = "Gestión de PQR y Devoluciones";
                 renderSoporte();
+                break;
+            case 'proveedores':
+                sectionTitle.textContent = "Gestión de Proveedores";
+                renderProveedores();
                 break;
         }
     }
@@ -1110,6 +1114,296 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         }
+    }
+
+    // ── 6. GESTIÓN DE PROVEEDORES (MÓDULO COMPLETO) ──
+    async function renderProveedores() {
+        dynamicContent.innerHTML = `
+            <section id="sec-proveedores">
+                <div class="action-bar" style="margin-bottom: 20px;">
+                    <button id="btnAbrirFormProveedor" class="btn-urban">＋ Registrar Proveedor</button>
+                </div>
+
+                <div id="wrapperFormProveedor" class="admin-panel-card" style="display:none; margin-bottom:20px;">
+                    <h3 id="formProveedorTitle">Registrar Nuevo Proveedor</h3>
+                    <form id="formRegistrarProveedor" class="admin-grid-form">
+                        <input type="hidden" name="idProveedor" id="provId" value="">
+                        
+                        <div class="input-group">
+                            <label>NIT del Proveedor</label>
+                            <input type="text" name="nitProveedor" id="provNit" placeholder="Ej: 900123456-1" required>
+                            <span class="error-text" id="error-nitProveedor" style="color:#ff4d4d; font-size:0.8rem; display:none; margin-top:4px;"></span>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Nombre de la Empresa</label>
+                            <input type="text" name="nombreEmpresa" id="provEmpresa" placeholder="Ej: Textiles El Camino" required>
+                            <span class="error-text" id="error-nombreEmpresa" style="color:#ff4d4d; font-size:0.8rem; display:none; margin-top:4px;"></span>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Nombre del Contacto</label>
+                            <input type="text" name="nombreContacto" id="provContacto" placeholder="Ej: Juan Pérez" required>
+                            <span class="error-text" id="error-nombreContacto" style="color:#ff4d4d; font-size:0.8rem; display:none; margin-top:4px;"></span>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Teléfono</label>
+                            <input type="text" name="telefono" id="provTelefono" placeholder="Ej: +57 315 123 4567" required>
+                            <span class="error-text" id="error-telefono" style="color:#ff4d4d; font-size:0.8rem; display:none; margin-top:4px;"></span>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Correo Electrónico</label>
+                            <input type="email" name="correo" id="provCorreo" placeholder="Ej: contacto@empresa.com" required>
+                            <span class="error-text" id="error-correo" style="color:#ff4d4d; font-size:0.8rem; display:none; margin-top:4px;"></span>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Dirección</label>
+                            <input type="text" name="direccion" id="provDireccion" placeholder="Ej: Calle 45 #12-34" required>
+                            <span class="error-text" id="error-direccion" style="color:#ff4d4d; font-size:0.8rem; display:none; margin-top:4px;"></span>
+                        </div>
+                        
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label>Categoría de Insumo</label>
+                            <select name="categoriaInsumo" id="provInsumo" style="padding: 10px; border-radius: 4px; background: #1f1f23; color: #fff; border: 1px solid #29292e;" required>
+                                <option value="">-- Seleccionar --</option>
+                                <option value="Telas">Telas</option>
+                                <option value="Hilos">Hilos</option>
+                                <option value="Empaques">Empaques</option>
+                                <option value="Calzado">Calzado</option>
+                                <option value="Insumos Varios">Insumos Varios</option>
+                            </select>
+                            <span class="error-text" id="error-categoriaInsumo" style="color:#ff4d4d; font-size:0.8rem; display:none; margin-top:4px;"></span>
+                        </div>
+                        
+                        <div style="grid-column: span 2; display:flex; gap:10px; margin-top:10px;">
+                            <button type="submit" class="btn-urban" id="btnGuardarProveedor">Guardar Proveedor</button>
+                            <button type="button" id="btnCancelarProveedor" class="btn-action">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>NIT</th>
+                            <th>Empresa</th>
+                            <th>Contacto</th>
+                            <th>Teléfono / Correo</th>
+                            <th>Insumo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="proveedoresTableBody">
+                        <tr><td colspan="7" style="text-align:center;">Cargando proveedores...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+        `;
+
+        const btnAbrir = document.getElementById('btnAbrirFormProveedor');
+        const btnCancelar = document.getElementById('btnCancelarProveedor');
+        const wrapper = document.getElementById('wrapperFormProveedor');
+        const form = document.getElementById('formRegistrarProveedor');
+        const titleEl = document.getElementById('formProveedorTitle');
+
+        if (btnAbrir) {
+            btnAbrir.addEventListener('click', () => {
+                form.reset();
+                document.getElementById('provId').value = '';
+                titleEl.textContent = 'Registrar Nuevo Proveedor';
+                wrapper.style.display = 'block';
+                limpiarTodosLosErrores();
+            });
+        }
+
+        if (btnCancelar) {
+            btnCancelar.addEventListener('click', () => {
+                wrapper.style.display = 'none';
+                form.reset();
+            });
+        }
+
+        async function cargarTablasProveedores() {
+            const tableBody = document.getElementById('proveedoresTableBody');
+            if (!tableBody) return;
+            try {
+                const proveedores = await ProveedorService.listar();
+                let filas = '';
+                proveedores.forEach(p => {
+                    const statusClass = p.estado === 1 ? 'success' : 'danger';
+                    const statusText = p.estado === 1 ? 'ACTIVO' : 'INACTIVO';
+                    const toggleText = p.estado === 1 ? 'Desactivar' : 'Activar';
+
+                    filas += `
+                        <tr data-json="${encodeURIComponent(JSON.stringify(p))}">
+                            <td><strong>${p.nitProveedor}</strong></td>
+                            <td>${p.nombreEmpresa}</td>
+                            <td>${p.nombreContacto}</td>
+                            <td>
+                                <div><i class='bx bx-phone'></i> ${p.telefono}</div>
+                                <div style="font-size: 0.85rem; color: #a6a6a6;"><i class='bx bx-envelope'></i> ${p.correo}</div>
+                            </td>
+                            <td><span class="badge info">${p.categoriaInsumo}</span></td>
+                            <td><span class="badge ${statusClass}">${statusText}</span></td>
+                            <td>
+                                <button class="btn-action btn-edit-prov" style="margin-right: 5px;"><i class='bx bx-edit-alt'></i> Editar</button>
+                                <button class="btn-action btn-toggle-prov" data-id="${p.idProveedor}" data-estado="${p.estado}">
+                                    ${toggleText}
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                if (proveedores.length === 0) {
+                    filas = `<tr><td colspan="7" style="text-align:center;">No hay proveedores registrados en el sistema.</td></tr>`;
+                }
+
+                tableBody.innerHTML = filas;
+
+                document.querySelectorAll('.btn-edit-prov').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const tr = e.target.closest('tr');
+                        const data = JSON.parse(decodeURIComponent(tr.getAttribute('data-json')));
+                        
+                        document.getElementById('provId').value = data.idProveedor;
+                        document.getElementById('provNit').value = data.nitProveedor;
+                        document.getElementById('provEmpresa').value = data.nombreEmpresa;
+                        document.getElementById('provContacto').value = data.nombreContacto;
+                        document.getElementById('provTelefono').value = data.telefono;
+                        document.getElementById('provCorreo').value = data.correo;
+                        document.getElementById('provDireccion').value = data.direccion;
+                        document.getElementById('provInsumo').value = data.categoriaInsumo;
+
+                        titleEl.textContent = 'Editar Proveedor';
+                        wrapper.style.display = 'block';
+                        limpiarTodosLosErrores();
+                        wrapper.scrollIntoView({ behavior: 'smooth' });
+                    });
+                });
+
+                document.querySelectorAll('.btn-toggle-prov').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = e.target.getAttribute('data-id');
+                        const estadoActual = parseInt(e.target.getAttribute('data-estado'));
+                        const nuevoEstado = estadoActual === 1 ? 0 : 1;
+
+                        if (estadoActual === 1) {
+                            if (!confirm('¿Está seguro de desactivar este proveedor?')) return;
+                        }
+
+                        const res = await ProveedorService.cambiarEstado(id, nuevoEstado);
+                        if (res.success) {
+                            alert('Estado del proveedor actualizado con éxito.');
+                            cargarTablasProveedores();
+                        } else {
+                            alert('Error al cambiar el estado: ' + (res.error || 'Ocurrió un error.'));
+                        }
+                    });
+                });
+
+            } catch (err) {
+                console.error("Error al cargar proveedores:", err);
+                tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#ff4d4d;">⚠️ Error al cargar proveedores.</td></tr>`;
+            }
+        }
+
+        function mostrarError(campoId, msg) {
+            const span = document.getElementById('error-' + campoId);
+            if (span) {
+                span.textContent = msg;
+                span.style.display = 'block';
+            }
+        }
+
+        function limpiarError(campoId) {
+            const span = document.getElementById('error-' + campoId);
+            if (span) {
+                span.style.display = 'none';
+            }
+        }
+
+        function limpiarTodosLosErrores() {
+            document.querySelectorAll('.error-text').forEach(span => {
+                span.style.display = 'none';
+            });
+        }
+
+        function validarCampo(input) {
+            const id = input.id.replace('prov', '').toLowerCase();
+            const val = input.value.trim();
+
+            if (!val) {
+                mostrarError(input.name, 'Este campo es obligatorio.');
+                return false;
+            }
+
+            if (input.type === 'email') {
+                const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailReg.test(val)) {
+                    mostrarError(input.name, 'Formato de correo inválido.');
+                    return false;
+                }
+            }
+
+            limpiarError(input.name);
+            return true;
+        }
+
+        form.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', () => {
+                validarCampo(input);
+            });
+            input.addEventListener('change', () => {
+                validarCampo(input);
+            });
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let formValido = true;
+
+            form.querySelectorAll('input, select').forEach(input => {
+                if (!validarCampo(input)) {
+                    formValido = false;
+                }
+            });
+
+            if (!formValido) return;
+
+            const id = document.getElementById('provId').value;
+            const payload = {
+                nitProveedor: document.getElementById('provNit').value.trim(),
+                nombreEmpresa: document.getElementById('provEmpresa').value.trim(),
+                nombreContacto: document.getElementById('provContacto').value.trim(),
+                telefono: document.getElementById('provTelefono').value.trim(),
+                correo: document.getElementById('provCorreo').value.trim(),
+                direccion: document.getElementById('provDireccion').value.trim(),
+                categoriaInsumo: document.getElementById('provInsumo').value
+            };
+
+            let res;
+            if (id) {
+                res = await ProveedorService.actualizar(id, payload);
+            } else {
+                res = await ProveedorService.crear(payload);
+            }
+
+            if (res.success) {
+                alert('Proveedor guardado con éxito.');
+                wrapper.style.display = 'none';
+                form.reset();
+                cargarTablasProveedores();
+            } else {
+                alert('Error al guardar: ' + (res.error || 'Ocurrió un error.'));
+            }
+        });
+
+        cargarTablasProveedores();
     }
 
     // Cierre de sesión nativo del panel
