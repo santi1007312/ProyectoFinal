@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const releaseDateEl = document.getElementById('productReleaseDate');
         if (releaseContainer && releaseDateEl) {
             if (prod.esNuevo) {
-                releaseDateEl.textContent = formatearFechaLanzamiento(prod.esNuevo);
+                releaseDateEl.textContent = prod.esNuevo;
                 releaseContainer.style.display = 'block';
             } else {
                 releaseContainer.style.display = 'none';
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const releaseDateEl = document.getElementById('productReleaseDate');
         if (releaseContainer && releaseDateEl) {
             if (prod.esNuevo) {
-                releaseDateEl.textContent = formatearFechaLanzamiento(prod.esNuevo);
+                releaseDateEl.textContent = prod.esNuevo;
                 releaseContainer.style.display = 'block';
             } else {
                 releaseContainer.style.display = 'none';

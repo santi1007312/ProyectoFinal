@@ -3,7 +3,7 @@
  * Script global: maneja el menú desplegable del header (dropdown)
  * y la barra de búsqueda dinámica.
  */
-import { getBaseUrl } from './services/api.js';
+import { getBaseUrl, NotificacionService } from './services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -23,6 +23,128 @@ document.addEventListener('DOMContentLoaded', () => {
                 headerDropdown.classList.remove('is-active');
             }
         });
+    }
+
+    // ── MÓDULO GLOBAL DE NOTIFICACIONES DE USUARIO ───────────────────────────
+    const navIcons = document.querySelector('.nav-bar__icons');
+    if (navIcons && !document.getElementById('notifBellWrapper')) {
+        const notifHtml = `
+            <div class="nav-bar__notif-wrapper" id="notifBellWrapper">
+                <i class="bx bx-bell nav-bar__icon" id="btnNotifBell" title="Notificaciones"></i>
+                <span class="nav-bar__notif-badge" id="notifBadge" style="display: none;">0</span>
+                
+                <div class="notif-dropdown" id="notifDropdown" style="display: none;">
+                    <div class="notif-dropdown__header">
+                        <h3>NOTIFICACIONES</h3>
+                        <button type="button" id="btnMarcarTodasNotifs">Marcar leídas</button>
+                    </div>
+                    <div class="notif-dropdown__body" id="notifList">
+                        <div class="notif-empty">Cargando notificaciones...</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        // Insertar justo antes del primer icono del perfil/carrito o al inicio de los iconos
+        navIcons.insertAdjacentHTML('afterbegin', notifHtml);
+        inicializarNotificaciones();
+    }
+
+    async function inicializarNotificaciones() {
+        const btnBell = document.getElementById('btnNotifBell');
+        const badge = document.getElementById('notifBadge');
+        const dropdown = document.getElementById('notifDropdown');
+        const listDiv = document.getElementById('notifList');
+        const btnMarcarTodas = document.getElementById('btnMarcarTodasNotifs');
+
+        if (!btnBell || !dropdown) return;
+
+        // Cargar contador inicial
+        await actualizarContador();
+
+        // Toggle dropdown
+        btnBell.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const estaVisible = dropdown.style.display === 'block';
+            dropdown.style.display = estaVisible ? 'none' : 'block';
+
+            if (!estaVisible) {
+                await cargarListaNotificaciones();
+            }
+        });
+
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            const wrapper = document.getElementById('notifBellWrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        if (btnMarcarTodas) {
+            btnMarcarTodas.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await NotificacionService.marcarTodasLeidas();
+                await actualizarContador();
+                await cargarListaNotificaciones();
+            });
+        }
+
+        async function actualizarContador() {
+            try {
+                const data = await NotificacionService.contarNoLeidas();
+                if (data && data.noLeidas > 0) {
+                    badge.textContent = data.noLeidas > 99 ? '99+' : data.noLeidas;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch (err) {
+                badge.style.display = 'none';
+            }
+        }
+
+        async function cargarListaNotificaciones() {
+            if (!listDiv) return;
+            listDiv.innerHTML = '<div class="notif-empty">Cargando...</div>';
+            try {
+                const notifs = await NotificacionService.listar();
+                if (!notifs || notifs.length === 0) {
+                    listDiv.innerHTML = '<div class="notif-empty">🎉 No tienes notificaciones por el momento.</div>';
+                    return;
+                }
+
+                listDiv.innerHTML = '';
+                notifs.forEach(n => {
+                    const item = document.createElement('div');
+                    item.className = `notif-item ${!n.leida ? 'is-unread' : ''}`;
+
+                    const dateFormatted = n.fecha ? new Date(n.fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : 'Reciente';
+
+                    item.innerHTML = `
+                        <div class="notif-item__title">
+                            <span>${n.titulo}</span>
+                        </div>
+                        <p class="notif-item__msg">${n.mensaje}</p>
+                        <span class="notif-item__time">${dateFormatted}</span>
+                    `;
+
+                    item.addEventListener('click', async () => {
+                        if (!n.leida) {
+                            await NotificacionService.marcarLeida(n.idNotificacion);
+                            await actualizarContador();
+                        }
+                        if (n.urlRedireccion) {
+                            window.location.href = n.urlRedireccion;
+                        }
+                    });
+
+                    listDiv.appendChild(item);
+                });
+            } catch (err) {
+                listDiv.innerHTML = '<div class="notif-empty">Inicie sesión para ver sus notificaciones.</div>';
+            }
+        }
     }
 
     // ── BARRA DE BÚSQUEDA DINÁMICA DE LA NAVBAR (OVERLAY Y TIEMPO REAL) ─────────

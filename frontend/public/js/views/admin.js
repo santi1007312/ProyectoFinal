@@ -175,11 +175,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const precioFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p.precioBase);
             const imgPreview = p.imagen ? `<img src="${p.imagen}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;margin-right:8px;" onerror="this.src='https://placehold.co/40'">` : '';
 
-            const stockS = getStockPorTalla(p.variantes, 'S');
-            const stockM = getStockPorTalla(p.variantes, 'M');
-            const stockL = getStockPorTalla(p.variantes, 'L');
-            const stockXL = getStockPorTalla(p.variantes, 'XL');
-            const totalStock = stockS + stockM + stockL + stockXL;
+            const zapatosCat = categorias.find(c => (c.nombreCategoria || c.nombre || '').toUpperCase() === 'ZAPATOS');
+            const zapatosId = zapatosCat ? (zapatosCat.idCategorias || zapatosCat.id) : 4;
+            const isZapatos = String(p.categoria) === String(zapatosId);
 
             // Formatear desglose con colores para stock agotado
             const formatStock = (talla, cant) => {
@@ -187,7 +185,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 return `${talla}: ${cant}`;
             };
 
-            const desgloseHtml = `${formatStock('S', stockS)} | ${formatStock('M', stockM)} | ${formatStock('L', stockL)} | ${formatStock('XL', stockXL)}`;
+            let totalStock = 0;
+            let desgloseHtml = '';
+
+            if (isZapatos) {
+                const tallasZapatos = ['34', '36', '38', '39', '40', '42', '43'];
+                const stocks = tallasZapatos.map(t => getStockPorTalla(p.variantes, t));
+                totalStock = stocks.reduce((a, b) => a + b, 0);
+                desgloseHtml = tallasZapatos.map((t, idx) => formatStock(t, stocks[idx])).join(' | ');
+            } else {
+                const stockS = getStockPorTalla(p.variantes, 'S');
+                const stockM = getStockPorTalla(p.variantes, 'M');
+                const stockL = getStockPorTalla(p.variantes, 'L');
+                const stockXL = getStockPorTalla(p.variantes, 'XL');
+                totalStock = stockS + stockM + stockL + stockXL;
+                desgloseHtml = `${formatStock('S', stockS)} | ${formatStock('M', stockM)} | ${formatStock('L', stockL)} | ${formatStock('XL', stockXL)}`;
+            }
 
             filas += `
                 <tr data-json="${encodeURIComponent(JSON.stringify(p))}">
@@ -271,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     <div class="input-group" style="grid-column: span 2;">
                         <label>Stock por Tallas (Cantidad Disponible)</label>
-                        <div class="size-stock-container">
+                        <div class="size-stock-container" id="clothesSizesContainer">
                             <div class="size-stock-item">
                                 <label>Talla S</label>
                                 <input type="number" name="stock_S" min="0" value="0">
@@ -290,6 +303,43 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="size-stock-item">
                                 <label>Talla XL</label>
                                 <input type="number" name="stock_XL" min="0" value="0">
+                                <span class="error-msg"></span>
+                            </div>
+                        </div>
+                        <div class="size-stock-container" id="shoesSizesContainer" style="display: none; grid-template-columns: repeat(4, 1fr);">
+                            <div class="size-stock-item">
+                                <label>Talla 34</label>
+                                <input type="number" name="stock_34" min="0" value="0">
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="size-stock-item">
+                                <label>Talla 36</label>
+                                <input type="number" name="stock_36" min="0" value="0">
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="size-stock-item">
+                                <label>Talla 38</label>
+                                <input type="number" name="stock_38" min="0" value="0">
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="size-stock-item">
+                                <label>Talla 39</label>
+                                <input type="number" name="stock_39" min="0" value="0">
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="size-stock-item">
+                                <label>Talla 40</label>
+                                <input type="number" name="stock_40" min="0" value="0">
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="size-stock-item">
+                                <label>Talla 42</label>
+                                <input type="number" name="stock_42" min="0" value="0">
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="size-stock-item">
+                                <label>Talla 43</label>
+                                <input type="number" name="stock_43" min="0" value="0">
                                 <span class="error-msg"></span>
                             </div>
                         </div>
@@ -326,6 +376,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('formRegistrarProducto');
         const formTitle = document.getElementById('formProductoTitle');
 
+        const catSelect = form ? form.querySelector('[name="categoria"]') : null;
+        const clothesContainer = document.getElementById('clothesSizesContainer');
+        const shoesContainer = document.getElementById('shoesSizesContainer');
+
+        function actualizarVisibilidadTallas() {
+            if (!catSelect) return;
+            const selectedCatId = catSelect.value;
+            const zapatosCat = categorias.find(c => (c.nombreCategoria || c.nombre || '').toUpperCase() === 'ZAPATOS');
+            const zapatosId = zapatosCat ? (zapatosCat.idCategorias || zapatosCat.id) : 4;
+
+            if (String(selectedCatId) === String(zapatosId)) {
+                if (clothesContainer) clothesContainer.style.display = 'none';
+                if (shoesContainer) shoesContainer.style.display = 'grid';
+            } else {
+                if (clothesContainer) clothesContainer.style.display = 'grid';
+                if (shoesContainer) shoesContainer.style.display = 'none';
+            }
+        }
+
+        if (catSelect) {
+            catSelect.addEventListener('change', actualizarVisibilidadTallas);
+        }
+
         // Helper functions for showing/hiding validation errors
         function mostrarError(inputName, mensaje) {
             const input = form.querySelector(`[name="${inputName}"]`);
@@ -354,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function limpiarTodosLosErrores() {
-            ['nombre', 'precio', 'descripcion', 'imagen', 'stock_S', 'stock_M', 'stock_L', 'stock_XL'].forEach(name => limpiarError(name));
+            ['nombre', 'precio', 'descripcion', 'imagen', 'stock_S', 'stock_M', 'stock_L', 'stock_XL', 'stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43'].forEach(name => limpiarError(name));
         }
 
         // Real-time dynamic validations as user types
@@ -382,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        ['stock_S', 'stock_M', 'stock_L', 'stock_XL'].forEach(name => {
+        ['stock_S', 'stock_M', 'stock_L', 'stock_XL', 'stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43'].forEach(name => {
             const input = form.querySelector(`[name="${name}"]`);
             if (input) {
                 input.addEventListener('input', () => {
@@ -421,10 +494,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 form.querySelector('[name="stock_M"]').value = 0;
                 form.querySelector('[name="stock_L"]').value = 0;
                 form.querySelector('[name="stock_XL"]').value = 0;
+                ['stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43'].forEach(name => {
+                    const input = form.querySelector(`[name="${name}"]`);
+                    if (input) input.value = 0;
+                });
                 // Reset checkboxes to Negro default
                 form.querySelectorAll('[name="color_option"]').forEach(cb => {
                     cb.checked = cb.value === 'Negro';
                 });
+                actualizarVisibilidadTallas();
             });
         }
         if(btnCancelar && wrapper) {
@@ -460,15 +538,37 @@ document.addEventListener('DOMContentLoaded', () => {
                     cb.checked = coloresDeVariantes.includes(cb.value);
                 });
 
-                const stockS = getStockPorTalla(p.variantes, 'S');
-                const stockM = getStockPorTalla(p.variantes, 'M');
-                const stockL = getStockPorTalla(p.variantes, 'L');
-                const stockXL = getStockPorTalla(p.variantes, 'XL');
+                const zapatosCat = categorias.find(c => (c.nombreCategoria || c.nombre || '').toUpperCase() === 'ZAPATOS');
+                const zapatosId = zapatosCat ? (zapatosCat.idCategorias || zapatosCat.id) : 4;
+                const isZapatos = String(p.categoria) === String(zapatosId);
 
-                form.querySelector('[name="stock_S"]').value = stockS;
-                form.querySelector('[name="stock_M"]').value = stockM;
-                form.querySelector('[name="stock_L"]').value = stockL;
-                form.querySelector('[name="stock_XL"]').value = stockXL;
+                // Reset all stocks to 0 first
+                form.querySelector('[name="stock_S"]').value = 0;
+                form.querySelector('[name="stock_M"]').value = 0;
+                form.querySelector('[name="stock_L"]').value = 0;
+                form.querySelector('[name="stock_XL"]').value = 0;
+                ['34', '36', '38', '39', '40', '42', '43'].forEach(t => {
+                    const input = form.querySelector(`[name="stock_${t}"]`);
+                    if (input) input.value = 0;
+                });
+
+                if (isZapatos) {
+                    ['34', '36', '38', '39', '40', '42', '43'].forEach(t => {
+                        const input = form.querySelector(`[name="stock_${t}"]`);
+                        if (input) input.value = getStockPorTalla(p.variantes, t);
+                    });
+                } else {
+                    const stockS = getStockPorTalla(p.variantes, 'S');
+                    const stockM = getStockPorTalla(p.variantes, 'M');
+                    const stockL = getStockPorTalla(p.variantes, 'L');
+                    const stockXL = getStockPorTalla(p.variantes, 'XL');
+
+                    form.querySelector('[name="stock_S"]').value = stockS;
+                    form.querySelector('[name="stock_M"]').value = stockM;
+                    form.querySelector('[name="stock_L"]').value = stockL;
+                    form.querySelector('[name="stock_XL"]').value = stockXL;
+                }
+                actualizarVisibilidadTallas();
                 
                 wrapper.style.display = 'block';
                 wrapper.scrollIntoView({ behavior: 'smooth' });
@@ -503,10 +603,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const descripcion = form.querySelector('[name="descripcion"]').value.trim();
             const esDestacado = form.querySelector('[name="esDestacado"]').checked;
 
+            const zapatosCat = categorias.find(c => (c.nombreCategoria || c.nombre || '').toUpperCase() === 'ZAPATOS');
+            const zapatosId = zapatosCat ? (zapatosCat.idCategorias || zapatosCat.id) : 4;
+            const isZapatos = String(idCategorias) === String(zapatosId);
+
             const stockS = parseInt(form.querySelector('[name="stock_S"]').value) || 0;
             const stockM = parseInt(form.querySelector('[name="stock_M"]').value) || 0;
             const stockL = parseInt(form.querySelector('[name="stock_L"]').value) || 0;
             const stockXL = parseInt(form.querySelector('[name="stock_XL"]').value) || 0;
+
+            const stock34 = parseInt(form.querySelector('[name="stock_34"]').value) || 0;
+            const stock36 = parseInt(form.querySelector('[name="stock_36"]').value) || 0;
+            const stock38 = parseInt(form.querySelector('[name="stock_38"]').value) || 0;
+            const stock39 = parseInt(form.querySelector('[name="stock_39"]').value) || 0;
+            const stock40 = parseInt(form.querySelector('[name="stock_40"]').value) || 0;
+            const stock42 = parseInt(form.querySelector('[name="stock_42"]').value) || 0;
+            const stock43 = parseInt(form.querySelector('[name="stock_43"]').value) || 0;
 
             let hayError = false;
 
@@ -567,7 +679,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Validar Stocks
-            ['stock_S', 'stock_M', 'stock_L', 'stock_XL'].forEach(stockField => {
+            const stockFields = isZapatos 
+                ? ['stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43']
+                : ['stock_S', 'stock_M', 'stock_L', 'stock_XL'];
+
+            stockFields.forEach(stockField => {
                 const val = parseInt(form.querySelector(`[name="${stockField}"]`).value);
                 if (isNaN(val) || val < 0) {
                     mostrarError(stockField, 'El stock no puede ser negativo.');
@@ -593,10 +709,20 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('esDestacado', esDestacado ? 'true' : 'false');
             
             // Adjuntar stocks
-            formData.append('stock_S', stockS);
-            formData.append('stock_M', stockM);
-            formData.append('stock_L', stockL);
-            formData.append('stock_XL', stockXL);
+            if (isZapatos) {
+                formData.append('stock_34', stock34);
+                formData.append('stock_36', stock36);
+                formData.append('stock_38', stock38);
+                formData.append('stock_39', stock39);
+                formData.append('stock_40', stock40);
+                formData.append('stock_42', stock42);
+                formData.append('stock_43', stock43);
+            } else {
+                formData.append('stock_S', stockS);
+                formData.append('stock_M', stockM);
+                formData.append('stock_L', stockL);
+                formData.append('stock_XL', stockXL);
+            }
             
             // Adjuntar colores seleccionados
             coloresSeleccionados.forEach(color => {
@@ -853,40 +979,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <!-- Contenido Pestaña 1: Devoluciones -->
             <div id="tabContentDevoluciones" class="tab-pane-content" style="display: block;">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Solicitante</th>
-                            <th>Motivo / Descripción</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="devolucionesTableBody">
-                        <tr><td colspan="5" style="text-align:center;">Cargando...</td></tr>
-                    </tbody>
-                </table>
+                <div class="admin-table-container admin-panel-card panel-card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Solicitante</th>
+                                <th>Motivo / Descripción</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="devolucionesTableBody">
+                            <tr><td colspan="5" style="text-align:center;">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Contenido Pestaña 2: Contacto -->
             <div id="tabContentContacto" class="tab-pane-content" style="display: none;">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Nombre</th>
-                            <th>Correo</th>
-                            <th>Teléfono</th>
-                            <th>Comentario</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="contactosTableBody">
-                        <tr><td colspan="7" style="text-align:center;">Cargando...</td></tr>
-                    </tbody>
-                </table>
+                <div class="admin-table-container admin-panel-card panel-card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Nombre</th>
+                                <th>Correo</th>
+                                <th>Teléfono</th>
+                                <th>Comentario</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contactosTableBody">
+                            <tr><td colspan="7" style="text-align:center;">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Modal de rechazo / Ver detalle -->

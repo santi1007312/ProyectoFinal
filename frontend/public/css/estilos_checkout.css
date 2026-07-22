@@ -685,10 +685,10 @@ body {
 /* --------------------------------------------------------------------------
    RESPONSIVIDAD
    -------------------------------------------------------------------------- */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .checkout-layout {
         grid-template-columns: 1fr;
-        gap: 40px;
+        gap: 30px;
     }
     
     .checkout-col-right {
@@ -700,14 +700,12 @@ body {
     }
 
     .checkout-layout-container {
-        padding: 0 20px;
+        padding: 0 15px;
     }
-}
 
-@media (max-width: 600px) {
     .form-row-2, .form-row-3 {
         grid-template-columns: 1fr;
-        gap: 0;
+        gap: 15px;
     }
     
     .saved-address-card {

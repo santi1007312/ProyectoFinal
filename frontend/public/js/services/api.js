@@ -573,4 +573,41 @@ export const OrdenCompraService = {
     }
 };
 
+// ─── NOTIFICACIONES DE USUARIO ────────────────────────────────────────────────
+export const NotificacionService = {
+    async listar() {
+        try {
+            return await get('NotificacionController', { accion: 'listar' });
+        } catch {
+            return [];
+        }
+    },
+
+    async contarNoLeidas() {
+        try {
+            return await get('NotificacionController', { accion: 'contarNoLeidas' });
+        } catch {
+            return { noLeidas: 0 };
+        }
+    },
+
+    async marcarLeida(idNotificacion) {
+        try {
+            const res = await post('NotificacionController', { accion: 'marcarLeida', idNotificacion });
+            return await res.json();
+        } catch {
+            return { status: 'error' };
+        }
+    },
+
+    async marcarTodasLeidas() {
+        try {
+            const res = await post('NotificacionController', { accion: 'marcarTodasLeidas' });
+            return await res.json();
+        } catch {
+            return { status: 'error' };
+        }
+    }
+};
+
 

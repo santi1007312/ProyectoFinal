@@ -246,8 +246,8 @@ body {
     cursor: default; /* Muestra que aún no es clickeable */
 }
 
-/* Responsive para celulares y pantallas pequeñas */
-@media (max-width: 1024px) {
+/* Responsive estandarizado para celulares y pantallas pequeñas */
+@media (max-width: 768px) {
     .contenedor-tallas {
         gap: 60px;
         padding: 0 20px;

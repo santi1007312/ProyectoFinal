@@ -164,8 +164,8 @@ body {
     font-weight: bold;
 }
 
-/* RESPONSIVE */
-@media (max-width: 1024px) {
+/* RESPONSIVE ESTANDARIZADO */
+@media (max-width: 768px) {
     .profile-panel {
         grid-template-columns: 1fr;
         gap: 30px;
