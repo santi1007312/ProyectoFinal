@@ -2,7 +2,7 @@
  * admin.js — Elixir and Flexx
  * Panel de Administración Completo (Dashboard, Productos, Ventas, Usuarios, Cupones).
  */
-import { UsuarioService, ProductoService, PedidoService, CategoriaService, SoporteService, VarianteService, ProveedorService, getBaseUrl, OrdenCompraService } from '../services/api.js';
+import { UsuarioService, ProductoService, PedidoService, CategoriaService, SoporteService, VarianteService, ProveedorService, getBaseUrl } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const navItems = document.querySelectorAll('.nav-item');
@@ -175,9 +175,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const precioFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p.precioBase);
             const imgPreview = p.imagen ? `<img src="${p.imagen}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;margin-right:8px;" onerror="this.src='https://placehold.co/40'">` : '';
 
-            const zapatosCat = categorias.find(c => (c.nombreCategoria || c.nombre || '').toUpperCase() === 'ZAPATOS');
-            const zapatosId = zapatosCat ? (zapatosCat.idCategorias || zapatosCat.id) : 4;
-            const isZapatos = String(p.categoria) === String(zapatosId);
+            const stockS = getStockPorTalla(p.variantes, 'S');
+            const stockM = getStockPorTalla(p.variantes, 'M');
+            const stockL = getStockPorTalla(p.variantes, 'L');
+            const stockXL = getStockPorTalla(p.variantes, 'XL');
+            const totalStock = stockS + stockM + stockL + stockXL;
 
             // Formatear desglose con colores para stock agotado
             const formatStock = (talla, cant) => {
@@ -185,22 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return `${talla}: ${cant}`;
             };
 
-            let totalStock = 0;
-            let desgloseHtml = '';
-
-            if (isZapatos) {
-                const tallasZapatos = ['34', '36', '38', '39', '40', '42', '43'];
-                const stocks = tallasZapatos.map(t => getStockPorTalla(p.variantes, t));
-                totalStock = stocks.reduce((a, b) => a + b, 0);
-                desgloseHtml = tallasZapatos.map((t, idx) => formatStock(t, stocks[idx])).join(' | ');
-            } else {
-                const stockS = getStockPorTalla(p.variantes, 'S');
-                const stockM = getStockPorTalla(p.variantes, 'M');
-                const stockL = getStockPorTalla(p.variantes, 'L');
-                const stockXL = getStockPorTalla(p.variantes, 'XL');
-                totalStock = stockS + stockM + stockL + stockXL;
-                desgloseHtml = `${formatStock('S', stockS)} | ${formatStock('M', stockM)} | ${formatStock('L', stockL)} | ${formatStock('XL', stockXL)}`;
-            }
+            const desgloseHtml = `${formatStock('S', stockS)} | ${formatStock('M', stockM)} | ${formatStock('L', stockL)} | ${formatStock('XL', stockXL)}`;
 
             filas += `
                 <tr data-json="${encodeURIComponent(JSON.stringify(p))}">
@@ -284,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     <div class="input-group" style="grid-column: span 2;">
                         <label>Stock por Tallas (Cantidad Disponible)</label>
-                        <div class="size-stock-container" id="clothesSizesContainer">
+                        <div class="size-stock-container">
                             <div class="size-stock-item">
                                 <label>Talla S</label>
                                 <input type="number" name="stock_S" min="0" value="0">
@@ -303,43 +290,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="size-stock-item">
                                 <label>Talla XL</label>
                                 <input type="number" name="stock_XL" min="0" value="0">
-                                <span class="error-msg"></span>
-                            </div>
-                        </div>
-                        <div class="size-stock-container" id="shoesSizesContainer" style="display: none; grid-template-columns: repeat(4, 1fr);">
-                            <div class="size-stock-item">
-                                <label>Talla 34</label>
-                                <input type="number" name="stock_34" min="0" value="0">
-                                <span class="error-msg"></span>
-                            </div>
-                            <div class="size-stock-item">
-                                <label>Talla 36</label>
-                                <input type="number" name="stock_36" min="0" value="0">
-                                <span class="error-msg"></span>
-                            </div>
-                            <div class="size-stock-item">
-                                <label>Talla 38</label>
-                                <input type="number" name="stock_38" min="0" value="0">
-                                <span class="error-msg"></span>
-                            </div>
-                            <div class="size-stock-item">
-                                <label>Talla 39</label>
-                                <input type="number" name="stock_39" min="0" value="0">
-                                <span class="error-msg"></span>
-                            </div>
-                            <div class="size-stock-item">
-                                <label>Talla 40</label>
-                                <input type="number" name="stock_40" min="0" value="0">
-                                <span class="error-msg"></span>
-                            </div>
-                            <div class="size-stock-item">
-                                <label>Talla 42</label>
-                                <input type="number" name="stock_42" min="0" value="0">
-                                <span class="error-msg"></span>
-                            </div>
-                            <div class="size-stock-item">
-                                <label>Talla 43</label>
-                                <input type="number" name="stock_43" min="0" value="0">
                                 <span class="error-msg"></span>
                             </div>
                         </div>
@@ -376,29 +326,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('formRegistrarProducto');
         const formTitle = document.getElementById('formProductoTitle');
 
-        const catSelect = form ? form.querySelector('[name="categoria"]') : null;
-        const clothesContainer = document.getElementById('clothesSizesContainer');
-        const shoesContainer = document.getElementById('shoesSizesContainer');
-
-        function actualizarVisibilidadTallas() {
-            if (!catSelect) return;
-            const selectedCatId = catSelect.value;
-            const zapatosCat = categorias.find(c => (c.nombreCategoria || c.nombre || '').toUpperCase() === 'ZAPATOS');
-            const zapatosId = zapatosCat ? (zapatosCat.idCategorias || zapatosCat.id) : 4;
-
-            if (String(selectedCatId) === String(zapatosId)) {
-                if (clothesContainer) clothesContainer.style.display = 'none';
-                if (shoesContainer) shoesContainer.style.display = 'grid';
-            } else {
-                if (clothesContainer) clothesContainer.style.display = 'grid';
-                if (shoesContainer) shoesContainer.style.display = 'none';
-            }
-        }
-
-        if (catSelect) {
-            catSelect.addEventListener('change', actualizarVisibilidadTallas);
-        }
-
         // Helper functions for showing/hiding validation errors
         function mostrarError(inputName, mensaje) {
             const input = form.querySelector(`[name="${inputName}"]`);
@@ -427,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function limpiarTodosLosErrores() {
-            ['nombre', 'precio', 'descripcion', 'imagen', 'stock_S', 'stock_M', 'stock_L', 'stock_XL', 'stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43'].forEach(name => limpiarError(name));
+            ['nombre', 'precio', 'descripcion', 'imagen', 'stock_S', 'stock_M', 'stock_L', 'stock_XL'].forEach(name => limpiarError(name));
         }
 
         // Real-time dynamic validations as user types
@@ -455,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        ['stock_S', 'stock_M', 'stock_L', 'stock_XL', 'stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43'].forEach(name => {
+        ['stock_S', 'stock_M', 'stock_L', 'stock_XL'].forEach(name => {
             const input = form.querySelector(`[name="${name}"]`);
             if (input) {
                 input.addEventListener('input', () => {
@@ -494,15 +421,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 form.querySelector('[name="stock_M"]').value = 0;
                 form.querySelector('[name="stock_L"]').value = 0;
                 form.querySelector('[name="stock_XL"]').value = 0;
-                ['stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43'].forEach(name => {
-                    const input = form.querySelector(`[name="${name}"]`);
-                    if (input) input.value = 0;
-                });
                 // Reset checkboxes to Negro default
                 form.querySelectorAll('[name="color_option"]').forEach(cb => {
                     cb.checked = cb.value === 'Negro';
                 });
-                actualizarVisibilidadTallas();
             });
         }
         if(btnCancelar && wrapper) {
@@ -538,37 +460,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     cb.checked = coloresDeVariantes.includes(cb.value);
                 });
 
-                const zapatosCat = categorias.find(c => (c.nombreCategoria || c.nombre || '').toUpperCase() === 'ZAPATOS');
-                const zapatosId = zapatosCat ? (zapatosCat.idCategorias || zapatosCat.id) : 4;
-                const isZapatos = String(p.categoria) === String(zapatosId);
+                const stockS = getStockPorTalla(p.variantes, 'S');
+                const stockM = getStockPorTalla(p.variantes, 'M');
+                const stockL = getStockPorTalla(p.variantes, 'L');
+                const stockXL = getStockPorTalla(p.variantes, 'XL');
 
-                // Reset all stocks to 0 first
-                form.querySelector('[name="stock_S"]').value = 0;
-                form.querySelector('[name="stock_M"]').value = 0;
-                form.querySelector('[name="stock_L"]').value = 0;
-                form.querySelector('[name="stock_XL"]').value = 0;
-                ['34', '36', '38', '39', '40', '42', '43'].forEach(t => {
-                    const input = form.querySelector(`[name="stock_${t}"]`);
-                    if (input) input.value = 0;
-                });
-
-                if (isZapatos) {
-                    ['34', '36', '38', '39', '40', '42', '43'].forEach(t => {
-                        const input = form.querySelector(`[name="stock_${t}"]`);
-                        if (input) input.value = getStockPorTalla(p.variantes, t);
-                    });
-                } else {
-                    const stockS = getStockPorTalla(p.variantes, 'S');
-                    const stockM = getStockPorTalla(p.variantes, 'M');
-                    const stockL = getStockPorTalla(p.variantes, 'L');
-                    const stockXL = getStockPorTalla(p.variantes, 'XL');
-
-                    form.querySelector('[name="stock_S"]').value = stockS;
-                    form.querySelector('[name="stock_M"]').value = stockM;
-                    form.querySelector('[name="stock_L"]').value = stockL;
-                    form.querySelector('[name="stock_XL"]').value = stockXL;
-                }
-                actualizarVisibilidadTallas();
+                form.querySelector('[name="stock_S"]').value = stockS;
+                form.querySelector('[name="stock_M"]').value = stockM;
+                form.querySelector('[name="stock_L"]').value = stockL;
+                form.querySelector('[name="stock_XL"]').value = stockXL;
                 
                 wrapper.style.display = 'block';
                 wrapper.scrollIntoView({ behavior: 'smooth' });
@@ -603,22 +503,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const descripcion = form.querySelector('[name="descripcion"]').value.trim();
             const esDestacado = form.querySelector('[name="esDestacado"]').checked;
 
-            const zapatosCat = categorias.find(c => (c.nombreCategoria || c.nombre || '').toUpperCase() === 'ZAPATOS');
-            const zapatosId = zapatosCat ? (zapatosCat.idCategorias || zapatosCat.id) : 4;
-            const isZapatos = String(idCategorias) === String(zapatosId);
-
             const stockS = parseInt(form.querySelector('[name="stock_S"]').value) || 0;
             const stockM = parseInt(form.querySelector('[name="stock_M"]').value) || 0;
             const stockL = parseInt(form.querySelector('[name="stock_L"]').value) || 0;
             const stockXL = parseInt(form.querySelector('[name="stock_XL"]').value) || 0;
-
-            const stock34 = parseInt(form.querySelector('[name="stock_34"]').value) || 0;
-            const stock36 = parseInt(form.querySelector('[name="stock_36"]').value) || 0;
-            const stock38 = parseInt(form.querySelector('[name="stock_38"]').value) || 0;
-            const stock39 = parseInt(form.querySelector('[name="stock_39"]').value) || 0;
-            const stock40 = parseInt(form.querySelector('[name="stock_40"]').value) || 0;
-            const stock42 = parseInt(form.querySelector('[name="stock_42"]').value) || 0;
-            const stock43 = parseInt(form.querySelector('[name="stock_43"]').value) || 0;
 
             let hayError = false;
 
@@ -679,11 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Validar Stocks
-            const stockFields = isZapatos 
-                ? ['stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43']
-                : ['stock_S', 'stock_M', 'stock_L', 'stock_XL'];
-
-            stockFields.forEach(stockField => {
+            ['stock_S', 'stock_M', 'stock_L', 'stock_XL'].forEach(stockField => {
                 const val = parseInt(form.querySelector(`[name="${stockField}"]`).value);
                 if (isNaN(val) || val < 0) {
                     mostrarError(stockField, 'El stock no puede ser negativo.');
@@ -709,20 +593,10 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('esDestacado', esDestacado ? 'true' : 'false');
             
             // Adjuntar stocks
-            if (isZapatos) {
-                formData.append('stock_34', stock34);
-                formData.append('stock_36', stock36);
-                formData.append('stock_38', stock38);
-                formData.append('stock_39', stock39);
-                formData.append('stock_40', stock40);
-                formData.append('stock_42', stock42);
-                formData.append('stock_43', stock43);
-            } else {
-                formData.append('stock_S', stockS);
-                formData.append('stock_M', stockM);
-                formData.append('stock_L', stockL);
-                formData.append('stock_XL', stockXL);
-            }
+            formData.append('stock_S', stockS);
+            formData.append('stock_M', stockM);
+            formData.append('stock_L', stockL);
+            formData.append('stock_XL', stockXL);
             
             // Adjuntar colores seleccionados
             coloresSeleccionados.forEach(color => {
@@ -787,77 +661,664 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── 3. HISTORIAL DE VENTAS Y DESPACHOS (PEDIDOS) ──
+    // ── 3. HISTORIAL DE VENTAS Y DESPACHOS (PEDIDOS & LOGÍSTICA FULL-STACK) ──
     async function renderVentas() {
-        dynamicContent.innerHTML = `<div class="loader">Cargando pedidos...</div>`;
+        dynamicContent.innerHTML = `<div class="loader">Cargando panel logístico de pedidos...</div>`;
 
-        let pedidos = [];
+        let listaPedidosOriginal = [];
         try {
-            pedidos = await PedidoService.listarTodos();
+            const data = await PedidoService.listarTodos();
+            listaPedidosOriginal = Array.isArray(data) ? data : [];
         } catch (e) {
-            console.error("Error al listar pedidos:", e);
+            console.error("Error al cargar la lista de pedidos:", e);
         }
 
-        let filas = '';
-        pedidos.forEach(p => {
-            const totalFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p.total);
-            const dateStr = p.fechaPedido ? new Date(p.fechaPedido).toLocaleDateString('es-CO') : 'Reciente';
-
-            let statusClass = 'preparando';
-            if (p.estado === 'enviado') statusClass = 'enviado';
-            if (p.estado === 'entregado') statusClass = 'entregado';
-            if (p.estado === 'cancelado') statusClass = 'cancelado';
-
-            filas += `
-                <tr>
-                    <td>#${p.idPedido}</td>
-                    <td>${p.clienteNombre || p.idUsuarios || 'Cliente'}</td>
-                    <td>${dateStr}</td>
-                    <td>${totalFormatted}</td>
-                    <td><span class="status-pill ${statusClass}" id="status-pill-${p.idPedido}">${p.estado.toUpperCase()}</span></td>
-                    <td>
-                        <select class="select-status-pedido" data-id="${p.idPedido}" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
-                            <option value="preparando" ${p.estado === 'preparando' ? 'selected' : ''}>En Preparación</option>
-                            <option value="enviado" ${p.estado === 'enviado' ? 'selected' : ''}>En Enviado / Despachado</option>
-                            <option value="entregado" ${p.estado === 'entregado' ? 'selected' : ''}>Entregado</option>
-                        </select>
-                    </td>
-                </tr>
-            `;
-        });
-
-        if (pedidos.length === 0) {
-            filas = `<tr><td colspan="6" style="text-align:center;">No hay pedidos registrados en el sistema.</td></tr>`;
-        }
-
+        // Renderizar Barra de Filtros y Estructura Principal
         dynamicContent.innerHTML = `
-            <table class="admin-table">
-                <thead>
-                    <tr><th>No. Pedido</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Estado Logístico</th><th>Acciones de Envío</th></tr>
-                </thead>
-                <tbody>
-                    ${filas}
-                </tbody>
-            </table>
+            <div class="logistics-filter-bar">
+                <div class="logistics-filter-group">
+                    <div class="search-box-wrapper">
+                        <i class='bx bx-search'></i>
+                        <input type="text" id="logisticsSearchInput" placeholder="Buscar por # Pedido, Cliente o Email...">
+                    </div>
+                    <div>
+                        <select id="logisticsStatusFilter" class="filter-select">
+                            <option value="TODOS">Todos los Estados</option>
+                            <option value="pendiente">Pendiente (Naranja)</option>
+                            <option value="preparando">En Preparación (Amarillo)</option>
+                            <option value="enviado">Enviado (Azul)</option>
+                            <option value="entregado">Entregado (Verde)</option>
+                            <option value="cancelado">Cancelado (Rojo)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="logistics-filter-group">
+                    <span class="filter-label">Rango de Fechas:</span>
+                    <input type="date" id="logisticsDateStart" class="filter-date-input" title="Fecha Inicial">
+                    <span class="filter-label">a</span>
+                    <input type="date" id="logisticsDateEnd" class="filter-date-input" title="Fecha Final">
+                    <button id="btnResetLogisticsFilters" class="btn-reset-filters" title="Limpiar Filtros">
+                        <i class='bx bx-refresh'></i> Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <div class="admin-panel-card">
+                <table class="admin-table" id="tablaLogisticaPedidos">
+                    <thead>
+                        <tr>
+                            <th># Pedido</th>
+                            <th>Cliente</th>
+                            <th>Fecha</th>
+                            <th>Total</th>
+                            <th>Estado Logístico</th>
+                            <th style="text-align: center;">Acciones de Envío</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyLogisticaPedidos">
+                        <!-- Filas dinámicas se insertan aquí -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- MODAL 1: DETALLE COMPLETO DEL PEDIDO (VISIBILIDAD 360°) -->
+            <div class="admin-modal-overlay" id="modalDetallePedido">
+                <div class="admin-modal-container">
+                    <div class="admin-modal-header">
+                        <h2><i class='bx bx-paperclip'></i> Expediente de Pedido <span id="m1NumeroPedido" style="color: #04d361;"></span></h2>
+                        <button class="admin-modal-close" data-modal="modalDetallePedido">&times;</button>
+                    </div>
+                    <div class="admin-modal-body" id="m1Body">
+                        <div class="loader">Cargando visibilidad 360°...</div>
+                    </div>
+                    <div class="admin-modal-footer">
+                        <button class="btn-action btn-modal-close" data-modal="modalDetallePedido">Cerrar Expediente</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL 2: GESTIÓN DE ESTADO Y DESPACHO (ORQUESTADOR LOGÍSTICO) -->
+            <div class="admin-modal-overlay" id="modalGestionDespacho">
+                <div class="admin-modal-container">
+                    <div class="admin-modal-header">
+                        <h2><i class='bx bx-truck'></i> Gestión de Despacho & Rastreo <span id="m2NumeroPedido" style="color: #04d361;"></span></h2>
+                        <button class="admin-modal-close" data-modal="modalGestionDespacho">&times;</button>
+                    </div>
+                    <div class="admin-modal-body">
+                        <form id="formGestionDespachoLogistico" class="logistics-form">
+                            <input type="hidden" id="m2IdPedido" name="idPedido">
+                            
+                            <div class="logistics-form-group">
+                                <label for="m2EstadoSelect">Nuevo Estado Logístico <span class="required">*</span></label>
+                                <select id="m2EstadoSelect" name="estado" class="logistics-input" required>
+                                    <option value="pendiente">Pendiente</option>
+                                    <option value="preparando">En Preparación / Empaque</option>
+                                    <option value="enviado">Enviado / En Ruta</option>
+                                    <option value="entregado">Entregado Exitosa</option>
+                                    <option value="cancelado">Cancelado (Reabastecer Kárdex)</option>
+                                </select>
+                            </div>
+
+                            <div class="logistics-form-group">
+                                <label for="m2Transportadora">Empresa Transportadora <span class="required" id="m2ReqTrans" style="display:none;">*</span></label>
+                                <select id="m2Transportadora" name="transportadora" class="logistics-input">
+                                    <option value="">-- Seleccionar Transportadora --</option>
+                                    <option value="Servientrega">Servientrega</option>
+                                    <option value="Interrapidisimo">Interrapidísimo</option>
+                                    <option value="Envía">Envía Colvanes</option>
+                                    <option value="Coordinadora">Coordinadora Mercantil</option>
+                                    <option value="Mensajeria Local Bucaramanga">Mensajería Express Local (Bucaramanga)</option>
+                                    <option value="Otra Transportadora">Otra Empresa Transportadora</option>
+                                </select>
+                            </div>
+
+                            <div class="logistics-form-group">
+                                <label for="m2NumeroGuia">Número de Guía de Rastreo <span class="required" id="m2ReqGuia" style="display:none;">*</span></label>
+                                <input type="text" id="m2NumeroGuia" name="numeroGuia" class="logistics-input" placeholder="Ej: SE-982347102">
+                            </div>
+
+                            <div class="logistics-form-group">
+                                <label for="m2Notas">Notas / Observaciones del Envío (Mensaje al Cliente)</label>
+                                <textarea id="m2Notas" name="descripcion" class="logistics-input" rows="3" placeholder="Ingresa notas internas o mensaje directo al cliente..."></textarea>
+                            </div>
+
+                            <h3 class="tracking-history-title"><i class='bx bx-history'></i> Historial de Movimientos de Rastreo</h3>
+                            <div id="m2HistorialRastreoContainer">
+                                <div class="loader">Cargando historial de rastreo...</div>
+                            </div>
+
+                            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;">
+                                <button type="button" class="btn-action btn-modal-close" data-modal="modalGestionDespacho">Cancelar</button>
+                                <button type="submit" class="btn-action" style="background-color:#04d361; color:#121214; font-weight:bold;">
+                                    <i class='bx bx-save'></i> Guardar y Notificar al Cliente
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL 3: VISTA DE IMPRESIÓN REMISIÓN / FACTURA DE EMPAQUE -->
+            <div class="admin-modal-overlay" id="modalPrintRemision">
+                <div class="admin-modal-container" style="max-width: 750px;">
+                    <div class="admin-modal-header">
+                        <h2><i class='bx bx-printer'></i> Remisión de Despacho & Empaque</h2>
+                        <button class="admin-modal-close" data-modal="modalPrintRemision">&times;</button>
+                    </div>
+                    <div class="admin-modal-body" id="m3PrintContainer">
+                        <div class="loader">Generando remisión de despacho...</div>
+                    </div>
+                    <div class="admin-modal-footer">
+                        <button class="btn-action btn-modal-close" data-modal="modalPrintRemision">Cerrar</button>
+                        <button id="btnEjecutarImpresionRemision" class="btn-action" style="background-color:#04d361; color:#121214; font-weight:bold;">
+                            <i class='bx bx-printer'></i> Imprimir Etiqueta de Caja
+                        </button>
+                    </div>
+                </div>
+            </div>
         `;
 
-        document.querySelectorAll('.select-status-pedido').forEach(select => {
-            select.addEventListener('change', async (e) => {
-                const idPedido = e.target.getAttribute('data-id');
-                const nuevoEstado = e.target.value;
+        // Referencias a Elementos DOM de Filtros y Tabla
+        const tbody = document.getElementById('tbodyLogisticaPedidos');
+        const inputSearch = document.getElementById('logisticsSearchInput');
+        const selectStatus = document.getElementById('logisticsStatusFilter');
+        const inputDateStart = document.getElementById('logisticsDateStart');
+        const inputDateEnd = document.getElementById('logisticsDateEnd');
+        const btnReset = document.getElementById('btnResetLogisticsFilters');
 
-                const res = await PedidoService.actualizarEstado(idPedido, nuevoEstado);
-                if (res.ok) {
-                    const pill = document.getElementById(`status-pill-${idPedido}`);
-                    if (pill) {
-                        pill.textContent = nuevoEstado.toUpperCase();
-                        pill.className = `status-pill ${nuevoEstado}`;
-                    }
+        // Función para renderizar la tabla aplicando filtros
+        function renderTablaFiltrada() {
+            const query = inputSearch.value.trim().toLowerCase();
+            const statusFilter = selectStatus.value.toLowerCase();
+            const dateStartVal = inputDateStart.value;
+            const dateEndVal = inputDateEnd.value;
+
+            const pedidosFiltrados = listaPedidosOriginal.filter(p => {
+                // Filtro por Texto (IdPedido, NumeroPedido, Cliente, Email)
+                const idStr = String(p.idPedido || '');
+                const numStr = (p.numeroPedido || '').toLowerCase();
+                const clienteStr = (p.clienteNombre || '').toLowerCase();
+                const emailStr = (p.clienteEmail || '').toLowerCase();
+
+                const matchesQuery = !query || 
+                    idStr.includes(query) || 
+                    numStr.includes(query) || 
+                    clienteStr.includes(query) || 
+                    emailStr.includes(query);
+
+                // Filtro por Estado
+                const estadoPed = (p.estado || 'pendiente').toLowerCase();
+                const matchesStatus = (statusFilter === 'todos') || (estadoPed === statusFilter);
+
+                // Filtro por Rango de Fechas
+                let matchesDate = true;
+                if (p.fechaPedido) {
+                    const pDateStr = p.fechaPedido.split(' ')[0]; // Formato YYYY-MM-DD
+                    if (dateStartVal && pDateStr < dateStartVal) matchesDate = false;
+                    if (dateEndVal && pDateStr > dateEndVal) matchesDate = false;
+                }
+
+                return matchesQuery && matchesStatus && matchesDate;
+            });
+
+            if (pedidosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:25px; color:#a8a8b3;">No se encontraron pedidos con los criterios de búsqueda seleccionados.</td></tr>`;
+                return;
+            }
+
+            let filasHtml = '';
+            pedidosFiltrados.forEach(p => {
+                const totalFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p.total || 0);
+                const dateStr = p.fechaPedido ? new Date(p.fechaPedido).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Reciente';
+
+                const estadoKey = (p.estado || 'pendiente').toLowerCase();
+
+                // Construcción del Badge Visual Dinámico
+                let badgeHtml = '';
+                if (estadoKey === 'pendiente') {
+                    badgeHtml = `<span class="status-badge pendiente"><i class='bx bx-time-five'></i> Pendiente</span>`;
+                } else if (estadoKey === 'preparando' || estadoKey === 'preparacion') {
+                    badgeHtml = `<span class="status-badge preparando"><i class='bx bx-cog'></i> En Empaque</span>`;
+                } else if (estadoKey === 'enviado') {
+                    badgeHtml = `<span class="status-badge enviado"><i class='bx bx-truck'></i> Enviado</span>`;
+                } else if (estadoKey === 'entregado') {
+                    badgeHtml = `<span class="status-badge entregado"><i class='bx bx-check-circle'></i> Entregado</span>`;
+                } else if (estadoKey === 'cancelado') {
+                    badgeHtml = `<span class="status-badge cancelado"><i class='bx bx-x-circle'></i> Cancelado</span>`;
                 } else {
-                    alert('Error al actualizar el estado logístico del pedido.');
+                    badgeHtml = `<span class="status-badge pendiente">${estadoKey.toUpperCase()}</span>`;
+                }
+
+                const numPedidoMostrar = p.numeroPedido ? p.numeroPedido : `#${p.idPedido}`;
+                const clienteNombreMostrar = p.clienteNombre ? p.clienteNombre : `Cliente #${p.idUsuarios}`;
+
+                filasHtml += `
+                    <tr data-id="${p.idPedido}">
+                        <td><strong style="color: #fff;">${numPedidoMostrar}</strong></td>
+                        <td>
+                            <div>
+                                <strong style="color: #e1e1e6;">${clienteNombreMostrar}</strong>
+                                ${p.clienteEmail ? `<br><small style="color: #a8a8b3;">${p.clienteEmail}</small>` : ''}
+                            </div>
+                        </td>
+                        <td>${dateStr}</td>
+                        <td><strong style="color: #04d361;">${totalFormatted}</strong></td>
+                        <td>${badgeHtml}</td>
+                        <td style="text-align: center;">
+                            <div class="action-buttons-group" style="justify-content: center;">
+                                <button class="btn-log-action btn-view btn-abrir-detalle" data-id="${p.idPedido}" title="Ver Detalle Completo 360°">
+                                    <i class='bx bx-show'></i>
+                                </button>
+                                <button class="btn-log-action btn-ship btn-abrir-despacho" data-id="${p.idPedido}" title="Gestionar Envío & Despacho">
+                                    <i class='bx bx-truck'></i>
+                                </button>
+                                <button class="btn-log-action btn-print btn-abrir-impresion" data-id="${p.idPedido}" title="Imprimir Remisión de Caja">
+                                    <i class='bx bx-printer'></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = filasHtml;
+
+            // Re-vincular eventos a botones recién creados
+            vincularEventosTabla();
+        }
+
+        // Eventos de Filtros en Tiempo Real
+        inputSearch.addEventListener('input', renderTablaFiltrada);
+        selectStatus.addEventListener('change', renderTablaFiltrada);
+        inputDateStart.addEventListener('change', renderTablaFiltrada);
+        inputDateEnd.addEventListener('change', renderTablaFiltrada);
+        btnReset.addEventListener('click', () => {
+            inputSearch.value = '';
+            selectStatus.value = 'TODOS';
+            inputDateStart.value = '';
+            inputDateEnd.value = '';
+            renderTablaFiltrada();
+        });
+
+        // Inicializar Renderizado de Tabla
+        renderTablaFiltrada();
+
+        // Manejadores de Modales (Cierre)
+        document.querySelectorAll('.btn-modal-close, .admin-modal-close').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const modalId = btn.getAttribute('data-modal');
+                const overlay = document.getElementById(modalId);
+                if (overlay) overlay.classList.remove('active');
+            });
+        });
+
+        document.querySelectorAll('.admin-modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
                 }
             });
         });
+
+        // ── VINCULAR EVENTOS DE BOTONES DE ACCIÓN ──
+        function vincularEventosTabla() {
+
+            // MODAL 1: VER DETALLE COMPLETO (VISIBILIDAD 360°)
+            document.querySelectorAll('.btn-abrir-detalle').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const idPedido = btn.getAttribute('data-id');
+                    const modal = document.getElementById('modalDetallePedido');
+                    const m1Body = document.getElementById('m1Body');
+                    const m1Numero = document.getElementById('m1NumeroPedido');
+
+                    m1Numero.textContent = `#${idPedido}`;
+                    m1Body.innerHTML = `<div class="loader">Cargando expediente 360° del pedido #${idPedido}...</div>`;
+                    modal.classList.add('active');
+
+                    try {
+                        const data = await PedidoService.obtenerDetalleCompleto(idPedido);
+                        if (!data || data.status === 'error') {
+                            m1Body.innerHTML = `<div class="error-msg">Error al cargar datos del pedido: ${data ? data.mensaje : 'Desconocido'}</div>`;
+                            return;
+                        }
+
+                        const p = data.pedido || {};
+                        const c = data.cliente || {};
+                        const pg = data.pago || {};
+                        const items = data.items || [];
+
+                        const numPed = p.numeroPedido || `#${p.idPedido}`;
+                        m1Numero.textContent = numPed;
+
+                        const totalFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p.total || 0);
+                        const costoEnvioFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p.costoEnvio || 0);
+                        const subtotalItems = (p.total || 0) - (p.costoEnvio || 0);
+                        const subtotalFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(subtotalItems);
+
+                        const fechaStr = p.fechaPedido ? new Date(p.fechaPedido).toLocaleString('es-CO') : 'N/A';
+
+                        let itemsRows = '';
+                        items.forEach(it => {
+                            const unitFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(it.precioUnitario || 0);
+                            const subFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(it.subtotal || 0);
+                            
+                            itemsRows += `
+                                <tr>
+                                    <td><strong style="color:#fff;">${it.nombreSnapshot || 'Prenda'}</strong></td>
+                                    <td><span class="badge info">${it.tallaSnapshot || 'Única'}</span></td>
+                                    <td>${it.colorSnapshot || 'N/A'}</td>
+                                    <td>${it.cantidad}</td>
+                                    <td>${unitFormatted}</td>
+                                    <td><strong style="color:#04d361;">${subFormatted}</strong></td>
+                                </tr>
+                            `;
+                        });
+
+                        if (items.length === 0) {
+                            itemsRows = `<tr><td colspan="6" style="text-align:center;">No hay ítems registrados en este pedido.</td></tr>`;
+                        }
+
+                        m1Body.innerHTML = `
+                            <div class="modal-grid-2col">
+                                <div class="modal-info-box">
+                                    <h4><i class='bx bx-user'></i> Datos del Cliente</h4>
+                                    <ul class="modal-info-list">
+                                        <li><span class="label">Nombre:</span> <strong>${c.nombre || ''} ${c.apellido || ''}</strong></li>
+                                        <li><span class="label">Correo Electrónico:</span> ${c.email || 'N/A'}</li>
+                                        <li><span class="label">Teléfono / WhatsApp:</span> ${c.telefono || 'N/A'}</li>
+                                        <li><span class="label">ID de Usuario:</span> #${c.idUsuarios || 'N/A'}</li>
+                                    </ul>
+                                </div>
+
+                                <div class="modal-info-box">
+                                    <h4><i class='bx bx-map'></i> Dirección & Envío</h4>
+                                    <ul class="modal-info-list">
+                                        <li><span class="label">Dirección Completa:</span> <strong>${p.direccionEnvio || 'No especificada'}</strong></li>
+                                        <li><span class="label">Fecha del Pedido:</span> ${fechaStr}</li>
+                                        <li><span class="label">Estado Actual:</span> <strong style="text-transform:uppercase; color:#04d361;">${p.estado}</strong></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="modal-info-box" style="margin-bottom: 20px;">
+                                <h4><i class='bx bx-credit-card'></i> Información de Pago (Trazabilidad)</h4>
+                                <ul class="modal-info-list" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                                    <li><span class="label">Pasarela / Método:</span> <strong>${pg.metodoPago || 'PSE'}</strong></li>
+                                    <li><span class="label">Estado del Pago:</span> <strong style="color:#04d361;">${(pg.estadoPago || 'aprobado').toUpperCase()}</strong></li>
+                                    <li><span class="label">Referencia de Pago:</span> <code>${pg.referencia || 'REF-' + p.idPedido}</code></li>
+                                    <li><span class="label">Monto Acreditado:</span> ${totalFormatted}</li>
+                                </ul>
+                            </div>
+
+                            <h4 style="color:#04d361; margin-bottom:10px;"><i class='bx bx-shopping-bag'></i> Ítems Comprados (Snapshot de Prenda)</h4>
+                            <table class="modal-items-table">
+                                <thead>
+                                    <tr>
+                                        <th>Prenda (Snapshot)</th>
+                                        <th>Talla</th>
+                                        <th>Color</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio Unitario</th>
+                                        <th>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${itemsRows}
+                                </tbody>
+                            </table>
+
+                            <div class="modal-breakdown-box">
+                                <div class="modal-breakdown-row">
+                                    <span>Subtotal Prendas:</span>
+                                    <span>${subtotalFormatted}</span>
+                                </div>
+                                <div class="modal-breakdown-row">
+                                    <span>Costo de Envío:</span>
+                                    <span>${costoEnvioFormatted}</span>
+                                </div>
+                                <div class="modal-breakdown-row total">
+                                    <span>Total Pedido:</span>
+                                    <span>${totalFormatted}</span>
+                                </div>
+                            </div>
+                        `;
+
+                    } catch (err) {
+                        console.error(err);
+                        m1Body.innerHTML = `<div class="error-msg">Error de conexión al obtener detalles.</div>`;
+                    }
+                });
+            });
+
+            // MODAL 2: GESTIÓN DE DESPACHO & RASTREO
+            document.querySelectorAll('.btn-abrir-despacho').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const idPedido = btn.getAttribute('data-id');
+                    const modal = document.getElementById('modalGestionDespacho');
+                    const m2Numero = document.getElementById('m2NumeroPedido');
+                    const m2IdInput = document.getElementById('m2IdPedido');
+                    const m2EstadoSelect = document.getElementById('m2EstadoSelect');
+                    const m2TransSelect = document.getElementById('m2Transportadora');
+                    const m2GuiaInput = document.getElementById('m2NumeroGuia');
+                    const m2NotasInput = document.getElementById('m2Notas');
+                    const m2Historial = document.getElementById('m2HistorialRastreoContainer');
+
+                    m2Numero.textContent = `#${idPedido}`;
+                    m2IdInput.value = idPedido;
+                    m2Historial.innerHTML = `<div class="loader">Cargando historial de rastreo...</div>`;
+                    modal.classList.add('active');
+
+                    // Pre-llenar datos si se encuentran en la lista original
+                    const pedEncontrado = listaPedidosOriginal.find(p => String(p.idPedido) === String(idPedido));
+                    if (pedEncontrado) {
+                        m2EstadoSelect.value = pedEncontrado.estado || 'pendiente';
+                        m2TransSelect.value = pedEncontrado.transportadora || '';
+                        m2GuiaInput.value = pedEncontrado.numeroGuia || '';
+                        m2NotasInput.value = '';
+                    }
+
+                    // Cargar Historial de Rastreo desde Backend
+                    try {
+                        const historial = await PedidoService.obtenerHistorialRastreo(idPedido);
+                        if (Array.isArray(historial) && historial.length > 0) {
+                            let histRows = '';
+                            historial.forEach(h => {
+                                const fStr = h.fechaEstado ? new Date(h.fechaEstado).toLocaleString('es-CO') : '';
+                                histRows += `
+                                    <tr>
+                                        <td><strong>${h.estadoEnvio ? h.estadoEnvio.toUpperCase() : ''}</strong></td>
+                                        <td>${h.transportadora || '-'}</td>
+                                        <td><code>${h.numeroGuia || '-'}</code></td>
+                                        <td>${h.descripcion || ''}</td>
+                                        <td><small>${fStr}</small></td>
+                                    </tr>
+                                `;
+                            });
+
+                            m2Historial.innerHTML = `
+                                <table class="modal-items-table" style="font-size:0.82rem;">
+                                    <thead>
+                                        <tr><th>Estado</th><th>Transportadora</th><th>No. Guía</th><th>Observaciones</th><th>Fecha / Hora</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${histRows}
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            m2Historial.innerHTML = `<p style="color:#a8a8b3; font-size:0.88rem; margin:10px 0;">No hay eventos previos de rastreo registrados para este pedido.</p>`;
+                        }
+                    } catch (e) {
+                        m2Historial.innerHTML = `<p style="color:#ff4d4d; font-size:0.88rem;">Error al cargar historial de rastreo.</p>`;
+                    }
+                });
+            });
+
+            // MODAL 3: IMPRIMIR REMISIÓN DE EMPAQUE
+            document.querySelectorAll('.btn-abrir-impresion').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const idPedido = btn.getAttribute('data-id');
+                    const modal = document.getElementById('modalPrintRemision');
+                    const container = document.getElementById('m3PrintContainer');
+
+                    container.innerHTML = `<div class="loader">Generando remisión limpia de empaque para pedido #${idPedido}...</div>`;
+                    modal.classList.add('active');
+
+                    try {
+                        const data = await PedidoService.obtenerDetalleCompleto(idPedido);
+                        if (!data || data.status === 'error') {
+                            container.innerHTML = `<div class="error-msg">Error al generar la remisión de empaque.</div>`;
+                            return;
+                        }
+
+                        const p = data.pedido || {};
+                        const c = data.cliente || {};
+                        const items = data.items || [];
+                        const rastreoList = data.rastreo || [];
+                        const ultimoRastreo = rastreoList.length > 0 ? rastreoList[0] : {};
+
+                        const numPed = p.numeroPedido || `#${p.idPedido}`;
+                        const fechaStr = p.fechaPedido ? new Date(p.fechaPedido).toLocaleDateString('es-CO') : 'Reciente';
+
+                        let itemRows = '';
+                        items.forEach(it => {
+                            itemRows += `
+                                <tr>
+                                    <td><strong>${it.nombreSnapshot}</strong></td>
+                                    <td>${it.tallaSnapshot}</td>
+                                    <td>${it.colorSnapshot || 'N/A'}</td>
+                                    <td><strong>${it.cantidad}</strong></td>
+                                </tr>
+                            `;
+                        });
+
+                        container.innerHTML = `
+                            <div class="print-shipping-label">
+                                <div class="print-header">
+                                    <div>
+                                        <div class="print-brand">ELIXIR & FLEXX</div>
+                                        <span style="font-size:0.85rem; color:#555;">E-Commerce Streetwear Colombia</span>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <h3 style="margin:0; font-size:1.2rem;">REMISIÓN DE EMPAQUE</h3>
+                                        <span style="font-size:1rem; font-weight:bold;">${numPed}</span><br>
+                                        <small style="color:#555;">Fecha: ${fechaStr}</small>
+                                    </div>
+                                </div>
+
+                                <div class="print-grid">
+                                    <div class="print-box">
+                                        <h5>ORIGEN / REMITENTE:</h5>
+                                        <p><strong>ELIXIR & FLEXX BODEGA CENTRAL</strong></p>
+                                        <p>Centro Logístico Bucaramanga</p>
+                                        <p>Bucaramanga, Santander, Colombia</p>
+                                        <p>Tel: +57 300 000 0000</p>
+                                    </div>
+
+                                    <div class="print-box">
+                                        <h5>DESTINATARIO / CLIENTE:</h5>
+                                        <p><strong>${c.nombre || ''} ${c.apellido || ''}</strong></p>
+                                        <p><strong>Dirección:</strong> ${p.direccionEnvio || 'N/A'}</p>
+                                        <p>Teléfono: ${c.telefono || 'N/A'}</p>
+                                        <p>Email: ${c.email || 'N/A'}</p>
+                                    </div>
+                                </div>
+
+                                <div class="print-box" style="margin-bottom:15px; background-color:#fafafa;">
+                                    <h5>INFORMACIÓN LOGÍSTICA DE TRANSPORTE:</h5>
+                                    <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+                                        <span>Transportadora: <strong>${ultimoRastreo.transportadora || 'Mensajería / Servientrega'}</strong></span>
+                                        <span>No. Guía de Rastreo: <strong>${ultimoRastreo.numeroGuia || 'PENDIENTE'}</strong></span>
+                                    </div>
+                                </div>
+
+                                <h5 style="margin:15px 0 8px 0; font-size:0.85rem; text-transform:uppercase;">CONTENIDO DEL PAQUETE (PRENDAS):</h5>
+                                <table class="print-items-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Prenda</th>
+                                            <th>Talla</th>
+                                            <th>Color</th>
+                                            <th>Cantidad</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${itemRows}
+                                    </tbody>
+                                </table>
+
+                                <div style="margin-top:25px; border-top:1px solid #ddd; padding-top:10px; text-align:center; font-size:0.75rem; color:#777;">
+                                    Etiqueta generada por el Sistema Logístico Elixir & Flexx. Por favor verificar el empaque sellado antes de entregar a la transportadora.
+                                </div>
+                            </div>
+                        `;
+                    } catch (e) {
+                        console.error(e);
+                        container.innerHTML = `<div class="error-msg">Error al generar la remisión para impresión.</div>`;
+                    }
+                });
+            });
+        }
+
+        // Evento Submit de Modal 2 (Formulario de Despacho)
+        const formDespacho = document.getElementById('formGestionDespachoLogistico');
+        if (formDespacho) {
+            formDespacho.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const idPedido = document.getElementById('m2IdPedido').value;
+                const estado = document.getElementById('m2EstadoSelect').value;
+                const transportadora = document.getElementById('m2Transportadora').value;
+                const numeroGuia = document.getElementById('m2NumeroGuia').value.trim();
+                const descripcion = document.getElementById('m2Notas').value.trim();
+
+                // Validación obligatoria si el estado pasa a 'enviado'
+                if (estado === 'enviado') {
+                    if (!transportadora) {
+                        alert("⚠️ Debes seleccionar una Empresa Transportadora cuando el estado es 'Enviado'.");
+                        return;
+                    }
+                    if (!numeroGuia) {
+                        alert("⚠️ Debes ingresar el Número de Guía de Rastreo cuando el estado es 'Enviado'.");
+                        return;
+                    }
+                }
+
+                try {
+                    const res = await PedidoService.actualizarDespacho({
+                        idPedido,
+                        estado,
+                        transportadora,
+                        numeroGuia,
+                        descripcion
+                    });
+
+                    if (res.ok) {
+                        alert("🎉 ¡Estado logístico y despacho actualizados con éxito! Notificación enviada al cliente.");
+                        document.getElementById('modalGestionDespacho').classList.remove('active');
+                        
+                        // Recargar la lista de pedidos en memoria y refrescar la tabla sin recargar la página
+                        const dataActualizada = await PedidoService.listarTodos();
+                        listaPedidosOriginal = Array.isArray(dataActualizada) ? dataActualizada : [];
+                        renderTablaFiltrada();
+                    } else {
+                        alert("❌ Error al guardar despacho: " + (res.mensaje || "Ocurrió un error en el servidor."));
+                    }
+                } catch (err) {
+                    console.error("Excepción al actualizar despacho:", err);
+                    alert("❌ Error de conexión al actualizar el despacho logístico.");
+                }
+            });
+        }
+
+        // Evento Botón Imprimir Remisión
+        const btnEjecutarImp = document.getElementById('btnEjecutarImpresionRemision');
+        if (btnEjecutarImp) {
+            btnEjecutarImp.addEventListener('click', () => {
+                window.print();
+            });
+        }
     }
 
     // ── 4. CONTROL Y AUDITORÍA DE USUARIOS ──
@@ -979,44 +1440,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <!-- Contenido Pestaña 1: Devoluciones -->
             <div id="tabContentDevoluciones" class="tab-pane-content" style="display: block;">
-                <div class="admin-table-container admin-panel-card panel-card">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Solicitante</th>
-                                <th>Motivo / Descripción</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="devolucionesTableBody">
-                            <tr><td colspan="5" style="text-align:center;">Cargando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Solicitante</th>
+                            <th>Motivo / Descripción</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="devolucionesTableBody">
+                        <tr><td colspan="5" style="text-align:center;">Cargando...</td></tr>
+                    </tbody>
+                </table>
             </div>
 
             <!-- Contenido Pestaña 2: Contacto -->
             <div id="tabContentContacto" class="tab-pane-content" style="display: none;">
-                <div class="admin-table-container admin-panel-card panel-card">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Nombre</th>
-                                <th>Correo</th>
-                                <th>Teléfono</th>
-                                <th>Comentario</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="contactosTableBody">
-                            <tr><td colspan="7" style="text-align:center;">Cargando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Teléfono</th>
+                            <th>Comentario</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contactosTableBody">
+                        <tr><td colspan="7" style="text-align:center;">Cargando...</td></tr>
+                    </tbody>
+                </table>
             </div>
 
             <!-- Modal de rechazo / Ver detalle -->
@@ -1283,14 +1740,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── 6. GESTIÓN DE PROVEEDORES (MÓDULO COMPLETO) ──
     async function renderProveedores() {
         dynamicContent.innerHTML = `
-            <div class="admin-tabs" style="display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid #29292e; padding-bottom: 10px;">
-                <button class="tab-btn-prov active" data-tab-prov="listado" style="background: transparent; border: none; color: #fff; padding: 10px 20px; font-weight: bold; cursor: pointer; border-bottom: 3px solid #04d361;">Directorio de Proveedores</button>
-                <button class="tab-btn-prov" data-tab-prov="realizar-pedido" style="background: transparent; border: none; color: #a8a8b3; padding: 10px 20px; font-weight: bold; cursor: pointer;">Realizar Pedido de Mercancía</button>
-                <button class="tab-btn-prov" data-tab-prov="historial" style="background: transparent; border: none; color: #a8a8b3; padding: 10px 20px; font-weight: bold; cursor: pointer;">Historial de Pedidos</button>
-            </div>
-
-            <!-- Sub-tab 1: Directorio -->
-            <div id="subContentListado" class="sub-tab-content" style="display: block;">
+            <section id="sec-proveedores">
                 <div class="action-bar" style="margin-bottom: 20px;">
                     <button id="btnAbrirFormProveedor" class="btn-urban">＋ Registrar Proveedor</button>
                 </div>
@@ -1372,68 +1822,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         <tr><td colspan="7" style="text-align:center;">Cargando proveedores...</td></tr>
                     </tbody>
                 </table>
-            </div>
-
-            <!-- Sub-tab 2: Realizar Pedido -->
-            <div id="subContentRealizarPedido" class="sub-tab-content" style="display: none;">
-                <div class="admin-panel-card">
-                    <h3>Realizar Pedido de Mercancía a Proveedor</h3>
-                    <form id="formRealizarPedido" class="admin-grid-form" style="margin-top: 15px;">
-                        <div class="input-group">
-                            <label>Proveedor</label>
-                            <select name="idProveedor" id="pedidoProveedor" style="padding: 10px; border-radius: 4px; background: #1f1f23; color: #fff; border: 1px solid #29292e;" required>
-                                <option value="">-- Seleccione Proveedor --</option>
-                            </select>
-                        </div>
-                        
-                        <div class="input-group">
-                            <label>Producto a Abastecer</label>
-                            <select id="pedidoProducto" style="padding: 10px; border-radius: 4px; background: #1f1f23; color: #fff; border: 1px solid #29292e;" required>
-                                <option value="">-- Seleccione Producto --</option>
-                            </select>
-                        </div>
-
-                        <div class="input-group" id="costoUnitarioGroup" style="display: none;">
-                            <label>Costo Unitario por Prenda ($COP)</label>
-                            <input type="number" id="pedidoCosto" min="0" placeholder="Ej: 25000" style="padding: 10px; border-radius: 4px; background: #1f1f23; color: #fff; border: 1px solid #29292e;">
-                        </div>
-
-                        <div class="input-group" id="pedidoVariantesContainer" style="grid-column: span 2; display: none;">
-                            <label style="font-weight: bold; margin-bottom: 10px; display: block; color: #04d361;">Cantidades por Talla/Color</label>
-                            <div id="variantesStockInputs" class="size-stock-container" style="display: flex; gap: 15px; flex-wrap: wrap;">
-                                <!-- JS inyectará los inputs aquí -->
-                            </div>
-                        </div>
-
-                        <div style="grid-column: span 2; display: flex; gap: 10px; margin-top: 15px;">
-                            <button type="submit" class="btn-urban" id="btnEnviarPedido" style="background: #04d361; color: #fff; border: none;">Enviar Pedido</button>
-                            <button type="button" class="btn-action" id="btnResetPedido">Limpiar Formulario</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Sub-tab 3: Historial de Pedidos -->
-            <div id="subContentHistorial" class="sub-tab-content" style="display: none;">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID Pedido</th>
-                            <th>Proveedor</th>
-                            <th>Fecha</th>
-                            <th>Total ($COP)</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historialPedidosTableBody">
-                        <tr><td colspan="6" style="text-align:center;">Cargando historial de pedidos...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+            </section>
         `;
 
-        // ── VARIABLES PARA PROVEEDORES ──
         const btnAbrir = document.getElementById('btnAbrirFormProveedor');
         const btnCancelar = document.getElementById('btnCancelarProveedor');
         const wrapper = document.getElementById('wrapperFormProveedor');
@@ -1600,6 +1991,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             console.log("Enviando formulario de proveedores...");
 
+            // Validación simple
             let formValido = true;
             form.querySelectorAll('input, select').forEach(input => {
                 if (input.type !== 'hidden' && input.id !== 'provId') {
@@ -1630,11 +2022,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     categoriaInsumo: document.getElementById('provInsumo').value
                 };
 
+                console.log("Payload a enviar:", payload);
+
                 const baseUrl = await getBaseUrl();
                 const url = id 
                     ? `${baseUrl}/api/proveedores/${id}`.replace(/([^:]\/)\/+/g, "$1")
                     : `${baseUrl}/api/proveedores`.replace(/([^:]\/)\/+/g, "$1");
                 const method = id ? 'PUT' : 'POST';
+
+                console.log(`Realizando petición fetch a URL: ${url} [MÉTODO: ${method}]`);
 
                 const res = await fetch(url, {
                     method: method,
@@ -1645,277 +2041,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (!res.ok) {
                     const textError = await res.text();
+                    console.error("Error devuelto por el servidor (HTTP Status " + res.status + "):", textError);
                     alert("Error HTTP " + res.status + " del servidor: " + textError);
                     return;
                 }
 
                 const json = await res.json();
+                console.log("Respuesta del servidor JSON:", json);
+
                 if (json.success) {
                     alert('Proveedor guardado con éxito.');
                     wrapper.style.display = 'none';
                     form.reset();
                     cargarTablasProveedores();
                 } else {
-                    alert('Error del servidor: ' + (json.error || 'Ocurrió un error inesperado al guardar.'));
+                    const errorMsg = json.error || 'Ocurrió un error inesperado al guardar.';
+                    console.error('Error lógico en el servidor al guardar proveedor:', errorMsg, json);
+                    alert('Error del servidor: ' + errorMsg);
                 }
             } catch (error) {
-                console.error(error);
+                console.error('Excepción detectada al intentar guardar el proveedor:', error);
                 alert('Excepción detectada en JS al intentar guardar el proveedor: ' + error.message);
             }
         });
 
-        // ── CONTROL DE SUB-PESTAÑAS DE PROVEEDORES ──
-        function cambiarSubPestanaProv(pestana) {
-            document.querySelectorAll('.tab-btn-prov').forEach(btn => {
-                btn.classList.remove('active');
-                btn.style.color = '#a8a8b3';
-                btn.style.borderBottom = 'none';
-                
-                if (btn.getAttribute('data-tab-prov') === pestana) {
-                    btn.classList.add('active');
-                    btn.style.color = '#fff';
-                    btn.style.borderBottom = '3px solid #04d361';
-                }
-            });
-
-            document.querySelectorAll('.sub-tab-content').forEach(div => {
-                div.style.display = 'none';
-            });
-
-            if (pestana === 'listado') {
-                document.getElementById('subContentListado').style.display = 'block';
-                cargarTablasProveedores();
-            } else if (pestana === 'realizar-pedido') {
-                document.getElementById('subContentRealizarPedido').style.display = 'block';
-                cargarSelectsPedido();
-            } else if (pestana === 'historial') {
-                document.getElementById('subContentHistorial').style.display = 'block';
-                cargarHistorialPedidos();
-            }
-        }
-
-        document.querySelectorAll('.tab-btn-prov').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tab = btn.getAttribute('data-tab-prov');
-                cambiarSubPestanaProv(tab);
-            });
-        });
-
-        // ── FORMULARIO Y LÓGICA DE PEDIDOS DE MERCANCÍA ──
-        async function cargarSelectsPedido() {
-            const selectProv = document.getElementById('pedidoProveedor');
-            const selectProd = document.getElementById('pedidoProducto');
-            if (!selectProv || !selectProd) return;
-
-            selectProv.innerHTML = '<option value="">Cargando proveedores...</option>';
-            selectProd.innerHTML = '<option value="">Cargando productos...</option>';
-
-            try {
-                const [proveedores, productos] = await Promise.all([
-                    ProveedorService.listar().catch(() => []),
-                    ProductoService.listar().catch(() => [])
-                ]);
-
-                // Poblar proveedores activos
-                selectProv.innerHTML = '<option value="">-- Seleccione Proveedor --</option>' +
-                    proveedores.filter(p => p.estado === 1).map(p => `<option value="${p.idProveedor}">${p.nombreEmpresa}</option>`).join('');
-
-                // Poblar productos
-                selectProd.innerHTML = '<option value="">-- Seleccione Producto --</option>' +
-                    productos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
-
-            } catch (err) {
-                console.error("Error al cargar selectores de pedido:", err);
-                selectProv.innerHTML = '<option value="">Error al cargar</option>';
-                selectProd.innerHTML = '<option value="">Error al cargar</option>';
-            }
-        }
-
-        const selectProd = document.getElementById('pedidoProducto');
-        if (selectProd) {
-            selectProd.addEventListener('change', async (e) => {
-                const idProducto = e.target.value;
-                const container = document.getElementById('pedidoVariantesContainer');
-                const inputsDiv = document.getElementById('variantesStockInputs');
-                const costGroup = document.getElementById('costoUnitarioGroup');
-                
-                if (!idProducto) {
-                    container.style.display = 'none';
-                    costGroup.style.display = 'none';
-                    return;
-                }
-                
-                inputsDiv.innerHTML = '<div class="loader">Cargando variantes de tallas...</div>';
-                container.style.display = 'block';
-                costGroup.style.display = 'block';
-                
-                try {
-                    const variants = await VarianteService.listarPorProducto(idProducto).catch(() => []);
-                    const tallasInteres = ['S', 'M', 'L', 'XL'];
-                    const filtered = variants.filter(v => tallasInteres.includes(v.talla));
-                    
-                    if (filtered.length === 0) {
-                        inputsDiv.innerHTML = '<div style="color: #ff4d4d; padding: 10px;">Este producto no tiene variantes registradas de tallas S, M, L o XL.</div>';
-                    } else {
-                        inputsDiv.innerHTML = filtered.map(v => `
-                            <div class="size-stock-item" style="flex: 1; min-width: 140px; margin-bottom: 10px;">
-                                <label style="font-weight: 500; font-size: 0.85rem; display:block; margin-bottom: 5px;">Talla ${v.talla} (${v.color})</label>
-                                <input type="number" class="cant-talla-input" name="cant_${v.idVariantes}" data-id-variante="${v.idVariantes}" min="0" value="0" style="padding: 10px; border-radius: 4px; background: #19191c; color: #fff; border: 1px solid #29292e; width: 100%;">
-                            </div>
-                        `).join('');
-                    }
-                } catch (err) {
-                    console.error(err);
-                    inputsDiv.innerHTML = '<div style="color: #ff4d4d;">Error al cargar variantes.</div>';
-                }
-            });
-        }
-
-        const formPedido = document.getElementById('formRealizarPedido');
-        if (formPedido) {
-            formPedido.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const idProveedor = document.getElementById('pedidoProveedor').value;
-                const costoUnitario = parseFloat(document.getElementById('pedidoCosto').value) || 0;
-                
-                if (!idProveedor) {
-                    alert('Por favor seleccione un proveedor.');
-                    return;
-                }
-                if (costoUnitario <= 0) {
-                    alert('Por favor ingrese un costo unitario válido (mayor a 0).');
-                    return;
-                }
-                
-                const inputs = formPedido.querySelectorAll('.cant-talla-input');
-                const items = [];
-                let totalCantidad = 0;
-                
-                inputs.forEach(input => {
-                    const idVar = parseInt(input.getAttribute('data-id-variante'));
-                    const cant = parseInt(input.value) || 0;
-                    if (cant > 0) {
-                        items.push({ idVariantes: idVar, cantidad: cant, costoUnitario: costoUnitario });
-                        totalCantidad += cant;
-                    }
-                });
-                
-                if (items.length === 0 || totalCantidad === 0) {
-                    alert('Debe pedir al menos 1 prenda en alguna talla.');
-                    return;
-                }
-                
-                const itemsStr = items.map(item => `${item.idVariantes}:${item.cantidad}:${item.costoUnitario}`).join('|');
-                const subtotal = totalCantidad * costoUnitario;
-                
-                const payload = {
-                    idProveedor: idProveedor,
-                    subtotal: subtotal,
-                    items: itemsStr
-                };
-                
-                try {
-                    const result = await OrdenCompraService.crear(payload);
-                    if (result.success) {
-                        alert('🎉 Pedido de mercancía enviado correctamente al proveedor en estado Pendiente.');
-                        formPedido.reset();
-                        document.getElementById('pedidoVariantesContainer').style.display = 'none';
-                        document.getElementById('costoUnitarioGroup').style.display = 'none';
-                        cambiarSubPestanaProv('historial');
-                    } else {
-                        alert('Error al enviar el pedido: ' + (result.error || 'Ocurrió un error.'));
-                    }
-                } catch (err) {
-                    console.error(err);
-                    alert('Error de conexión al enviar el pedido.');
-                }
-            });
-
-            const btnReset = document.getElementById('btnResetPedido');
-            if (btnReset) {
-                btnReset.addEventListener('click', () => {
-                    formPedido.reset();
-                    document.getElementById('pedidoVariantesContainer').style.display = 'none';
-                    document.getElementById('costoUnitarioGroup').style.display = 'none';
-                });
-            }
-        }
-
-        // ── LOGICA DE RECEPCION Y HISTORIAL DE PEDIDOS ──
-        async function cargarHistorialPedidos() {
-            const tableBody = document.getElementById('historialPedidosTableBody');
-            if (!tableBody) return;
-            
-            try {
-                const ordenes = await OrdenCompraService.listar();
-                let filas = '';
-                
-                ordenes.forEach(o => {
-                    const totalFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(o.subtotal);
-                    const dateStr = o.fechaPedido ? new Date(o.fechaPedido).toLocaleDateString('es-CO') + ' ' + new Date(o.fechaPedido).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : 'Reciente';
-                    
-                    let badgeClass = 'badge info'; // Pendiente
-                    if (o.estadoOrden === 'Recibido') badgeClass = 'badge success';
-                    
-                    let accionBtn = '';
-                    if (o.estadoOrden === 'Pendiente') {
-                        accionBtn = `<button class="btn-action btn-recibir-pedido" data-id="${o.idOrdenCompra}" style="background: #04d361; color: #fff; border:none;"><i class='bx bx-check-double'></i> Marcar como Recibido</button>`;
-                    } else {
-                        accionBtn = `<span style="font-size:0.85rem; color:#888;">Entregado & Stock Sumado</span>`;
-                    }
-                    
-                    filas += `
-                        <tr>
-                            <td><strong>OC-${o.idOrdenCompra}</strong></td>
-                            <td>${o.nombreProveedor}</td>
-                            <td>${dateStr}</td>
-                            <td>${totalFormatted}</td>
-                            <td><span class="${badgeClass}">${o.estadoOrden.toUpperCase()}</span></td>
-                            <td>${accionBtn}</td>
-                        </tr>
-                    `;
-                });
-                
-                if (ordenes.length === 0) {
-                    filas = `<tr><td colspan="6" style="text-align:center;">No hay pedidos de mercancía registrados.</td></tr>`;
-                }
-                
-                tableBody.innerHTML = filas;
-                
-                document.querySelectorAll('.btn-recibir-pedido').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const id = btn.getAttribute('data-id');
-                        if (confirm(`¿Confirma que ha recibido la mercancía de la orden OC-${id}? Esto sumará automáticamente las unidades al stock y registrará el ingreso en el Kárdex.`)) {
-                            btn.disabled = true;
-                            btn.textContent = 'Procesando...';
-                            
-                            try {
-                                const result = await OrdenCompraService.marcarRecibido(id);
-                                if (result.success) {
-                                    alert('🎉 Inventario actualizado con éxito. El estado de la orden es ahora Recibido.');
-                                    cargarHistorialPedidos();
-                                } else {
-                                    alert('Error al marcar como recibido: ' + (result.error || 'Ocurrió un error.'));
-                                    btn.disabled = false;
-                                    btn.textContent = 'Marcar como Recibido';
-                                }
-                            } catch (err) {
-                                console.error(err);
-                                alert('Error de conexión.');
-                                btn.disabled = false;
-                                btn.textContent = 'Marcar como Recibido';
-                            }
-                        }
-                    });
-                });
-                
-            } catch (err) {
-                console.error(err);
-                tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ff4d4d;">⚠️ Error al cargar el historial.</td></tr>`;
-            }
-        }
-
-        // Cargar directorio de proveedores por defecto
         cargarTablasProveedores();
     }
 

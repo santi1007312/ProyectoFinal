@@ -409,6 +409,14 @@ export const PedidoService = {
         return get('PedidoController', { accion: 'obtenerMetricas' });
     },
 
+    async obtenerDetalleCompleto(idPedido) {
+        return get('PedidoController', { accion: 'obtenerDetalleCompleto', idPedido });
+    },
+
+    async obtenerHistorialRastreo(idPedido) {
+        return get('PedidoController', { accion: 'obtenerHistorialRastreo', idPedido });
+    },
+
     async crear(total, direccionEnvio) {
         try {
             const res = await post('PedidoController', { accion: 'crearPedido', total, direccionEnvio });
@@ -426,6 +434,16 @@ export const PedidoService = {
             return { ok: json.status === 'success' };
         } catch {
             return { ok: false };
+        }
+    },
+
+    async actualizarDespacho(datos) {
+        try {
+            const res = await post('PedidoController', { accion: 'actualizarDespacho', ...datos });
+            const json = await res.json();
+            return { ok: json.status === 'success', mensaje: json.mensaje || json.error };
+        } catch {
+            return { ok: false, mensaje: 'Error de conexión.' };
         }
     }
 };
@@ -538,75 +556,6 @@ export const ProveedorService = {
             credentials: 'include'
         });
         return res.json();
-    }
-};
-
-export const OrdenCompraService = {
-    async listar() {
-        const baseUrl = await getBaseUrl();
-        const res = await fetch(`${baseUrl}/api/ordenes-compra`, {
-            method: 'GET',
-            credentials: 'include'
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-    },
-
-    async crear(datos) {
-        const baseUrl = await getBaseUrl();
-        const res = await fetch(`${baseUrl}/api/ordenes-compra`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datos),
-            credentials: 'include'
-        });
-        return res.json();
-    },
-
-    async marcarRecibido(idOrdenCompra) {
-        const baseUrl = await getBaseUrl();
-        const res = await fetch(`${baseUrl}/api/ordenes-compra/${idOrdenCompra}/recibir`, {
-            method: 'POST',
-            credentials: 'include'
-        });
-        return res.json();
-    }
-};
-
-// ─── NOTIFICACIONES DE USUARIO ────────────────────────────────────────────────
-export const NotificacionService = {
-    async listar() {
-        try {
-            return await get('NotificacionController', { accion: 'listar' });
-        } catch {
-            return [];
-        }
-    },
-
-    async contarNoLeidas() {
-        try {
-            return await get('NotificacionController', { accion: 'contarNoLeidas' });
-        } catch {
-            return { noLeidas: 0 };
-        }
-    },
-
-    async marcarLeida(idNotificacion) {
-        try {
-            const res = await post('NotificacionController', { accion: 'marcarLeida', idNotificacion });
-            return await res.json();
-        } catch {
-            return { status: 'error' };
-        }
-    },
-
-    async marcarTodasLeidas() {
-        try {
-            const res = await post('NotificacionController', { accion: 'marcarTodasLeidas' });
-            return await res.json();
-        } catch {
-            return { status: 'error' };
-        }
     }
 };
 
