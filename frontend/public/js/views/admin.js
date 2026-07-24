@@ -340,6 +340,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const containerStockRopa = document.getElementById('containerStockRopa');
         const containerStockZapatos = document.getElementById('containerStockZapatos');
 
+        const btnAbrir = document.getElementById('btnAbrirFormProducto') || document.getElementById('btnAbrirModalAgregar');
+        const wrapper = document.getElementById('wrapperFormProducto');
+        const formTitle = document.getElementById('formProductoTitle');
+        const form = document.getElementById('formRegistrarProducto');
+        const btnCancelar = document.getElementById('btnCancelarProducto');
+
         function actualizarContenedoresStock() {
             const valCat = selectCategoria ? selectCategoria.value : '';
             if (String(valCat) === '4') {

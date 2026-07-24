@@ -115,11 +115,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formEditarPerfilModal) {
         formEditarPerfilModal.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const nom = modalInputNombre.value.trim();
-            const ape = modalInputApellido.value.trim();
+            const nom = modalInputNombre ? modalInputNombre.value.trim() : '';
+            const ape = modalInputApellido ? modalInputApellido.value.trim() : '';
+            const email = modalInputEmail ? modalInputEmail.value.trim() : '';
 
-            if (!nom || !ape) {
-                alert('Nombre y apellido son obligatorios.');
+            if (!nom || !ape || !email) {
+                alert('Nombre, apellido y correo electrónico son obligatorios.');
                 return;
             }
 
@@ -129,12 +130,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            if (!email.includes('@')) {
+                alert('Ingrese un correo electrónico válido.');
+                return;
+            }
+
             try {
-                const res = await UsuarioService.actualizarPerfil(nom, ape);
+                const res = await UsuarioService.actualizarPerfil(nom, ape, email);
                 if (res.ok) {
                     if (usuarioActual) {
                         usuarioActual.nombre = nom;
                         usuarioActual.apellido = ape;
+                        usuarioActual.email = email;
                     }
                     renderizarDatosUsuario(usuarioActual);
                     cerrarModalPerfil();
@@ -146,6 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (usuarioActual) {
                     usuarioActual.nombre = nom;
                     usuarioActual.apellido = ape;
+                    usuarioActual.email = email;
                 }
                 renderizarDatosUsuario(usuarioActual);
                 cerrarModalPerfil();
@@ -289,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localDirs.unshift(nuevaDir);
             localStorage.setItem('saved_addresses', JSON.stringify(localDirs));
 
-            renderizarDireccionesLocal();
+            await cargarDirecciones();
             cerrarModalDireccion();
             formAgregarDireccionModal.reset();
             alert('¡Dirección agregada correctamente!');

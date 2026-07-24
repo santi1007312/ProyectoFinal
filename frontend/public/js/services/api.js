@@ -202,11 +202,11 @@ export const UsuarioService = {
     /**
      * Actualiza el perfil del usuario (nombre y apellido).
      */
-    async actualizarPerfil(nombre, apellido) {
+    async actualizarPerfil(nombre, apellido, email = '') {
         try {
-            const res = await post('UsuarioController', { accion: 'actualizarPerfil', nombre, apellido });
+            const res = await post('UsuarioController', { accion: 'actualizarPerfil', nombre, apellido, email });
             const data = await res.json();
-            return { ok: data.success === true, error: data.error };
+            return { ok: data.success === true || data.status === 'success', error: data.error };
         } catch (err) {
             return { ok: false, error: 'Error de conexión con el servidor.' };
         }
@@ -433,7 +433,11 @@ export const CarritoService = {
 export const PedidoService = {
 
     async listarMisPedidos() {
-        return get('PedidoController', { accion: 'listarMisPedidos' });
+        try {
+            return await get('PedidoController', { accion: 'misPedidos' });
+        } catch (e) {
+            return await get('PedidoController', { accion: 'listarMisPedidos' });
+        }
     },
 
     async listarTodos() {
@@ -593,5 +597,3 @@ export const ProveedorService = {
         return res.json();
     }
 };
-
-

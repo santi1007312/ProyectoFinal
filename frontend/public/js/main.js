@@ -26,11 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Vincular todos los botones/enlaces de "Políticas de devolución" muertos en la página
+    // Vincular todos los botones/enlaces de "Políticas de devolución"
     document.querySelectorAll('a[href*="politicas"], a[href*="devolucion"], .enlace-footer-devolucion').forEach(link => {
+        if (link.id === 'dropdownToggle') return;
         link.addEventListener('click', (e) => {
             const href = link.getAttribute('href');
-            if (!href || href === '#' || href === 'politicas.html') {
+            if (href === '#' || href === 'politicas.html') {
                 e.preventDefault();
                 window.location.href = 'interfazDevoluciones.html?seccion=devoluciones';
             }
@@ -62,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsContainer = document.getElementById('searchOverlayResults');
 
     // Vincular TODOS los iconos de búsqueda (en navbar o header)
-    document.querySelectorAll('.bx-search').forEach(searchIcon => {
+    document.querySelectorAll('.bx-search, .search-icon, #btnSearch').forEach(searchIcon => {
         if (searchIcon.id !== 'searchOverlayBtn') {
             searchIcon.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -96,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('click', (e) => {
             if (overlay.classList.contains('is-active')) {
                 const container = document.querySelector('.search-overlay__container');
-                if (container && !container.contains(e.target) && !searchIcon.contains(e.target)) {
+                if (container && !container.contains(e.target) && !e.target.closest('.bx-search, .search-icon, #btnSearch')) {
                     cerrarBuscador();
                 }
             }
@@ -132,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === 'Enter') {
                 const query = input.value.trim();
                 if (query) {
-                    window.location.href = `interfazCatalogo.html?buscar=${encodeURIComponent(query)}`;
+                    window.location.href = `interfazCatalogo.html?q=${encodeURIComponent(query)}`;
                 }
             }
         });
@@ -142,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         searchBtn.addEventListener('click', () => {
             const query = input.value.trim();
             if (query) {
-                window.location.href = `interfazCatalogo.html?buscar=${encodeURIComponent(query)}`;
+                window.location.href = `interfazCatalogo.html?q=${encodeURIComponent(query)}`;
             }
         });
     }

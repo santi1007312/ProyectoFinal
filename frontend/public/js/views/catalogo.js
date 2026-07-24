@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function cargarProductos() {
         try {
             const urlParams = new URLSearchParams(window.location.search);
-            const queryBusqueda = urlParams.get('buscar');
+            const queryBusqueda = urlParams.get('q') || urlParams.get('buscar');
             const queryCategoria = urlParams.get('categoria');
 
             // Listamos productos (con búsqueda si aplica)
