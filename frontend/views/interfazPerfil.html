@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Perfil - Elixir and Flexx</title>
+    <title>Mi Perfil y Pedidos - Elixir and Flexx</title>
     <link rel="stylesheet" href="../public/css/global.css"> 
     <link rel="stylesheet" href="../public/css/estilos_perfil.css"> 
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
 <body>
 
-    <!-- HEADER ESTANDARIZADO PARA TODAS LAS VISTAS -->
+    <!-- HEADER ESTANDARIZADO -->
     <header>
         <nav class="nav-bar">
             <div class="nav-bar__logo">ELIXIRANDFLEXX</div>
@@ -23,7 +23,7 @@
                 
                 <!-- ITEM DROPDOWN UNIFICADO -->
                 <li class="nav-bar__item--dropdown">
-                    <a href="#interfazDevoluciones.html" class="nav-bar__link" id="dropdownToggle">
+                    <a href="#" class="nav-bar__link" id="dropdownToggle">
                         Politicas de Devolucion <i class="bx bx-chevron-down dropdown-arrow"></i>
                     </a>
                     <ul class="nav-bar__dropdown-menu" id="headerDropdown">
@@ -45,90 +45,201 @@
         </nav>
     </header>
 
-    <main class="title-view">
-        <div class="title-view__header">
-            <span class="title-view__badge">SOLO SENA</span>
+    <!-- LAYOUT PRINCIPAL CON MENÚ LATERAL ESTÁTICO -->
+    <div class="layout-perfil-wrapper">
+        
+        <!-- Columna Izquierda: Menú Lateral -->
+        <aside class="sidebar-menu">
+            <button type="button" id="navOptionPerfil" class="sidebar-menu__item active">
+                <i class="bx bx-user"></i> Perfil
+            </button>
+            <button type="button" id="navOptionPedidos" class="sidebar-menu__item">
+                <i class="bx bx-package"></i> Pedidos
+            </button>
+        </aside>
+
+        <!-- Columna Derecha: Contenido Dinámico -->
+        <section class="content-panel">
+
+            <!-- VISTA 1: "PERFIL" (Activa por defecto) -->
+            <div id="viewPerfilContent">
+                
+                <!-- Sección Datos del Usuario -->
+                <div class="dark-card" style="margin-bottom: 24px;">
+                    <div class="dark-card__header">
+                        <h2 id="userNameDisplay" class="dark-card__title">Cargando usuario...</h2>
+                        <button type="button" id="btnEditPerfil" class="btn-dark-action">Editar</button>
+                    </div>
+                    <div class="modal-field-group">
+                        <label>Correo electrónico</label>
+                        <input type="email" id="userEmailInput" class="form-input-disabled" value="carrilloriverasantiago@gmail.com" disabled readonly>
+                    </div>
+                </div>
+
+                <!-- Sección Direcciones -->
+                <div class="dark-card" style="margin-bottom: 24px;">
+                    <div class="dark-card__header">
+                        <h2 class="dark-card__title">Direcciones</h2>
+                        <button type="button" id="btnAddAddress" class="btn-dark-action">+ Agregar</button>
+                    </div>
+                    
+                    <div id="addressListContainer" class="address-card-list">
+                        <!-- JS inyectará tarjetas de direcciones o placeholder -->
+                    </div>
+                </div>
+
+                <!-- Panel de Control (Solo visible para Administradores) -->
+                <div class="dark-card" id="adminPanelContainer" style="display: none; margin-bottom: 24px;">
+                    <div class="dark-card__header">
+                        <h2 class="dark-card__title">Panel de Control Administrador</h2>
+                    </div>
+                    <button type="button" id="btnVolverAlPanel" class="btn-dark-action" style="width:100%; padding: 12px; background: #dc2626; color: white;">Volver al Panel Administrativo</button>
+                </div>
+
+                <!-- Footer de Perfil: Acciones de Sesión -->
+                <div class="profile-footer-actions">
+                    <button type="button" id="btnCerrarSesionLocal" class="btn-danger-dark">Cerrar sesión</button>
+                    <button type="button" id="btnCerrarSesionGlobal" class="btn-dark-secondary">Cerrar sesión en todos los dispositivos</button>
+                </div>
+
+            </div>
+
+            <!-- VISTA 2: "PEDIDOS" (Oculta por defecto, toggleable con JS) -->
+            <div id="viewPedidosContent" style="display: none;">
+                <div id="pedidosDynamicContainer">
+                    <!-- JS inyectará las tarjetas de resumen o la vista de detalle -->
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- MODAL 1: "EDITAR PERFIL" -->
+    <div id="modalEditarPerfil" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Editar perfil</h3>
+                <button type="button" class="modal-close-btn" id="btnCloseModalPerfil">&times;</button>
+            </div>
+            <form id="formEditarPerfilModal" class="modal-body" novalidate>
+                <div class="modal-form-row">
+                    <div class="modal-field-group">
+                        <label>Nombre</label>
+                        <input type="text" id="modalInputNombre" class="modal-input" placeholder="Nombre" required>
+                    </div>
+                    <div class="modal-field-group">
+                        <label>Apellido</label>
+                        <input type="text" id="modalInputApellido" class="modal-input" placeholder="Apellido" required>
+                    </div>
+                </div>
+                <div class="modal-field-group">
+                    <label>Correo electrónico</label>
+                    <input type="email" id="modalInputEmail" class="modal-input" placeholder="correo@ejemplo.com" required readonly disabled style="opacity:0.7;">
+                </div>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">
+                    Los datos actualizados se guardarán automáticamente en tu cuenta.
+                </p>
+                <div class="modal-footer">
+                    <button type="button" id="btnCancelarEditarPerfil" class="btn-dark-secondary">Cancelar</button>
+                    <button type="submit" id="btnGuardarEditarPerfil" class="btn-dark-action">Guardar</button>
+                </div>
+            </form>
         </div>
-    </main>
-    
-    <main class="profile-panel">
-        
-        <section class="profile-panel__column">
-            <div class="profile-panel__header">
-                <h2>Pedidos</h2>
-                <button class="profile-panel__gallery-btn"><i class="bx bx-grid-alt"></i> Galería <i class="bx bx-chevron-down"></i></button>
-            </div>
+    </div>
 
-            <div class="order-container">
-                <div class="order-container__status">
-                    <p>Información de envío pendiente</p>
-                </div>
+    <!-- MODAL 2: "AGREGAR DIRECCIÓN" -->
+    <div id="modalAgregarDireccion" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Agregar dirección</h3>
+                <button type="button" class="modal-close-btn" id="btnCloseModalDireccion">&times;</button>
+            </div>
+            <form id="formAgregarDireccionModal" class="modal-body" novalidate>
                 
-                <div class="order-container__gallery">
-                    <div class="order-container__img-box">
-                        <img src="../public/images/bmm92840_black_xl.webp" alt="Producto 1">
-                    </div>
-                    <div class="order-container__img-box">
-                        <img src="../public/images/descarga.jpg" alt="Producto 2">
-                    </div>
+                <div class="modal-field-group">
+                    <label>País / Región</label>
+                    <select id="modalSelectPais" class="modal-select">
+                        <option value="Colombia" selected>Colombia</option>
+                        <option value="México">México</option>
+                        <option value="Estados Unidos">Estados Unidos</option>
+                        <option value="España">España</option>
+                        <option value="Argentina">Argentina</option>
+                    </select>
                 </div>
-            </div>
-        </section>
 
-        <section class="profile-panel__column">
-            <div class="profile-panel__header">
-                <h2>Perfil</h2>
-            </div>
-
-            <div class="user-info-card">
-                <div class="user-info-card__row">
-                    <h3 id="userNameDisplay">Santiago Carrillo rivera</h3>
-                    <button id="btnEditPerfil" class="user-info-card__edit-btn"><i class="bx bx-pencil"></i></button>
-                </div>
-                <div class="user-info-card__field">
-                    <span class="user-info-card__label">Correo electrónico</span>
-                    <p id="userEmailDisplay" class="user-info-card__value">carrilloriverasantiago@gmail.com</p>
-                </div>
-            </div>
-
-            <div class="user-info-card">
-                <div class="user-info-card__row">
-                    <h3>Direcciones</h3>
-                    <button class="user-info-card__add-btn">+ Agregar</button>
-                </div>
-                
-                <div class="address-grid">
-                    <div class="address-grid__col">
-                        <span class="user-info-card__label">Dirección predeterminada</span>
-                        <p id="addressNameDisplay" class="address-grid__text address-grid__text--bold">Santiago Carrillo rivera</p>
-        
-                        <p id="addressStreetDisplay" class="address-grid__text">Calle 64e 1w 48</p>
-                        <p id="addressNeighbourDisplay" class="address-grid__text">Balcones de gratamira</p>
+                <div class="modal-form-row">
+                    <div class="modal-field-group">
+                        <label>Nombre</label>
+                        <input type="text" id="modalDirNombre" class="modal-input" placeholder="Nombre" required>
                     </div>
-                    <div class="address-grid__col">
-                        <span class="user-info-card__label">&nbsp;</span>
-                        <p class="address-grid__text address-grid__text--bold">Santiago Carrillo rivera</p>
-                        <p id="addressCountryDisplay" class="address-grid__text">Colombia</p>
+                    <div class="modal-field-group">
+                        <label>Apellido</label>
+                        <input type="text" id="modalDirApellido" class="modal-input" placeholder="Apellido" required>
                     </div>
                 </div>
-            </div>
 
-            <!-- Contenedor del Panel de Control (Solo visible para Administradores) -->
-            <div class="user-info-card" id="adminPanelContainer" style="display: none; margin-bottom: 25px;">
-                <div class="user-info-card__row">
-                    <h3>Panel de Control</h3>
+                <div class="modal-field-group">
+                    <label>Empresa (opcional)</label>
+                    <input type="text" id="modalDirEmpresa" class="modal-input" placeholder="Nombre de empresa">
                 </div>
-                <button id="btnVolverAlPanel" class="btn btn--red" style="width: 100%; border-radius: 4px; padding: 12px; font-size: 0.9rem; font-family: var(--font-primary);">Volver al Panel</button>
-            </div>
 
-            <div class="auth-card__logout-actions">
-                <button id="btnCerrarSesionLocal" class="btn-urban btn-urban--danger">Cerrar sesión</button>
-    
-                <button id="btnCerrarSesionGlobal" class="btn-urban btn-urban--secondary">Cerrar sesión en todos los dispositivos</button>
-            </div>
-        </section>
+                <div class="modal-field-group">
+                    <label>Dirección</label>
+                    <input type="text" id="modalDirCalle" class="modal-input" placeholder="Calle, número, apartamento" required>
+                </div>
 
-    </main>
+                <div class="modal-form-row">
+                    <div class="modal-field-group">
+                        <label>Ciudad</label>
+                        <input type="text" id="modalDirCiudad" class="modal-input" placeholder="Bucaramanga" required>
+                    </div>
+                    <div class="modal-field-group">
+                        <label>Provincia / Departamento</label>
+                        <select id="modalDirDepartamento" class="modal-select">
+                            <option value="Santander" selected>Santander</option>
+                            <option value="Antioquia">Antioquia</option>
+                            <option value="Bogotá D.C.">Bogotá D.C.</option>
+                            <option value="Cundinamarca">Cundinamarca</option>
+                            <option value="Valle del Cauca">Valle del Cauca</option>
+                            <option value="Atlántico">Atlántico</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-form-row">
+                    <div class="modal-field-group">
+                        <label>Código postal</label>
+                        <input type="text" id="modalDirCodigoPostal" class="modal-input" placeholder="680006">
+                    </div>
+                    <div class="modal-field-group">
+                        <label>Teléfono</label>
+                        <div class="phone-input-group">
+                            <select class="phone-flag-select">
+                                <option value="+57">🇨🇴 +57</option>
+                                <option value="+1">🇺🇸 +1</option>
+                                <option value="+52">🇲🇽 +52</option>
+                                <option value="+34">🇪🇸 +34</option>
+                            </select>
+                            <input type="tel" id="modalDirTelefono" class="modal-input" placeholder="300 123 4567" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+                    <input type="checkbox" id="modalDirPredeterminada" checked style="accent-color: var(--accent-gold);">
+                    <label for="modalDirPredeterminada" style="font-size:0.85rem; color:var(--text-main); cursor:pointer;">Esta es mi dirección predeterminada</label>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="btnCancelarDireccion" class="btn-dark-secondary">Cancelar</button>
+                    <button type="submit" id="btnGuardarDireccion" class="btn-dark-action">Guardar</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
     <script src="../public/js/main.js" type="module"></script>
     <script src="../public/js/views/perfil.js" type="module"></script>
 </body>

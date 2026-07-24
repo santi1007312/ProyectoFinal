@@ -301,6 +301,25 @@ export const ProductoService = {
         }
     },
 
+    async listarInactivos() {
+        return get('ProductoController', { accion: 'inactivos' });
+    },
+
+    async reactivar(id) {
+        try {
+            const baseUrl = await getBaseUrl();
+            const url = `${baseUrl}/ProductoController?accion=reactivar&idProducto=${id}`.replace(/([^:]\/)\/+/g, "$1");
+            const res = await fetch(url, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            const json = await res.json();
+            return { ok: json.status === 'success', mensaje: json.mensaje };
+        } catch {
+            return { ok: false, mensaje: 'Error de conexión.' };
+        }
+    },
+
     async actualizarConForm(formData) {
         try {
             const baseUrl = await getBaseUrl();
@@ -315,6 +334,22 @@ export const ProductoService = {
             return { ok: json.status === 'success', mensaje: json.mensaje };
         } catch (err) {
             console.error(err);
+            return { ok: false, mensaje: 'Error de conexión.' };
+        }
+    }
+};
+
+// ─── DIRECCIONES ──────────────────────────────────────────────────────────────
+export const DireccionService = {
+    async listar(idUsuarios = '') {
+        return get('DireccionController', { accion: 'listar', idUsuarios });
+    },
+    async crear(datos) {
+        try {
+            const res = await post('DireccionController', { accion: 'crear', ...datos });
+            const json = await res.json();
+            return { ok: json.success === true, mensaje: json.mensaje };
+        } catch (err) {
             return { ok: false, mensaje: 'Error de conexión.' };
         }
     }

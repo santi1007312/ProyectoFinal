@@ -175,19 +175,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const precioFormatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p.precioBase);
             const imgPreview = p.imagen ? `<img src="${p.imagen}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;margin-right:8px;" onerror="this.src='https://placehold.co/40'">` : '';
 
-            const stockS = getStockPorTalla(p.variantes, 'S');
-            const stockM = getStockPorTalla(p.variantes, 'M');
-            const stockL = getStockPorTalla(p.variantes, 'L');
-            const stockXL = getStockPorTalla(p.variantes, 'XL');
-            const totalStock = stockS + stockM + stockL + stockXL;
+            const esZapatos = String(p.categoria) === '4' || catNombre.toUpperCase() === 'ZAPATOS';
+            let desgloseHtml = '';
+            let totalStock = 0;
 
-            // Formatear desglose con colores para stock agotado
             const formatStock = (talla, cant) => {
                 if (cant === 0) return `<span class="stock-out-badge">${talla}: 0</span>`;
                 return `${talla}: ${cant}`;
             };
 
-            const desgloseHtml = `${formatStock('S', stockS)} | ${formatStock('M', stockM)} | ${formatStock('L', stockL)} | ${formatStock('XL', stockXL)}`;
+            if (esZapatos) {
+                const tallasCalzado = ['34', '36', '38', '39', '40', '42', '43'];
+                desgloseHtml = tallasCalzado.map(t => {
+                    const cant = getStockPorTalla(p.variantes, t);
+                    totalStock += cant;
+                    return formatStock(t, cant);
+                }).join(' | ');
+            } else {
+                const stockS = getStockPorTalla(p.variantes, 'S');
+                const stockM = getStockPorTalla(p.variantes, 'M');
+                const stockL = getStockPorTalla(p.variantes, 'L');
+                const stockXL = getStockPorTalla(p.variantes, 'XL');
+                totalStock = stockS + stockM + stockL + stockXL;
+                desgloseHtml = `${formatStock('S', stockS)} | ${formatStock('M', stockM)} | ${formatStock('L', stockL)} | ${formatStock('XL', stockXL)}`;
+            }
 
             filas += `
                 <tr data-json="${encodeURIComponent(JSON.stringify(p))}">
@@ -214,8 +225,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         dynamicContent.innerHTML = `
-            <div class="action-bar">
+            <div class="action-bar" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
                 <button id="btnAbrirFormProducto" class="btn-urban">＋ Agregar Nueva Prenda</button>
+                <button id="btnVerProductosDesactivados" class="btn-action" style="background:#28a745; color:white; border:none; padding:10px 18px; border-radius:4px; font-weight:bold; cursor:pointer;">Ver productos desactivados</button>
             </div>
             
             <div id="wrapperFormProducto" class="admin-panel-card" style="display:none; margin-bottom:20px;">
@@ -231,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     <div class="input-group">
                         <label>Categoría</label>
-                        <select name="categoria">
+                        <select name="categoria" id="selectCategoriaProducto">
                             ${categorias.map(cat => `<option value="${cat.idCategorias || cat.id}">${cat.nombreCategoria || cat.nombre}</option>`).join('')}
                         </select>
                         <span class="error-msg"></span>
@@ -271,27 +283,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     <div class="input-group" style="grid-column: span 2;">
                         <label>Stock por Tallas (Cantidad Disponible)</label>
-                        <div class="size-stock-container">
-                            <div class="size-stock-item">
-                                <label>Talla S</label>
-                                <input type="number" name="stock_S" min="0" value="0">
-                                <span class="error-msg"></span>
-                            </div>
-                            <div class="size-stock-item">
-                                <label>Talla M</label>
-                                <input type="number" name="stock_M" min="0" value="0">
-                                <span class="error-msg"></span>
-                            </div>
-                            <div class="size-stock-item">
-                                <label>Talla L</label>
-                                <input type="number" name="stock_L" min="0" value="0">
-                                <span class="error-msg"></span>
-                            </div>
-                            <div class="size-stock-item">
-                                <label>Talla XL</label>
-                                <input type="number" name="stock_XL" min="0" value="0">
-                                <span class="error-msg"></span>
-                            </div>
+                        <div class="size-stock-container" id="containerStockRopa">
+                            <div class="size-stock-item"><label>Talla S</label><input type="number" name="stock_S" min="0" value="0"><span class="error-msg"></span></div>
+                            <div class="size-stock-item"><label>Talla M</label><input type="number" name="stock_M" min="0" value="0"><span class="error-msg"></span></div>
+                            <div class="size-stock-item"><label>Talla L</label><input type="number" name="stock_L" min="0" value="0"><span class="error-msg"></span></div>
+                            <div class="size-stock-item"><label>Talla XL</label><input type="number" name="stock_XL" min="0" value="0"><span class="error-msg"></span></div>
+                        </div>
+                        <div class="size-stock-container" id="containerStockZapatos" style="display:none; flex-wrap:wrap; gap:10px;">
+                            <div class="size-stock-item"><label>Talla 34</label><input type="number" name="stock_34" min="0" value="0"><span class="error-msg"></span></div>
+                            <div class="size-stock-item"><label>Talla 36</label><input type="number" name="stock_36" min="0" value="0"><span class="error-msg"></span></div>
+                            <div class="size-stock-item"><label>Talla 38</label><input type="number" name="stock_38" min="0" value="0"><span class="error-msg"></span></div>
+                            <div class="size-stock-item"><label>Talla 39</label><input type="number" name="stock_39" min="0" value="0"><span class="error-msg"></span></div>
+                            <div class="size-stock-item"><label>Talla 40</label><input type="number" name="stock_40" min="0" value="0"><span class="error-msg"></span></div>
+                            <div class="size-stock-item"><label>Talla 42</label><input type="number" name="stock_42" min="0" value="0"><span class="error-msg"></span></div>
+                            <div class="size-stock-item"><label>Talla 43</label><input type="number" name="stock_43" min="0" value="0"><span class="error-msg"></span></div>
                         </div>
                     </div>
 
@@ -310,6 +315,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 </form>
             </div>
 
+            <!-- Contenedor Modal / Sección para Productos Desactivados -->
+            <div id="wrapperProductosDesactivados" class="admin-panel-card" style="display:none; margin-bottom:20px; border:1px solid #28a745;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="color:#28a745;">Productos Desactivados (Inactivos)</h3>
+                    <button type="button" id="btnCerrarInactivos" class="btn-action" style="background:#555; color:white;">Cerrar</button>
+                </div>
+                <div id="tablaInactivosContainer">
+                    <p style="color:#ccc;">Cargando productos desactivados...</p>
+                </div>
+            </div>
+
             <table class="admin-table">
                 <thead>
                     <tr><th>ID</th><th>Prenda</th><th>Categoría</th><th>Precio</th><th>Stock Total</th><th>Acciones</th></tr>
@@ -320,11 +336,103 @@ document.addEventListener('DOMContentLoaded', () => {
             </table>
         `;
 
-        const btnAbrir = document.getElementById('btnAbrirFormProducto');
-        const btnCancelar = document.getElementById('btnCancelarProducto');
-        const wrapper = document.getElementById('wrapperFormProducto');
-        const form = document.getElementById('formRegistrarProducto');
-        const formTitle = document.getElementById('formProductoTitle');
+        const selectCategoria = document.getElementById('selectCategoriaProducto');
+        const containerStockRopa = document.getElementById('containerStockRopa');
+        const containerStockZapatos = document.getElementById('containerStockZapatos');
+
+        function actualizarContenedoresStock() {
+            const valCat = selectCategoria ? selectCategoria.value : '';
+            if (String(valCat) === '4') {
+                if (containerStockRopa) containerStockRopa.style.display = 'none';
+                if (containerStockZapatos) containerStockZapatos.style.display = 'flex';
+            } else {
+                if (containerStockRopa) containerStockRopa.style.display = 'flex';
+                if (containerStockZapatos) containerStockZapatos.style.display = 'none';
+            }
+        }
+
+        if (selectCategoria) {
+            selectCategoria.addEventListener('change', actualizarContenedoresStock);
+        }
+
+        // Manejo de "Ver productos desactivados"
+        const btnVerInactivos = document.getElementById('btnVerProductosDesactivados');
+        const wrapperInactivos = document.getElementById('wrapperProductosDesactivados');
+        const btnCerrarInactivos = document.getElementById('btnCerrarInactivos');
+        const tablaInactivosContainer = document.getElementById('tablaInactivosContainer');
+
+        if (btnVerInactivos && wrapperInactivos) {
+            btnVerInactivos.addEventListener('click', async () => {
+                wrapperInactivos.style.display = 'block';
+                wrapperInactivos.scrollIntoView({ behavior: 'smooth' });
+                await cargarTablaInactivos();
+            });
+        }
+
+        if (btnCerrarInactivos && wrapperInactivos) {
+            btnCerrarInactivos.addEventListener('click', () => {
+                wrapperInactivos.style.display = 'none';
+            });
+        }
+
+        async function cargarTablaInactivos() {
+            if (!tablaInactivosContainer) return;
+            tablaInactivosContainer.innerHTML = '<p style="color:#ccc;">Cargando productos desactivados...</p>';
+            try {
+                const list = await ProductoService.listarInactivos();
+                if (!list || list.length === 0) {
+                    tablaInactivosContainer.innerHTML = '<p style="color:#aaa; padding:10px;">No hay productos desactivados en el sistema.</p>';
+                    return;
+                }
+
+                let html = `
+                    <table class="admin-table" style="background:#1a1a1e;">
+                        <thead>
+                            <tr><th>ID</th><th>Prenda</th><th>Categoría</th><th>Precio Base</th><th>Acción</th></tr>
+                        </thead>
+                        <tbody>
+                `;
+                list.forEach(p => {
+                    const catNombre = catMap[p.categoria] || 'General';
+                    const precioFmt = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p.precioBase);
+                    html += `
+                        <tr>
+                            <td>${p.id}</td>
+                            <td>${p.nombre}</td>
+                            <td>${catNombre}</td>
+                            <td>${precioFmt}</td>
+                            <td>
+                                <button class="btn-reactivar-prod" data-id="${p.id}" style="background:#28a745; color:white; border:none; padding:6px 14px; border-radius:4px; font-weight:bold; cursor:pointer;">
+                                    Reactivar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                html += `</tbody></table>`;
+                tablaInactivosContainer.innerHTML = html;
+
+                tablaInactivosContainer.querySelectorAll('.btn-reactivar-prod').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.getAttribute('data-id');
+                        btn.disabled = true;
+                        btn.textContent = 'Reactivando...';
+                        const res = await ProductoService.reactivar(id);
+                        if (res.ok) {
+                            alert('¡Producto reactivado exitosamente!');
+                            await cargarTablaInactivos();
+                            renderProductos();
+                        } else {
+                            alert('Error al reactivar: ' + (res.mensaje || 'Intente de nuevo.'));
+                            btn.disabled = false;
+                            btn.textContent = 'Reactivar';
+                        }
+                    });
+                });
+            } catch (err) {
+                tablaInactivosContainer.innerHTML = '<p style="color:#ff6666;">Error al cargar la lista de inactivos.</p>';
+            }
+        }
 
         // Helper functions for showing/hiding validation errors
         function mostrarError(inputName, mensaje) {
@@ -354,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function limpiarTodosLosErrores() {
-            ['nombre', 'precio', 'descripcion', 'imagen', 'stock_S', 'stock_M', 'stock_L', 'stock_XL'].forEach(name => limpiarError(name));
+            ['nombre', 'precio', 'descripcion', 'imagen', 'stock_S', 'stock_M', 'stock_L', 'stock_XL', 'stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43'].forEach(name => limpiarError(name));
         }
 
         // Real-time dynamic validations as user types
@@ -382,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        ['stock_S', 'stock_M', 'stock_L', 'stock_XL'].forEach(name => {
+        ['stock_S', 'stock_M', 'stock_L', 'stock_XL', 'stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43'].forEach(name => {
             const input = form.querySelector(`[name="${name}"]`);
             if (input) {
                 input.addEventListener('input', () => {
@@ -417,10 +525,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 formTitle.textContent = "Registrar Prenda en Inventario";
                 wrapper.style.display = 'block';
                 form.querySelector('[name="esDestacado"]').checked = false;
-                form.querySelector('[name="stock_S"]').value = 0;
-                form.querySelector('[name="stock_M"]').value = 0;
-                form.querySelector('[name="stock_L"]').value = 0;
-                form.querySelector('[name="stock_XL"]').value = 0;
+                ['stock_S', 'stock_M', 'stock_L', 'stock_XL', 'stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43'].forEach(n => {
+                    const inp = form.querySelector(`[name="${n}"]`);
+                    if (inp) inp.value = 0;
+                });
+                actualizarContenedoresStock();
                 // Reset checkboxes to Negro default
                 form.querySelectorAll('[name="color_option"]').forEach(cb => {
                     cb.checked = cb.value === 'Negro';
@@ -460,16 +569,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     cb.checked = coloresDeVariantes.includes(cb.value);
                 });
 
-                const stockS = getStockPorTalla(p.variantes, 'S');
-                const stockM = getStockPorTalla(p.variantes, 'M');
-                const stockL = getStockPorTalla(p.variantes, 'L');
-                const stockXL = getStockPorTalla(p.variantes, 'XL');
+                ['S', 'M', 'L', 'XL'].forEach(t => {
+                    const inp = form.querySelector(`[name="stock_${t}"]`);
+                    if (inp) inp.value = getStockPorTalla(p.variantes, t);
+                });
+                ['34', '36', '38', '39', '40', '42', '43'].forEach(t => {
+                    const inp = form.querySelector(`[name="stock_${t}"]`);
+                    if (inp) inp.value = getStockPorTalla(p.variantes, t);
+                });
 
-                form.querySelector('[name="stock_S"]').value = stockS;
-                form.querySelector('[name="stock_M"]').value = stockM;
-                form.querySelector('[name="stock_L"]').value = stockL;
-                form.querySelector('[name="stock_XL"]').value = stockXL;
-                
+                actualizarContenedoresStock();
                 wrapper.style.display = 'block';
                 wrapper.scrollIntoView({ behavior: 'smooth' });
             });
@@ -567,8 +676,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Validar Stocks
-            ['stock_S', 'stock_M', 'stock_L', 'stock_XL'].forEach(stockField => {
-                const val = parseInt(form.querySelector(`[name="${stockField}"]`).value);
+            const stockFieldsToValidate = String(idCategorias) === '4'
+                ? ['stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43']
+                : ['stock_S', 'stock_M', 'stock_L', 'stock_XL'];
+
+            stockFieldsToValidate.forEach(stockField => {
+                const inp = form.querySelector(`[name="${stockField}"]`);
+                const val = inp ? parseInt(inp.value) : 0;
                 if (isNaN(val) || val < 0) {
                     mostrarError(stockField, 'El stock no puede ser negativo.');
                     hayError = true;
@@ -592,11 +706,17 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('descripcion', descripcion);
             formData.append('esDestacado', esDestacado ? 'true' : 'false');
             
-            // Adjuntar stocks
+            // Adjuntar stocks ropa
             formData.append('stock_S', stockS);
             formData.append('stock_M', stockM);
             formData.append('stock_L', stockL);
             formData.append('stock_XL', stockXL);
+            
+            // Adjuntar stocks calzado
+            ['34', '36', '38', '39', '40', '42', '43'].forEach(t => {
+                const inp = form.querySelector(`[name="stock_${t}"]`);
+                formData.append(`stock_${t}`, inp ? (parseInt(inp.value) || 0) : 0);
+            });
             
             // Adjuntar colores seleccionados
             coloresSeleccionados.forEach(color => {

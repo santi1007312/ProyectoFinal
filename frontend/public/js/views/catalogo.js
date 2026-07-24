@@ -128,6 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const precioFinalFmt = Number(prod.precioFinal || prod.precioBase).toLocaleString('es-CO');
             const tieneDescuento = prod.descuento > 0;
 
+            const isDestacado = prod.esDestacado === true || prod.esDestacado === 'true' || prod.isDestacado === true || prod.isDestacado === 'true';
+            const destacadoHtml = isDestacado 
+                ? `<div class="badge-destacado" style="background-color: #ffcc00; color: #000000; font-weight: bold; padding: 4px 8px; text-align: center; border-radius: 4px; margin-top: 6px; margin-bottom: 4px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">PRODUCTO DESTACADO</div>`
+                : '';
+
             card.innerHTML = `
                 <div class="category-card__img-wrapper">
                     <img
@@ -141,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="category-card__info">
                     <h3 class="category-card__name">${prod.nombre.toUpperCase()} <span class="category-card__arrow">&gt;</span></h3>
+                    ${destacadoHtml}
                     <p class="category-card__category">${nombreCategoria}</p>
                     <div class="category-card__price">
                         ${tieneDescuento

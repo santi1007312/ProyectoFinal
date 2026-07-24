@@ -70,8 +70,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function inicializarVista(prod, variantes) {
         if (nameEl)  nameEl.textContent  = prod.nombre;
+
+        // Renderizar banner "PRODUCTO DESTACADO" debajo del título si esDestacado / isDestacado es true
+        const isDestacado = prod.esDestacado === true || prod.esDestacado === 'true' || prod.isDestacado === true || prod.isDestacado === 'true';
+        let badgeEl = document.getElementById('destacadoBadge');
+        if (isDestacado) {
+            if (!badgeEl && nameEl && nameEl.parentNode) {
+                badgeEl = document.createElement('div');
+                badgeEl.id = 'destacadoBadge';
+                badgeEl.style.cssText = 'background-color: #ffcc00; color: #000000; font-weight: bold; padding: 6px 12px; border-radius: 4px; margin-top: 8px; margin-bottom: 12px; text-align: center; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;';
+                badgeEl.textContent = 'PRODUCTO DESTACADO';
+                nameEl.parentNode.insertBefore(badgeEl, nameEl.nextSibling);
+            } else if (badgeEl) {
+                badgeEl.style.display = 'block';
+            }
+        } else if (badgeEl) {
+            badgeEl.style.display = 'none';
+        }
+
         if (descEl)  {
-            // Hacer la descripción obligatoria y clara
             descEl.textContent  = prod.descripcion || 'Esta prenda cuenta con un diseño exclusivo, confeccionada con los mejores materiales de alta calidad.';
             descEl.style.display = 'block';
         }
@@ -96,12 +113,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Extraer colores y tallas únicos desde las variantes reales
-        const coloresUnicos = [...new Set(variantes.map(v => v.color).filter(Boolean))];
-        const tallasUnicas  = [...new Set(variantes.map(v => v.talla).filter(Boolean))];
+        const esZapatos = String(prod.categoria) === '4' || (prod.nombre && prod.nombre.toUpperCase().includes('ZAPATO'));
+        const tallasValidasCalzado = ['34', '36', '38', '39', '40', '42', '43'];
+        const tallasValidasRopa = ['S', 'M', 'L', 'XL'];
 
-        // Si no hay variantes, usar fallback
+        const coloresUnicos = [...new Set(variantes.map(v => v.color).filter(Boolean))];
+        let tallasUnicas  = [...new Set(variantes.map(v => v.talla).filter(Boolean))];
+
+        if (esZapatos) {
+            tallasUnicas = tallasUnicas.filter(t => tallasValidasCalzado.includes(t));
+            if (!tallasUnicas.length) tallasUnicas = tallasValidasCalzado;
+        } else {
+            tallasUnicas = tallasUnicas.filter(t => tallasValidasRopa.includes(t));
+            if (!tallasUnicas.length) tallasUnicas = tallasValidasRopa;
+        }
+
         const colores = coloresUnicos.length ? coloresUnicos : ['Negro'];
-        const tallas  = tallasUnicas.length  ? tallasUnicas  : ['S', 'M', 'L', 'XL'];
+        const tallas  = tallasUnicas;
 
         renderizarColores(colores);
         renderizarTallas(tallas);
