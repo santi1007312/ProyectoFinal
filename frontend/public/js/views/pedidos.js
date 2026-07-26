@@ -2,10 +2,38 @@
  * pedidos.js — Elixir and Flexx
  * Vista independiente de Pedidos (consumida desde la Navbar).
  */
-import { PedidoService } from '../services/api.js';
+import { PedidoService, CarritoService } from '../services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const pedidosContainer = document.getElementById('pedidosDynamicContainer');
+
+    function ejecutarVolverAComprar(articulos) {
+        if (!articulos || articulos.length === 0) return;
+
+        const carritoActual = CarritoService.obtenerLocal() || [];
+
+        articulos.forEach(art => {
+            const existente = carritoActual.find(c => (c.id === art.id || c.idVariante === art.idVariante) && c.talla === (art.variante ? art.variante.split('/')[1]?.trim() : (art.talla || 'M')));
+            if (existente) {
+                existente.cantidad += (art.cantidad || 1);
+            } else {
+                carritoActual.push({
+                    idVariante: art.idVariante || art.id || 1,
+                    id: art.id || 1,
+                    nombre: art.nombre || 'Prenda Elixir',
+                    precio: art.precio || 95000,
+                    color: art.variante ? art.variante.split('/')[0]?.trim() : (art.color || 'Negro'),
+                    talla: art.variante ? art.variante.split('/')[1]?.trim() : (art.talla || 'M'),
+                    cantidad: art.cantidad || 1,
+                    imagen: art.imagen || '../public/images/34.webp'
+                });
+            }
+        });
+
+        CarritoService.guardarLocal(carritoActual);
+        alert('¡Prendas agregadas al carrito de compras! Redirigiendo...');
+        window.location.href = 'interfazCarrito.html';
+    }
 
     const PEDIDOS_MOCK = [
         {
@@ -98,8 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (btnVC) {
                 btnVC.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    alert('Artículos agregados al carrito.');
-                    window.location.href = 'interfazCarrito.html';
+                    ejecutarVolverAComprar(ped.articulos);
                 });
             }
 
@@ -191,8 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnVC = document.getElementById('btnVolverComprarDetalle');
         if (btnVC) {
             btnVC.addEventListener('click', () => {
-                alert('Artículos agregados al carrito.');
-                window.location.href = 'interfazCarrito.html';
+                ejecutarVolverAComprar(articulos);
             });
         }
     }

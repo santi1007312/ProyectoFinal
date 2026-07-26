@@ -11,28 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnPagar       = document.getElementById('btnPagarPedido');
     const direccionInput = document.getElementById('inputDireccionEnvio');
 
+    // Estado inicial limpio por defecto (estrictamente [] si está vacío)
     let carrito = CarritoService.obtenerLocal();
-
-    // Si está vacío, mostrar un item de demo para presentación
-    if (carrito.length === 0) {
-        carrito = [{
-            idVariante: 1,
-            id: 1,
-            nombre: 'Hoodie Crossroads ✦',
-            precio: 185000,
-            color: 'Negro',
-            talla: 'M',
-            cantidad: 1,
-            imagen: '../public/images/34.webp'
-        }];
-        CarritoService.guardarLocal(carrito);
-    }
 
     function renderizarCarrito() {
         if (!itemsContainer) return;
         itemsContainer.innerHTML = '';
 
-        if (carrito.length === 0) {
+        if (!carrito || carrito.length === 0) {
             itemsContainer.innerHTML = '<p style="padding:20px 0;color:var(--color-text-secondary)">El carrito está vacío, añade prendas desde el catálogo.</p>';
             if (totalSumLabel) totalSumLabel.textContent = '$0 COP';
             return;
@@ -80,20 +66,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Delegación de eventos para sumar, restar y eliminar
     if (itemsContainer) {
-        itemsContainer.addEventListener('click', (e) => {
+        itemsContainer.addEventListener('click', async (e) => {
             const idx = e.target.getAttribute('data-index');
             if (idx === null) return;
             const i = parseInt(idx);
 
             if (e.target.classList.contains('btn-sumar')) {
                 carrito[i].cantidad++;
+                CarritoService.guardarLocal(carrito);
             } else if (e.target.classList.contains('btn-restar')) {
-                if (carrito[i].cantidad > 1) carrito[i].cantidad--;
+                if (carrito[i].cantidad > 1) {
+                    carrito[i].cantidad--;
+                    CarritoService.guardarLocal(carrito);
+                }
             } else if (e.target.classList.contains('btn-delete')) {
-                carrito.splice(i, 1);
+                await CarritoService.eliminar(i);
+                carrito = CarritoService.obtenerLocal();
             }
 
-            CarritoService.guardarLocal(carrito);
             renderizarCarrito();
         });
     }
@@ -101,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── BOTÓN PAGAR → Redirige a la vista de checkout ──────────────────────
     if (btnPagar) {
         btnPagar.addEventListener('click', () => {
-            if (carrito.length === 0) {
+            if (!carrito || carrito.length === 0) {
                 alert('El carrito está vacío.');
                 return;
             }

@@ -217,10 +217,12 @@ export const UsuarioService = {
      */
     async logoutGlobal() {
         try {
+            CarritoService.limpiarLocal();
             const res = await post('UsuarioController', { accion: 'logoutGlobal' });
             const data = await res.json();
             return { ok: data.success === true, error: data.error };
         } catch (err) {
+            CarritoService.limpiarLocal();
             return { ok: false, error: 'Error de conexión con el servidor.' };
         }
     },
@@ -230,6 +232,7 @@ export const UsuarioService = {
      */
     async logout() {
         try {
+            CarritoService.limpiarLocal();
             await post('UsuarioController', { accion: 'logout' });
         } catch (e) {
             // ignorar errores de red al cerrar sesión
@@ -398,7 +401,7 @@ export const CarritoService = {
 
     async agregar(idVariante, cantidad, itemLocal) {
         const carrito = CarritoService.obtenerLocal();
-        const existente = carrito.findIndex(i => i.idVariante === idVariante);
+        const existente = carrito.findIndex(i => (i.idVariante && i.idVariante === idVariante) || (i.id === itemLocal.id && i.talla === itemLocal.talla && i.color === itemLocal.color));
 
         if (existente !== -1) {
             carrito[existente].cantidad += cantidad;
@@ -416,12 +419,55 @@ export const CarritoService = {
         return carrito;
     },
 
+    async eliminar(index) {
+        const carrito = CarritoService.obtenerLocal();
+        let itemEliminado = null;
+
+        if (index >= 0 && index < carrito.length) {
+            itemEliminado = carrito.splice(index, 1)[0];
+        }
+
+        if (carrito.length === 0) {
+            CarritoService.limpiarLocal();
+        } else {
+            CarritoService.guardarLocal(carrito);
+        }
+
+        try {
+            if (itemEliminado && itemEliminado.idCarrito) {
+                await post('CarritoController', { accion: 'eliminar', idCarrito: itemEliminado.idCarrito });
+            }
+        } catch {
+            // ignorar error de red al eliminar en servidor
+        }
+
+        return carrito;
+    },
+
+    async vaciar() {
+        CarritoService.limpiarLocal();
+        try {
+            await post('CarritoController', { accion: 'vaciar' });
+        } catch {
+            // ignorar error de red
+        }
+    },
+
     obtenerLocal() {
-        return JSON.parse(localStorage.getItem('elixir_cart')) || [];
+        try {
+            const raw = localStorage.getItem('elixir_cart');
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
     },
 
     guardarLocal(carrito) {
-        localStorage.setItem('elixir_cart', JSON.stringify(carrito));
+        if (!carrito || !Array.isArray(carrito) || carrito.length === 0) {
+            CarritoService.limpiarLocal();
+        } else {
+            localStorage.setItem('elixir_cart', JSON.stringify(carrito));
+        }
     },
 
     limpiarLocal() {

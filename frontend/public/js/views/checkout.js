@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Si la compra provino del carrito, vaciar el carrito
                     if (checkoutSource === 'cart') {
-                        CarritoService.limpiarLocal();
+                        CarritoService.vaciar();
                     }
 
                     // Redirigir a pedidos
