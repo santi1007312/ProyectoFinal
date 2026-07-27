@@ -534,8 +534,8 @@ document.addEventListener('DOMContentLoaded', () => {
             btnPayNow.textContent = 'PROCESANDO PAGO...';
 
             try {
-                // Crear pedido en backend
-                const resultado = await PedidoService.crear(total, direccionPedidoCompleta);
+                // Crear pedido en backend con ítems del carrito
+                const resultado = await PedidoService.crear(total, direccionPedidoCompleta, checkoutItems);
 
                 if (resultado.ok) {
                     alert(`✅ ¡Pedido #${resultado.idPedido} creado exitosamente!\nTotal: $${total.toLocaleString('es-CO')} COP\nTu compra ha sido procesada mediante ${activePayment.toUpperCase()}.`);

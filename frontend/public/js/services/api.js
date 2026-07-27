@@ -2,10 +2,6 @@
  * api.js — Elixir and Flexx
  * Capa centralizada de servicios: todas las llamadas fetch() al backend Java van aquí.
  * Cada vista importa solo lo que necesita desde este archivo.
- *
- * CORRECCIÓN PRINCIPAL:
- *   UsuarioService.login() ahora lee el JSON que devuelve el servlet
- *   en lugar de esperar res.redirected (que fetch() nunca expone al JS).
  */
 
 // ─── BASE URL CORREGIDA ──────────────────────────────────────────────────────
@@ -16,7 +12,7 @@ export async function getBaseUrl() {
 
     const { protocol, hostname, port } = window.location;
 
-    // SI ESTÁS EN TOMCAT
+    // TOMCAT
     if (port !== '5500') {
         // window.location.pathname suele ser: "/NombreProyecto/frontend/views/login.html"
         // Al separar por '/' el primer elemento válido [1] es el Context Path (tu proyecto)
@@ -33,7 +29,7 @@ export async function getBaseUrl() {
         return url;
     }
 
-    // Si estás visualizando desde Live Server (puerto 5500), probamos los posibles contextos de Tomcat
+    // Si se esta visualizando desde Live Server (puerto 5500), probamos los posibles contextos de Tomcat
     const candidates = [
         `${protocol}//${hostname}:8080/ElixirAndFlexx`,
         `${protocol}//${hostname}:8080/Backend_de_los_backend`,
@@ -133,6 +129,9 @@ export const UsuarioService = {
             
             // Si la respuesta fue exitosa (status 200)
             const data = await response.json();
+            if (data.success) {
+                CarritoService.limpiarLocal();
+            }
             return { ok: data.success, esAdmin: data.esAdmin, error: data.error };
 
         } catch (error) {
@@ -162,7 +161,10 @@ export const UsuarioService = {
             const res = await post('UsuarioController', payload);
             const data = await res.json();
 
-            if (data.success) return { ok: true };
+            if (data.success) {
+                CarritoService.limpiarLocal();
+                return { ok: true };
+            }
             return { ok: false, error: data.error || 'No se pudo completar el registro.' };
 
         } catch (err) {
@@ -479,11 +481,7 @@ export const CarritoService = {
 export const PedidoService = {
 
     async listarMisPedidos() {
-        try {
-            return await get('PedidoController', { accion: 'misPedidos' });
-        } catch (e) {
-            return await get('PedidoController', { accion: 'listarMisPedidos' });
-        }
+        return get('PedidoController', { accion: 'listarMisPedidos' });
     },
 
     async listarTodos() {
@@ -502,9 +500,13 @@ export const PedidoService = {
         return get('PedidoController', { accion: 'obtenerHistorialRastreo', idPedido });
     },
 
-    async crear(total, direccionEnvio) {
+    async crear(total, direccionEnvio, items) {
         try {
-            const res = await post('PedidoController', { accion: 'crearPedido', total, direccionEnvio });
+            const payload = { accion: 'crearPedido', total, direccionEnvio };
+            if (items) {
+                payload.items = typeof items === 'string' ? items : JSON.stringify(items);
+            }
+            const res = await post('PedidoController', payload);
             const json = await res.json();
             return { ok: json.status === 'success', idPedido: json.idPedido, mensaje: json.mensaje };
         } catch {

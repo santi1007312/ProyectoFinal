@@ -5,7 +5,7 @@
  */
 import { getBaseUrl, NotificacionService } from './services/api.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+function initMain() {
 
     // ── DROPDOWN Y ENLACES DE POLÍTICAS DE DEVOLUCIÓN ──────────────────────
     const dropdownToggle = document.getElementById('dropdownToggle');
@@ -62,19 +62,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchBtn = document.getElementById('searchOverlayBtn');
     const resultsContainer = document.getElementById('searchOverlayResults');
 
-    // Vincular TODOS los iconos de búsqueda (en navbar o header)
-    document.querySelectorAll('.bx-search, .search-icon, #btnSearch').forEach(searchIcon => {
-        if (searchIcon.id !== 'searchOverlayBtn') {
-            searchIcon.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (overlay) {
-                    overlay.classList.add('is-active');
-                    setTimeout(() => {
-                        if (input) input.focus();
-                    }, 100);
-                }
-            });
+    // CORRECCIÓN ERROR 4: Delegación de eventos a nivel global para interceptar clics 
+    // en cualquier icono de lupa (.bx-search, .search-icon, #btnSearch) en cualquier vista.
+    document.addEventListener('click', (e) => {
+        const searchTrigger = e.target.closest('.bx-search, .search-icon, #btnSearch');
+        if (searchTrigger && searchTrigger.id !== 'searchOverlayBtn') {
+            e.preventDefault();
+            e.stopPropagation();
+            const ov = document.getElementById('searchOverlay');
+            const inp = document.getElementById('searchOverlayInput');
+            if (ov) {
+                ov.classList.add('is-active');
+                setTimeout(() => {
+                    if (inp) inp.focus();
+                }, 100);
+            }
         }
     });
 
@@ -223,4 +225,10 @@ document.addEventListener('DOMContentLoaded', () => {
         catCol.appendChild(catList);
         resultsContainer.appendChild(catCol);
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMain);
+} else {
+    initMain();
+}

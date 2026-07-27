@@ -80,8 +80,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     CarritoService.guardarLocal(carrito);
                 }
             } else if (e.target.classList.contains('btn-delete')) {
+                // CORRECCIÓN ERROR 3: Al eliminar un producto, sincronizamos la eliminación 
+                // y aseguramos que si el carrito queda vacío, se purgue completamente de localStorage
                 await CarritoService.eliminar(i);
                 carrito = CarritoService.obtenerLocal();
+                if (!carrito || carrito.length === 0) {
+                    CarritoService.limpiarLocal();
+                    carrito = [];
+                }
             }
 
             renderizarCarrito();

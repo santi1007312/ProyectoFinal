@@ -162,21 +162,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── SECCIÓN Y MODAL "AGREGAR DIRECCIÓN" ──────────────────────────────────
+    // ── SECCIÓN Y MODAL "AGREGAR / EDITAR DIRECCIÓN" ─────────────────────────
     const btnAddAddress        = document.getElementById('btnAddAddress');
     const modalAgregarDireccion= document.getElementById('modalAgregarDireccion');
     const btnCloseModalDireccion= document.getElementById('btnCloseModalDireccion');
     const btnCancelarDireccion = document.getElementById('btnCancelarDireccion');
     const formAgregarDireccionModal = document.getElementById('formAgregarDireccionModal');
+    let direccionEditandoIndex = null;
 
     if (btnAddAddress && modalAgregarDireccion) {
         btnAddAddress.addEventListener('click', () => {
+            // CORRECCIÓN ERROR 2: Al hacer clic en '+ Agregar', reseteamos la variable de edición
+            // y restauramos el título original del modal.
+            direccionEditandoIndex = null;
+            const modalTitle = modalAgregarDireccion.querySelector('.modal-header h3');
+            if (modalTitle) modalTitle.textContent = 'Agregar dirección';
+            if (formAgregarDireccionModal) formAgregarDireccionModal.reset();
             modalAgregarDireccion.classList.add('is-open');
         });
     }
 
     function cerrarModalDireccion() {
         if (modalAgregarDireccion) modalAgregarDireccion.classList.remove('is-open');
+        direccionEditandoIndex = null;
+    }
+
+    // CORRECCIÓN ERROR 2: Función helper para abrir el modal precargado con los datos de la dirección a editar
+    function abrirModalEditarDireccion(d, idx) {
+        direccionEditandoIndex = idx;
+        const modalTitle = modalAgregarDireccion ? modalAgregarDireccion.querySelector('.modal-header h3') : null;
+        if (modalTitle) modalTitle.textContent = 'Editar dirección';
+
+        if (document.getElementById('modalSelectPais')) document.getElementById('modalSelectPais').value = d.pais || 'Colombia';
+        if (document.getElementById('modalDirNombre')) document.getElementById('modalDirNombre').value = d.nombre || usuarioActual?.nombre || '';
+        if (document.getElementById('modalDirApellido')) document.getElementById('modalDirApellido').value = d.apellido || usuarioActual?.apellido || '';
+        if (document.getElementById('modalDirEmpresa')) document.getElementById('modalDirEmpresa').value = d.empresa || '';
+        if (document.getElementById('modalDirCalle')) document.getElementById('modalDirCalle').value = d.calle || '';
+        if (document.getElementById('modalDirCiudad')) document.getElementById('modalDirCiudad').value = d.ciudad || '';
+        if (document.getElementById('modalDirDepartamento')) document.getElementById('modalDirDepartamento').value = d.departamento || 'Santander';
+        if (document.getElementById('modalDirCodigoPostal')) document.getElementById('modalDirCodigoPostal').value = d.codigoPostal || '';
+        if (document.getElementById('modalDirTelefono')) document.getElementById('modalDirTelefono').value = d.telefono || '';
+        if (document.getElementById('modalDirPredeterminada')) document.getElementById('modalDirPredeterminada').checked = Boolean(d.esPredeterminada);
+
+        if (modalAgregarDireccion) modalAgregarDireccion.classList.add('is-open');
     }
 
     if (btnCloseModalDireccion) btnCloseModalDireccion.addEventListener('click', cerrarModalDireccion);
@@ -199,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderizarDireccionesLista(lista) {
         addressListContainer.innerHTML = '';
-        lista.forEach(d => {
+        lista.forEach((d, idx) => {
             const card = document.createElement('div');
             card.className = 'address-item-card';
 
@@ -209,8 +237,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             card.innerHTML = `
                 <div class="address-item-card__text">${dirTexto}</div>
-                <button type="button" class="btn-dark-secondary" style="font-size:0.78rem;">Editar</button>
+                <button type="button" class="btn-dark-secondary btn-editar-direccion" style="font-size:0.78rem;">Editar</button>
             `;
+
+            // CORRECCIÓN ERROR 2: Vincular el evento click del botón 'Editar' para cargar los datos en el modal
+            const btnEdit = card.querySelector('.btn-editar-direccion');
+            if (btnEdit) {
+                btnEdit.addEventListener('click', () => abrirModalEditarDireccion(d, idx));
+            }
+
             addressListContainer.appendChild(card);
         });
     }
@@ -235,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         addressListContainer.innerHTML = '';
-        saved.forEach(d => {
+        saved.forEach((d, idx) => {
             const card = document.createElement('div');
             card.className = 'address-item-card';
 
@@ -245,8 +280,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             card.innerHTML = `
                 <div class="address-item-card__text">${dirTexto}</div>
-                <button type="button" class="btn-dark-secondary" style="font-size:0.78rem;">Editar</button>
+                <button type="button" class="btn-dark-secondary btn-editar-direccion" style="font-size:0.78rem;">Editar</button>
             `;
+
+            // CORRECCIÓN ERROR 2: Vincular el evento click del botón 'Editar' para direcciones locales
+            const btnEdit = card.querySelector('.btn-editar-direccion');
+            if (btnEdit) {
+                btnEdit.addEventListener('click', () => abrirModalEditarDireccion(d, idx));
+            }
+
             addressListContainer.appendChild(card);
         });
     }
@@ -294,13 +336,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (esPredet) {
                 localDirs.forEach(d => d.esPredeterminada = false);
             }
-            localDirs.unshift(nuevaDir);
+
+            // CORRECCIÓN ERROR 2: Si estábamos editando, actualizamos la dirección en la posición correspondiente.
+            // De lo contrario, insertamos una nueva dirección al inicio de la lista.
+            if (direccionEditandoIndex !== null && direccionEditandoIndex >= 0 && direccionEditandoIndex < localDirs.length) {
+                localDirs[direccionEditandoIndex] = { ...localDirs[direccionEditandoIndex], ...nuevaDir };
+                direccionEditandoIndex = null;
+                alert('¡Dirección actualizada correctamente!');
+            } else {
+                localDirs.unshift(nuevaDir);
+                alert('¡Dirección agregada correctamente!');
+            }
+
             localStorage.setItem('saved_addresses', JSON.stringify(localDirs));
 
             await cargarDirecciones();
             cerrarModalDireccion();
             formAgregarDireccionModal.reset();
-            alert('¡Dirección agregada correctamente!');
         });
     }
 
@@ -427,16 +479,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function renderizarDetallePedido(ped) {
+    async function renderizarDetallePedido(ped) {
         if (!pedidosContainer) return;
+        pedidosContainer.innerHTML = '<div style="color:#ccc; padding:20px; text-align:center;">Cargando detalle del pedido...</div>';
+
+        let articulosReales = ped.articulos || [];
+        let estadoPedido = ped.estado || 'pendiente';
+
+        try {
+            const detalleCompleto = await PedidoService.obtenerDetalleCompleto(ped.idPedido);
+            if (detalleCompleto && detalleCompleto.items && detalleCompleto.items.length > 0) {
+                articulosReales = detalleCompleto.items.map(it => ({
+                    id: it.idDetallePedidos,
+                    nombre: it.nombreSnapshot,
+                    variante: `${it.colorSnapshot || 'Único'} / ${it.tallaSnapshot}`,
+                    cantidad: it.cantidad,
+                    precio: it.precioUnitario,
+                    imagen: '../public/images/34.webp'
+                }));
+            }
+            if (detalleCompleto && detalleCompleto.pedido) {
+                estadoPedido = detalleCompleto.pedido.estado || estadoPedido;
+            }
+        } catch (e) {
+            console.warn("No se pudo obtener el detalle completo del pedido:", e);
+        }
 
         const totalFmt = Number(ped.total).toLocaleString('es-CO');
-        const articulos = ped.articulos || [
-            { id: 1, nombre: 'Sudadera False', variante: 'Negro / L', cantidad: 1, precio: 95000, imagen: '../public/images/34.webp' },
-            { id: 2, nombre: 'Hoodie Crossroads', variante: 'Gris / M', cantidad: 1, precio: 95000, imagen: '../public/images/bmm92840_black_xl.webp' }
-        ];
-
-        const fechaFmt = ped.fecha ? new Date(ped.fecha).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }) : '28 de enero de 2026';
+        const articulos = articulosReales;
+        const fechaFmt = ped.fechaPedido || ped.fecha ? new Date(ped.fechaPedido || ped.fecha).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Reciente';
 
         const itemsHtml = articulos.map(item => `
             <div class="order-item-row">
@@ -447,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div>
                         <div class="order-item-meta__name">${item.nombre}</div>
-                        <div class="order-item-meta__variant">${item.variante || 'Negro / L'}</div>
+                        <div class="order-item-meta__variant">${item.variante || 'Única'}</div>
                     </div>
                 </div>
                 <div style="font-weight:600; font-size:0.95rem;">

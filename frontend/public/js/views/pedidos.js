@@ -4,7 +4,10 @@
  */
 import { PedidoService, CarritoService } from '../services/api.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+// CORRECCIÓN ERROR 1: Encapsulamos la inicialización en una función initPedidos() 
+// y verificamos document.readyState para asegurar que cargarPedidos() se ejecute 
+// inmediatamente aunque el script module cargue cuando DOMContentLoaded ya haya ocurrido.
+function initPedidos() {
     const pedidosContainer = document.getElementById('pedidosDynamicContainer');
 
     function ejecutarVolverAComprar(articulos) {
@@ -110,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="order-summary-card__info">
                     <div>
-                        <span class="order-status-badge"><i class="bx bx-truck"></i> ${ped.estadoTexto || 'En camino'}</span>
+                        <span class="order-status-badge"><i class="bx bx-truck"></i> ${ped.estadoTexto || ped.estado || 'En camino'}</span>
                         <div class="order-meta-text">Pedido #${ped.idPedido}</div>
                     </div>
                     <div class="order-total-price">$ ${totalFmt} COP</div>
@@ -134,16 +137,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function renderizarDetallePedido(ped) {
+    async function renderizarDetallePedido(ped) {
         if (!pedidosContainer) return;
+        pedidosContainer.innerHTML = '<div style="color:#ccc; padding:20px; text-align:center;">Cargando detalle del pedido...</div>';
+
+        let articulosReales = ped.articulos || [];
+        let estadoPedido = ped.estado || 'pendiente';
+        let direccionEnvio = ped.direccionCompleta || '';
+
+        try {
+            const detalleCompleto = await PedidoService.obtenerDetalleCompleto(ped.idPedido);
+            if (detalleCompleto && detalleCompleto.items && detalleCompleto.items.length > 0) {
+                articulosReales = detalleCompleto.items.map(it => ({
+                    id: it.idDetallePedidos,
+                    nombre: it.nombreSnapshot,
+                    variante: `${it.colorSnapshot || 'Único'} / ${it.tallaSnapshot}`,
+                    cantidad: it.cantidad,
+                    precio: it.precioUnitario,
+                    imagen: '../public/images/34.webp'
+                }));
+            }
+            if (detalleCompleto && detalleCompleto.pedido) {
+                estadoPedido = detalleCompleto.pedido.estado || estadoPedido;
+                direccionEnvio = detalleCompleto.pedido.direccionEnvio || direccionEnvio;
+            }
+        } catch (e) {
+            console.warn("No se pudo cargar detalle completo del pedido, usando datos disponibles:", e);
+        }
 
         const totalFmt = Number(ped.total).toLocaleString('es-CO');
-        const articulos = ped.articulos || [
-            { id: 1, nombre: 'Sudadera False', variante: 'Negro / L', cantidad: 1, precio: 95000, imagen: '../public/images/34.webp' },
-            { id: 2, nombre: 'Hoodie Crossroads', variante: 'Gris / M', cantidad: 1, precio: 95000, imagen: '../public/images/bmm92840_black_xl.webp' }
-        ];
-
-        const fechaFmt = ped.fecha ? new Date(ped.fecha).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }) : '28 de enero de 2026';
+        const articulos = articulosReales;
+        const fechaFmt = ped.fechaPedido || ped.fecha ? new Date(ped.fechaPedido || ped.fecha).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Reciente';
 
         const itemsHtml = articulos.map(item => `
             <div class="order-item-row">
@@ -154,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div>
                         <div class="order-item-meta__name">${item.nombre}</div>
-                        <div class="order-item-meta__variant">${item.variante || 'Negro / L'}</div>
+                        <div class="order-item-meta__variant">${item.variante || 'Única'}</div>
                     </div>
                 </div>
                 <div style="font-weight:600; font-size:0.95rem;">
@@ -187,13 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="timeline-step active">
                             <div class="timeline-step__marker"></div>
-                            <span class="timeline-step__title">En camino</span>
-                            <span class="timeline-step__date">En tránsito</span>
-                        </div>
-                        <div class="timeline-step">
-                            <div class="timeline-step__marker"></div>
-                            <span class="timeline-step__title">Entregado</span>
-                            <span class="timeline-step__date">Pendiente</span>
+                            <span class="timeline-step__title">${estadoPedido.toUpperCase()}</span>
+                            <span class="timeline-step__date">Estado Logístico</span>
                         </div>
                     </div>
                 </div>
@@ -204,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:16px; border-top:1px solid var(--border-dark); font-weight:700; font-size:1.1rem;">
-                    <span>Subtotal</span>
+                    <span>Total del Pedido</span>
                     <span>$ ${totalFmt} COP</span>
                 </div>
             </div>
@@ -224,4 +243,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     cargarPedidos();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPedidos);
+} else {
+    initPedidos();
+}

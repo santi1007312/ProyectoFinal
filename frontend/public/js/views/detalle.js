@@ -307,7 +307,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnIncrement && qtyDisplay) {
         btnIncrement.addEventListener('click', () => {
             const variante = variantesDisp.find(v => v.color === colorSeleccionado && v.talla === tallaSeleccionada);
-            const stockMax = variante ? variante.stock : 10;
+            // Si la variante fue devuelta por la BD usamos su stock real; si aun no se han cargado variantes permitimos hasta stock disponible
+            const stockMax = variante ? variante.stock : (variantesDisp.length > 0 ? 0 : 99);
+            if (stockMax <= 0) {
+                alert('⚠️ Esta variante no cuenta con stock disponible actualmente.');
+                return;
+            }
             if (cantidadSeleccionada < stockMax) {
                 cantidadSeleccionada++;
                 qtyDisplay.textContent = cantidadSeleccionada;
@@ -321,6 +326,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnAdd) {
         btnAdd.addEventListener('click', async () => {
             if (!productoActual) return;
+
+            const variante = variantesDisp.find(v => v.color === colorSeleccionado && v.talla === tallaSeleccionada);
+            if (variante && variante.stock <= 0) {
+                alert('⚠️ No se puede agregar al carrito: Esta variante está agotada.');
+                return;
+            }
 
             const itemLocal = {
                 id:     productoActual.id,
