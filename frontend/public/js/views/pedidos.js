@@ -89,16 +89,23 @@ function initPedidos() {
             card.className = 'order-summary-card';
 
             const totalFmt = Number(ped.total).toLocaleString('es-CO');
-            const articulos = ped.articulos || [
-                { id: 1, nombre: 'Sudadera False', variante: 'Negro / L', cantidad: 1, precio: 95000, imagen: '../public/images/34.webp' },
-                { id: 2, nombre: 'Camisa Oversized', variante: 'Blanco / M', cantidad: 1, precio: 95000, imagen: '../public/images/bmm92840_black_xl.webp' }
-            ];
+            const articulos = ped.items || ped.detalles || ped.articulos || [];
 
-            const thumbsHtml = articulos.map(item => `
-                <div class="order-thumb-box">
-                    <img src="${item.imagen || '../public/images/34.webp'}" alt="${item.nombre}" onerror="this.src='../public/images/34.webp'">
-                </div>
-            `).join('');
+            // Reemplaza el fragmento dentro de renderizarListaPedidos en pedidos.js:
+
+            const thumbsHtml = articulos.length > 0
+                ? articulos.slice(0, 4).map(item => {
+                    // Normalizamos la ruta de la imagen priorizando urlImagen o imagen
+                    const imgSrc = item.urlImagen || item.imagen || item.imagenUrl || '';
+                    return `
+                        <div class="order-thumb-box">
+                            ${imgSrc 
+                                ? `<img src="${imgSrc}" alt="${item.nombreSnapshot || item.nombre || 'Producto'}" onerror="this.src='../public/images/placeholder.png';">` 
+                                : `<i class="bx bx-package" style="font-size:1.2rem; color:#71717a;"></i>`}
+                        </div>
+                    `;
+                }).join('')
+                : `<div class="order-thumb-box"><i class="bx bx-package" style="font-size:1.2rem; color:#71717a;"></i></div>`;
 
             card.innerHTML = `
                 <div class="order-summary-card__top">
@@ -107,7 +114,7 @@ function initPedidos() {
                             ${thumbsHtml}
                         </div>
                     </div>
-                    <button type="button" class="btn-dark-action btn-volver-comprar-trigger" data-ped='${JSON.stringify(articulos)}'>
+                    <button type="button" class="btn-dark-action btn-volver-comprar-trigger">
                         Volver a comprar
                     </button>
                 </div>
@@ -129,7 +136,7 @@ function initPedidos() {
             if (btnVC) {
                 btnVC.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    ejecutarVolverAComprar(ped.articulos);
+                    ejecutarVolverAComprar(articulos);
                 });
             }
 
@@ -141,25 +148,23 @@ function initPedidos() {
         if (!pedidosContainer) return;
         pedidosContainer.innerHTML = '<div style="color:#ccc; padding:20px; text-align:center;">Cargando detalle del pedido...</div>';
 
-        let articulosReales = ped.articulos || [];
+        let articulosReales = ped.items || ped.detalles || ped.articulos || [];
         let estadoPedido = ped.estado || 'pendiente';
-        let direccionEnvio = ped.direccionCompleta || '';
 
         try {
             const detalleCompleto = await PedidoService.obtenerDetalleCompleto(ped.idPedido);
             if (detalleCompleto && detalleCompleto.items && detalleCompleto.items.length > 0) {
                 articulosReales = detalleCompleto.items.map(it => ({
                     id: it.idDetallePedidos,
-                    nombre: it.nombreSnapshot,
-                    variante: `${it.colorSnapshot || 'Único'} / ${it.tallaSnapshot}`,
+                    nombre: it.nombreSnapshot || it.nombre || 'Prenda',
+                    variante: `${it.colorSnapshot || 'Único'} / ${it.tallaSnapshot || 'M'}`,
                     cantidad: it.cantidad,
-                    precio: it.precioUnitario,
-                    imagen: '../public/images/34.webp'
+                    precio: it.precioUnitario || it.precio || 0,
+                    urlImagen: it.urlImagen || it.imagen || ''
                 }));
             }
             if (detalleCompleto && detalleCompleto.pedido) {
                 estadoPedido = detalleCompleto.pedido.estado || estadoPedido;
-                direccionEnvio = detalleCompleto.pedido.direccionEnvio || direccionEnvio;
             }
         } catch (e) {
             console.warn("No se pudo cargar detalle completo del pedido, usando datos disponibles:", e);
@@ -169,11 +174,15 @@ function initPedidos() {
         const articulos = articulosReales;
         const fechaFmt = ped.fechaPedido || ped.fecha ? new Date(ped.fechaPedido || ped.fecha).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Reciente';
 
-        const itemsHtml = articulos.map(item => `
+        const itemsHtml = articulos.map(item => {
+            const imgSrc = item.urlImagen || item.imagen || '';
+            return `
             <div class="order-item-row">
                 <div class="order-item-row__left">
                     <div class="order-item-thumb-badge">
-                        <img src="${item.imagen || '../public/images/34.webp'}" alt="${item.nombre}" onerror="this.src='../public/images/34.webp'">
+                        ${imgSrc 
+                            ? `<img src="${imgSrc}" alt="${item.nombre}" onerror="this.style.display='none'">` 
+                            : `<i class="bx bx-package" style="font-size:1.5rem; color:#71717a;"></i>`}
                         <span class="order-item-badge-qty">${item.cantidad || 1}</span>
                     </div>
                     <div>
@@ -185,7 +194,8 @@ function initPedidos() {
                     $ ${Number(item.precio * (item.cantidad || 1)).toLocaleString('es-CO')} COP
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         pedidosContainer.innerHTML = `
             <div class="dark-card">
@@ -211,8 +221,13 @@ function initPedidos() {
                         </div>
                         <div class="timeline-step active">
                             <div class="timeline-step__marker"></div>
-                            <span class="timeline-step__title">${estadoPedido.toUpperCase()}</span>
-                            <span class="timeline-step__date">Estado Logístico</span>
+                            <span class="timeline-step__title">En camino</span>
+                            <span class="timeline-step__date">En tránsito</span>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="timeline-step__marker"></div>
+                            <span class="timeline-step__title">Entregado</span>
+                            <span class="timeline-step__date">Pendiente</span>
                         </div>
                     </div>
                 </div>
@@ -223,7 +238,7 @@ function initPedidos() {
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:16px; border-top:1px solid var(--border-dark); font-weight:700; font-size:1.1rem;">
-                    <span>Total del Pedido</span>
+                    <span>Subtotal</span>
                     <span>$ ${totalFmt} COP</span>
                 </div>
             </div>

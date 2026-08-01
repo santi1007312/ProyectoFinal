@@ -429,16 +429,20 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = 'order-summary-card';
 
             const totalFmt = Number(ped.total).toLocaleString('es-CO');
-            const articulos = ped.articulos || [
-                { id: 1, nombre: 'Sudadera False', variante: 'Negro / L', cantidad: 1, precio: 95000, imagen: '../public/images/34.webp' },
-                { id: 2, nombre: 'Camisa Oversized', variante: 'Blanco / M', cantidad: 1, precio: 95000, imagen: '../public/images/bmm92840_black_xl.webp' }
-            ];
+            const articulos = ped.items || ped.detalles || ped.articulos || [];
 
-            const thumbsHtml = articulos.map(item => `
-                <div class="order-thumb-box">
-                    <img src="${item.imagen || '../public/images/34.webp'}" alt="${item.nombre}" onerror="this.src='../public/images/34.webp'">
-                </div>
-            `).join('');
+            const thumbsHtml = articulos.length > 0
+                ? articulos.slice(0, 4).map(item => {
+                    const imgSrc = item.urlImagen || item.imagen || '';
+                    return `
+                        <div class="order-thumb-box">
+                            ${imgSrc 
+                                ? `<img src="${imgSrc}" alt="${item.nombreSnapshot || item.nombre || 'Producto'}" onerror="this.style.display='none'">` 
+                                : `<i class="bx bx-package" style="font-size:1.2rem; color:#71717a;"></i>`}
+                        </div>
+                    `;
+                }).join('')
+                : `<div class="order-thumb-box"><i class="bx bx-package" style="font-size:1.2rem; color:#71717a;"></i></div>`;
 
             card.innerHTML = `
                 <div class="order-summary-card__top">
@@ -447,13 +451,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${thumbsHtml}
                         </div>
                     </div>
-                    <button type="button" class="btn-dark-action btn-volver-comprar-trigger" data-ped='${JSON.stringify(articulos)}'>
+                    <button type="button" class="btn-dark-action btn-volver-comprar-trigger">
                         Volver a comprar
                     </button>
                 </div>
                 <div class="order-summary-card__info">
                     <div>
-                        <span class="order-status-badge"><i class="bx bx-truck"></i> ${ped.estadoTexto || 'En camino'}</span>
+                        <span class="order-status-badge"><i class="bx bx-truck"></i> ${ped.estadoTexto || ped.estado || 'En camino'}</span>
                         <div class="order-meta-text">Pedido #${ped.idPedido}</div>
                     </div>
                     <div class="order-total-price">$ ${totalFmt} COP</div>
@@ -483,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!pedidosContainer) return;
         pedidosContainer.innerHTML = '<div style="color:#ccc; padding:20px; text-align:center;">Cargando detalle del pedido...</div>';
 
-        let articulosReales = ped.articulos || [];
+        let articulosReales = ped.items || ped.detalles || ped.articulos || [];
         let estadoPedido = ped.estado || 'pendiente';
 
         try {
@@ -491,11 +495,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (detalleCompleto && detalleCompleto.items && detalleCompleto.items.length > 0) {
                 articulosReales = detalleCompleto.items.map(it => ({
                     id: it.idDetallePedidos,
-                    nombre: it.nombreSnapshot,
-                    variante: `${it.colorSnapshot || 'Único'} / ${it.tallaSnapshot}`,
+                    nombre: it.nombreSnapshot || it.nombre || 'Prenda',
+                    variante: `${it.colorSnapshot || 'Único'} / ${it.tallaSnapshot || 'M'}`,
                     cantidad: it.cantidad,
-                    precio: it.precioUnitario,
-                    imagen: '../public/images/34.webp'
+                    precio: it.precioUnitario || it.precio || 0,
+                    urlImagen: it.urlImagen || it.imagen || ''
                 }));
             }
             if (detalleCompleto && detalleCompleto.pedido) {
@@ -509,11 +513,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const articulos = articulosReales;
         const fechaFmt = ped.fechaPedido || ped.fecha ? new Date(ped.fechaPedido || ped.fecha).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Reciente';
 
-        const itemsHtml = articulos.map(item => `
+        const itemsHtml = articulos.map(item => {
+            const imgSrc = item.urlImagen || item.imagen || '';
+            return `
             <div class="order-item-row">
                 <div class="order-item-row__left">
                     <div class="order-item-thumb-badge">
-                        <img src="${item.imagen || '../public/images/34.webp'}" alt="${item.nombre}" onerror="this.src='../public/images/34.webp'">
+                        ${imgSrc 
+                            ? `<img src="${imgSrc}" alt="${item.nombre}" onerror="this.style.display='none'">` 
+                            : `<i class="bx bx-package" style="font-size:1.5rem; color:#71717a;"></i>`}
                         <span class="order-item-badge-qty">${item.cantidad || 1}</span>
                     </div>
                     <div>
@@ -525,7 +533,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     $ ${Number(item.precio * (item.cantidad || 1)).toLocaleString('es-CO')} COP
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         pedidosContainer.innerHTML = `
             <div class="dark-card">

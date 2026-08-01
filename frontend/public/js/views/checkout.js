@@ -108,14 +108,15 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const prod = await ProductoService.detalle(id);
             const itemLocal = {
-                idVariante: 1, // default
-                id:     prod.id,
-                nombre: prod.nombre,
+                idProducto: prod.id || prod.idProducto,
+                idVariante: prod.idVariante || 0,
+                id:     prod.id || prod.idProducto,
+                nombre: prod.nombre || prod.nombreProducto,
                 precio: prod.precioFinal || prod.precioBase,
-                color:  (prod.colores && prod.colores.length > 0) ? prod.colores[0] : 'Negro',
-                talla:  (prod.tallas && prod.tallas.length > 0) ? prod.tallas[0] : 'S',
+                color:  (prod.colores && prod.colores.length > 0) ? prod.colores[0] : 'Blanco',
+                talla:  (prod.tallas && prod.tallas.length > 0) ? prod.tallas[0] : 'L',
                 cantidad: 1,
-                imagen: prod.imagenPrincipal || prod.imagen || '../public/images/34.webp'
+                imagen: prod.imagenPrincipal || prod.imagen || prod.urlImagen || ''
             };
 
             checkoutItems = [itemLocal];
@@ -126,17 +127,19 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             // Fallback visual si el backend no responde
             const fallback = {
+                idProducto: parseInt(id),
                 id: parseInt(id),
-                nombre: 'CONJUNTO DRAGÓN 🥷',
-                precioBase: 220000,
-                precioFinal: 220000,
-                imagen: '../public/images/34.webp',
-                color: 'Negro',
-                talla: 'S',
+                nombre: 'Prenda Elixir',
+                precioBase: 130000,
+                precioFinal: 130000,
+                imagen: '',
+                color: 'Blanco',
+                talla: 'L',
                 cantidad: 1
             };
             const itemLocal = {
-                idVariante: 1,
+                idProducto: fallback.id,
+                idVariante: 0,
                 id:     fallback.id,
                 nombre: fallback.nombre,
                 precio: fallback.precioFinal || fallback.precioBase,

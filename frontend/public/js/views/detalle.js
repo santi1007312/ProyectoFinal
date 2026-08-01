@@ -337,16 +337,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 id:     productoActual.id,
                 nombre: productoActual.nombre,
                 precio: productoActual.precioFinal || productoActual.precioBase,
+                idProducto: productoActual.id || productoActual.idProducto,
+                idVariante: idVarianteSeleccionada || 0,
+                id:     productoActual.id || productoActual.idProducto,
+                nombre: productoActual.nombre || productoActual.nombreProducto,
+                precio: productoActual.precioFinal || productoActual.precioBase,
                 color:  colorSeleccionado,
                 talla:  tallaSeleccionada,
                 cantidad: cantidadSeleccionada,
-                imagen: productoActual.imagenPrincipal || productoActual.imagen || '../public/images/34.webp'
+                imagen: productoActual.imagenPrincipal || productoActual.imagen || productoActual.urlImagen || ''
             };
 
             btnAdd.disabled = true;
             btnAdd.textContent = 'Agregando...';
 
-            const idVar = idVarianteSeleccionada || 1; // fallback si no hay variantes cargadas
+            const idVar = idVarianteSeleccionada || 0;
             await CarritoService.agregar(idVar, cantidadSeleccionada, itemLocal);
 
             btnAdd.disabled = false;
@@ -385,14 +390,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!productoActual) return;
 
             const itemLocal = {
-                idVariante: idVarianteSeleccionada || 1,
-                id:     productoActual.id,
-                nombre: productoActual.nombre,
+                idProducto: productoActual.id || productoActual.idProducto,
+                idVariante: idVarianteSeleccionada || 0,
+                id:     productoActual.id || productoActual.idProducto,
+                nombre: productoActual.nombre || productoActual.nombreProducto,
                 precio: productoActual.precioFinal || productoActual.precioBase,
                 color:  colorSeleccionado,
                 talla:  tallaSeleccionada,
                 cantidad: cantidadSeleccionada,
-                imagen: productoActual.imagenPrincipal || productoActual.imagen || '../public/images/34.webp'
+                imagen: productoActual.imagenPrincipal || productoActual.imagen || productoActual.urlImagen || ''
             };
 
             localStorage.setItem('elixir_checkout_items', JSON.stringify([itemLocal]));
