@@ -1390,45 +1390,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ── 5. MARKETING (CUPONES Y DESCUENTOS) ──
-    function renderCupones() {
-        dynamicContent.innerHTML = `
-            <div class="action-bar">
-                <button id="btnAbrirFormCupón" class="btn-urban">＋ Crear Código de Descuento</button>
-            </div>
-
-            <div id="wrapperFormCupón" class="admin-panel-card" style="display:none; margin-bottom:20px;">
-                <h3>Crear Nuevo Cupón de Descuento</h3>
-                <form id="formRegistrarCupón" class="admin-grid-form">
-                    <div class="input-group"><label>Código del Cupón (Ej: FLEXX20)</label><input type="text" name="codigo" placeholder="LETRAS MAYÚSCULAS" required></div>
-                    <div class="input-group"><label>Porcentaje de Descuento (%)</label><input type="number" name="descuento" min="1" max="100" required></div>
-                    <div class="input-group"><label>Fecha de Expiración</label><input type="date" name="fechaExpiracion" required></div>
-                    <div style="grid-column: span 2; display:flex; gap:10px; margin-top:10px;">
-                        <button type="submit" class="btn-urban">Activar Cupón</button>
-                        <button type="button" id="btnCancelarCupón" class="btn-action">Cancelar</button>
-                    </div>
-                </form>
-            </div>
-
-            <table class="admin-table">
-                <thead>
-                    <tr><th>ID</th><th>Código</th><th>Descuento</th><th>Vencimiento</th><th>Estado</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>1</td><td><strong>ELIXIR15</strong></td><td>15% OFF</td><td>31/12/2026</td><td><span class="badge success">Activo</span></td></tr>
-                    <tr><td>2</td><td><strong>SENA2026</strong></td><td>20% OFF</td><td>01/07/2026</td><td><span class="badge success">Activo</span></td></tr>
-                </tbody>
-            </table>
-        `;
-
-        const btnAbrir = document.getElementById('btnAbrirFormCupón');
-        const btnCancelar = document.getElementById('btnCancelarCupón');
-        const wrapper = document.getElementById('wrapperFormCupón');
-
-        if(btnAbrir && wrapper) btnAbrir.addEventListener('click', () => wrapper.style.display = 'block');
-        if(btnCancelar && wrapper) btnCancelar.addEventListener('click', () => wrapper.style.display = 'none');
-    }
-
+    
     // ── 5. GESTIÓN DE PQR Y DEVOLUCIONES ──
     async function renderSoporte() {
         dynamicContent.innerHTML = `<div class="loader">Cargando solicitudes de soporte...</div>`;
