@@ -254,19 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!addressListContainer) return;
         const saved = JSON.parse(localStorage.getItem('saved_addresses')) || [];
         if (saved.length === 0) {
-            // Ejemplo predeterminado si hay datos
-            const defaultAddress = {
-                nombre: usuarioActual?.nombre || 'Santiago',
-                apellido: usuarioActual?.apellido || 'Carrillo Rivera',
-                calle: 'Calle 64e 1w 48',
-                barrio: 'Balcones de gratamira',
-                ciudad: 'Bucaramanga',
-                departamento: 'Santander',
-                codigoPostal: '680006',
-                pais: 'Colombia',
-                esPredeterminada: true
-            };
-            saved.push(defaultAddress);
+            addressListContainer.innerHTML = '<div class="empty-placeholder" style="padding:20px; color:#888; text-align:center;">No has registrado ninguna dirección de envío.</div>';
+            return;
         }
 
         addressListContainer.innerHTML = '';
@@ -625,8 +614,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const carritoActual = CarritoService.obtenerLocal() || [];
 
         articulos.forEach(art => {
-            // Verificar si el item ya existe en el carrito local
-            const existente = carritoActual.find(c => c.id === art.id && c.talla === (art.variante ? art.variante.split('/')[1]?.trim() : 'M'));
+            const rawVar = art.variante || '';
+            const parts = rawVar.includes('/') ? rawVar.split('/') : [rawVar, ''];
+            const colorVal = parts[0] && parts[0].trim() !== '' ? parts[0].trim() : (art.color || 'Único');
+            const tallaVal = parts[1] && parts[1].trim() !== '' ? parts[1].trim() : (art.talla || 'Única');
+
+            const existente = carritoActual.find(c => c.id === art.id && c.talla === tallaVal);
             if (existente) {
                 existente.cantidad += (art.cantidad || 1);
             } else {
@@ -635,10 +628,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: art.id || 1,
                     nombre: art.nombre || 'Prenda Elixir',
                     precio: art.precio || 95000,
-                    color: art.variante ? art.variante.split('/')[0]?.trim() : 'Negro',
-                    talla: art.variante ? art.variante.split('/')[1]?.trim() : 'M',
+                    color: colorVal,
+                    talla: tallaVal,
                     cantidad: art.cantidad || 1,
-                    imagen: art.imagen || '../public/images/34.webp'
+                    imagen: art.urlImagen || art.imagen || '../public/images/34.webp'
                 });
             }
         });

@@ -699,11 +699,7 @@
     border-color: #f1c40f;
 }
 
-.btn-log-action.btn-print:hover {
-    background-color: rgba(4, 211, 97, 0.2);
-    color: #04d361;
-    border-color: #04d361;
-}
+
 
 /* MODALES FLOTANTES — STREETWEAR DARK THEME */
 .admin-modal-overlay {
@@ -937,92 +933,3 @@
     gap: 8px;
 }
 
-/* REMISIÓN / FACTURA DE EMPAQUE (VISTA DE IMPRESIÓN) */
-.print-shipping-label {
-    background: #ffffff;
-    color: #111111;
-    padding: 25px;
-    font-family: Arial, sans-serif;
-    border: 2px dashed #333333;
-    border-radius: 8px;
-}
-
-.print-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #111;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-}
-
-.print-brand {
-    font-size: 1.6rem;
-    font-weight: 900;
-    letter-spacing: 2px;
-}
-
-.print-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.print-box {
-    border: 1px solid #ccc;
-    padding: 12px;
-    border-radius: 4px;
-}
-
-.print-box h5 {
-    margin: 0 0 8px 0;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    color: #555;
-}
-
-.print-box p {
-    margin: 3px 0;
-    font-size: 0.95rem;
-}
-
-.print-items-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
-
-.print-items-table th, .print-items-table td {
-    border: 1px solid #dddddd;
-    padding: 8px 10px;
-    font-size: 0.85rem;
-    text-align: left;
-}
-
-.print-items-table th {
-    background-color: #f2f2f2;
-}
-
-@media print {
-    body * {
-        visibility: hidden;
-    }
-    #modalPrintRemision, #modalPrintRemision * {
-        visibility: visible;
-    }
-    #modalPrintRemision {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: auto;
-        background: #fff;
-    }
-    .admin-modal-header, .admin-modal-footer, .admin-modal-close {
-        display: none !important;
-    }
-    .print-shipping-label {
-        border: none;
-    }
-}

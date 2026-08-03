@@ -348,7 +348,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function actualizarContenedoresStock() {
             const valCat = selectCategoria ? selectCategoria.value : '';
-            if (String(valCat) === '4') {
+            const textCat = selectCategoria && selectCategoria.selectedIndex >= 0 ? selectCategoria.options[selectCategoria.selectedIndex].text.toUpperCase() : '';
+            const esZapatos = String(valCat) === '4' || textCat.includes('ZAPATO') || textCat.includes('CALZADO');
+            if (esZapatos) {
                 if (containerStockRopa) containerStockRopa.style.display = 'none';
                 if (containerStockZapatos) containerStockZapatos.style.display = 'flex';
             } else {
@@ -682,7 +684,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Validar Stocks
-            const stockFieldsToValidate = String(idCategorias) === '4'
+            const textCatSel = selectCategoria && selectCategoria.selectedIndex >= 0 ? selectCategoria.options[selectCategoria.selectedIndex].text.toUpperCase() : '';
+            const esZapatosVal = String(idCategorias) === '4' || textCatSel.includes('ZAPATO') || textCatSel.includes('CALZADO');
+            const stockFieldsToValidate = esZapatosVal
                 ? ['stock_34', 'stock_36', 'stock_38', 'stock_39', 'stock_40', 'stock_42', 'stock_43']
                 : ['stock_S', 'stock_M', 'stock_L', 'stock_XL'];
 
@@ -925,24 +929,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
 
-            <!-- MODAL 3: VISTA DE IMPRESIÓN REMISIÓN / FACTURA DE EMPAQUE -->
-            <div class="admin-modal-overlay" id="modalPrintRemision">
-                <div class="admin-modal-container" style="max-width: 750px;">
-                    <div class="admin-modal-header">
-                        <h2><i class='bx bx-printer'></i> Remisión de Despacho & Empaque</h2>
-                        <button class="admin-modal-close" data-modal="modalPrintRemision">&times;</button>
-                    </div>
-                    <div class="admin-modal-body" id="m3PrintContainer">
-                        <div class="loader">Generando remisión de despacho...</div>
-                    </div>
-                    <div class="admin-modal-footer">
-                        <button class="btn-action btn-modal-close" data-modal="modalPrintRemision">Cerrar</button>
-                        <button id="btnEjecutarImpresionRemision" class="btn-action" style="background-color:#04d361; color:#121214; font-weight:bold;">
-                            <i class='bx bx-printer'></i> Imprimir Etiqueta de Caja
-                        </button>
-                    </div>
-                </div>
-            </div>
+
         `;
 
         // Referencias a Elementos DOM de Filtros y Tabla
@@ -1039,9 +1026,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <button class="btn-log-action btn-ship btn-abrir-despacho" data-id="${p.idPedido}" title="Gestionar Envío & Despacho">
                                     <i class='bx bx-truck'></i>
                                 </button>
-                                <button class="btn-log-action btn-print btn-abrir-impresion" data-id="${p.idPedido}" title="Imprimir Remisión de Caja">
-                                    <i class='bx bx-printer'></i>
-                                </button>
+
                             </div>
                         </td>
                     </tr>
@@ -1281,110 +1266,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
 
-            // MODAL 3: IMPRIMIR REMISIÓN DE EMPAQUE
-            document.querySelectorAll('.btn-abrir-impresion').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const idPedido = btn.getAttribute('data-id');
-                    const modal = document.getElementById('modalPrintRemision');
-                    const container = document.getElementById('m3PrintContainer');
 
-                    container.innerHTML = `<div class="loader">Generando remisión limpia de empaque para pedido #${idPedido}...</div>`;
-                    modal.classList.add('active');
-
-                    try {
-                        const data = await PedidoService.obtenerDetalleCompleto(idPedido);
-                        if (!data || data.status === 'error') {
-                            container.innerHTML = `<div class="error-msg">Error al generar la remisión de empaque.</div>`;
-                            return;
-                        }
-
-                        const p = data.pedido || {};
-                        const c = data.cliente || {};
-                        const items = data.items || [];
-                        const rastreoList = data.rastreo || [];
-                        const ultimoRastreo = rastreoList.length > 0 ? rastreoList[0] : {};
-
-                        const numPed = p.numeroPedido || `#${p.idPedido}`;
-                        const fechaStr = p.fechaPedido ? new Date(p.fechaPedido).toLocaleDateString('es-CO') : 'Reciente';
-
-                        let itemRows = '';
-                        items.forEach(it => {
-                            itemRows += `
-                                <tr>
-                                    <td><strong>${it.nombreSnapshot}</strong></td>
-                                    <td>${it.tallaSnapshot}</td>
-                                    <td>${it.colorSnapshot || 'N/A'}</td>
-                                    <td><strong>${it.cantidad}</strong></td>
-                                </tr>
-                            `;
-                        });
-
-                        container.innerHTML = `
-                            <div class="print-shipping-label">
-                                <div class="print-header">
-                                    <div>
-                                        <div class="print-brand">ELIXIR & FLEXX</div>
-                                        <span style="font-size:0.85rem; color:#555;">E-Commerce Streetwear Colombia</span>
-                                    </div>
-                                    <div style="text-align:right;">
-                                        <h3 style="margin:0; font-size:1.2rem;">REMISIÓN DE EMPAQUE</h3>
-                                        <span style="font-size:1rem; font-weight:bold;">${numPed}</span><br>
-                                        <small style="color:#555;">Fecha: ${fechaStr}</small>
-                                    </div>
-                                </div>
-
-                                <div class="print-grid">
-                                    <div class="print-box">
-                                        <h5>ORIGEN / REMITENTE:</h5>
-                                        <p><strong>ELIXIR & FLEXX BODEGA CENTRAL</strong></p>
-                                        <p>Centro Logístico Bucaramanga</p>
-                                        <p>Bucaramanga, Santander, Colombia</p>
-                                        <p>Tel: +57 300 000 0000</p>
-                                    </div>
-
-                                    <div class="print-box">
-                                        <h5>DESTINATARIO / CLIENTE:</h5>
-                                        <p><strong>${c.nombre || ''} ${c.apellido || ''}</strong></p>
-                                        <p><strong>Dirección:</strong> ${p.direccionEnvio || 'N/A'}</p>
-                                        <p>Teléfono: ${c.telefono || 'N/A'}</p>
-                                        <p>Email: ${c.email || 'N/A'}</p>
-                                    </div>
-                                </div>
-
-                                <div class="print-box" style="margin-bottom:15px; background-color:#fafafa;">
-                                    <h5>INFORMACIÓN LOGÍSTICA DE TRANSPORTE:</h5>
-                                    <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-                                        <span>Transportadora: <strong>${ultimoRastreo.transportadora || 'Mensajería / Servientrega'}</strong></span>
-                                        <span>No. Guía de Rastreo: <strong>${ultimoRastreo.numeroGuia || 'PENDIENTE'}</strong></span>
-                                    </div>
-                                </div>
-
-                                <h5 style="margin:15px 0 8px 0; font-size:0.85rem; text-transform:uppercase;">CONTENIDO DEL PAQUETE (PRENDAS):</h5>
-                                <table class="print-items-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Prenda</th>
-                                            <th>Talla</th>
-                                            <th>Color</th>
-                                            <th>Cantidad</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${itemRows}
-                                    </tbody>
-                                </table>
-
-                                <div style="margin-top:25px; border-top:1px solid #ddd; padding-top:10px; text-align:center; font-size:0.75rem; color:#777;">
-                                    Etiqueta generada por el Sistema Logístico Elixir & Flexx. Por favor verificar el empaque sellado antes de entregar a la transportadora.
-                                </div>
-                            </div>
-                        `;
-                    } catch (e) {
-                        console.error(e);
-                        container.innerHTML = `<div class="error-msg">Error al generar la remisión para impresión.</div>`;
-                    }
-                });
-            });
         }
 
         // Evento Submit de Modal 2 (Formulario de Despacho)
@@ -1438,13 +1320,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Evento Botón Imprimir Remisión
-        const btnEjecutarImp = document.getElementById('btnEjecutarImpresionRemision');
-        if (btnEjecutarImp) {
-            btnEjecutarImp.addEventListener('click', () => {
-                window.print();
-            });
-        }
+
     }
 
     // ── 4. CONTROL Y AUDITORÍA DE USUARIOS ──
@@ -1778,7 +1654,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
                     if (confirm('¿Está seguro de aprobar esta solicitud de devolución?')) {
-                        const res = await SoporteService.actualizarEstadoDevolucion(id, 'aprobado');
+                        const res = await SoporteService.actualizarEstadoDevolucion(id, 'aprobada');
                         if (res.ok) {
                             alert('Aprobado con éxito.');
                             await cargarTablasSoporte();
@@ -1802,7 +1678,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             alert('Debe especificar un motivo.');
                             return;
                         }
-                        const res = await SoporteService.actualizarEstadoDevolucion(id, 'rechazado', motivo);
+                        const res = await SoporteService.actualizarEstadoDevolucion(id, 'rechazada', motivo);
                         if (res.ok) {
                             alert('Rechazado con éxito.');
                             await cargarTablasSoporte();

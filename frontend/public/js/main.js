@@ -13,9 +13,12 @@ function initMain() {
 
     if (dropdownToggle && headerDropdown) {
         dropdownToggle.addEventListener('click', (e) => {
-            // Permitir navegación si es doble clic o redireccionar directo a interfazDevoluciones.html si se prefiere
-            e.preventDefault();
-            headerDropdown.classList.toggle('is-active');
+            // ERR-009: Si hace clic sobre la flecha o si href es '#', alterna el dropdown. De lo contrario navega directamente a la página.
+            const href = dropdownToggle.getAttribute('href');
+            if (e.target.classList.contains('dropdown-arrow') || href === '#' || href === '') {
+                e.preventDefault();
+                headerDropdown.classList.toggle('is-active');
+            }
         });
 
         // Cerrar al hacer clic fuera
@@ -34,6 +37,22 @@ function initMain() {
             if (href === '#' || href === 'politicas.html') {
                 e.preventDefault();
                 window.location.href = 'interfazDevoluciones.html?seccion=devoluciones';
+            }
+        });
+    });
+
+    // ERR-008: Proteger navegación a la ruta "PEDIDOS" si no hay sesión activa
+    document.querySelectorAll('a[href*="interfazPedidos.html"]').forEach(link => {
+        link.addEventListener('click', async (e) => {
+            try {
+                const baseUrl = await getBaseUrl();
+                const res = await fetch(`${baseUrl}/UsuarioController?accion=obtenerPerfil`, { credentials: 'include' });
+                if (!res.ok) {
+                    e.preventDefault();
+                    window.location.href = 'login.html?redirect=interfazPedidos.html';
+                }
+            } catch (err) {
+                // si falla la petición, permitir la navegación estándar
             }
         });
     });

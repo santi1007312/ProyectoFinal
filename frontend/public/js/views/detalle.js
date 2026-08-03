@@ -71,8 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function inicializarVista(prod, variantes) {
         if (nameEl)  nameEl.textContent  = prod.nombre;
 
-        // Renderizar banner "PRODUCTO DESTACADO" debajo del título si esDestacado / isDestacado es true
-        const isDestacado = prod.esDestacado === true || prod.esDestacado === 'true' || prod.isDestacado === true || prod.isDestacado === 'true';
+        // Renderizar banner "PRODUCTO DESTACADO" debajo del título si esDestacado / isDestacado es true o 1
+        const isDestacado = Boolean(prod.esDestacado) === true || String(prod.esDestacado) === 'true' || Number(prod.esDestacado) === 1 || Boolean(prod.isDestacado) === true || String(prod.isDestacado) === 'true' || Number(prod.isDestacado) === 1;
         let badgeEl = document.getElementById('destacadoBadge');
         if (isDestacado) {
             if (!badgeEl && nameEl && nameEl.parentNode) {

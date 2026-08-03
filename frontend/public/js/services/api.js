@@ -312,12 +312,7 @@ export const ProductoService = {
 
     async reactivar(id) {
         try {
-            const baseUrl = await getBaseUrl();
-            const url = `${baseUrl}/ProductoController?accion=reactivar&idProducto=${id}`.replace(/([^:]\/)\/+/g, "$1");
-            const res = await fetch(url, {
-                method: 'PUT',
-                credentials: 'include'
-            });
+            const res = await post('ProductoController', { accion: 'reactivar', idProducto: id });
             const json = await res.json();
             return { ok: json.status === 'success', mensaje: json.mensaje };
         } catch {
