@@ -55,8 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
             renderizarDatosUsuario(usuarioActual);
             cargarDirecciones();
 
-            if (usuarioActual && (usuarioActual.idRol === 2 || usuarioActual.idRol === 3)) {
+            if (usuarioActual && (usuarioActual.idRol === 2 || usuarioActual.idRol === 3 || usuarioActual.esAdmin)) {
                 if (adminPanelContainer) adminPanelContainer.style.display = 'block';
+                const seccionPanelAdmin = document.getElementById('seccionPanelAdmin');
+                if (seccionPanelAdmin) {
+                    seccionPanelAdmin.classList.remove('hidden');
+                    seccionPanelAdmin.style.display = 'block';
+                }
                 if (btnVolverAlPanel) {
                     btnVolverAlPanel.onclick = () => { window.location.href = 'interfazAdmin.html'; };
                 }
