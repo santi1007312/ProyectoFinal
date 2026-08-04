@@ -55,35 +55,36 @@ document.addEventListener('DOMContentLoaded', () => {
             renderizarDatosUsuario(usuarioActual);
             cargarDirecciones();
 
-            if (usuarioActual && (usuarioActual.idRol === 2 || usuarioActual.idRol === 3 || usuarioActual.esAdmin)) {
-                if (adminPanelContainer) adminPanelContainer.style.display = 'block';
-                const seccionPanelAdmin = document.getElementById('seccionPanelAdmin');
-                if (seccionPanelAdmin) {
-                    seccionPanelAdmin.classList.remove('hidden');
-                    seccionPanelAdmin.style.display = 'block';
-                }
-                if (btnVolverAlPanel) {
-                    btnVolverAlPanel.onclick = () => { window.location.href = 'interfazAdmin.html'; };
+            const esAdmin = usuarioActual && (usuarioActual.idRol === 2 || usuarioActual.idRol === 3 || usuarioActual.esAdmin === true);
+            if (adminPanelContainer) {
+                if (esAdmin) {
+                    adminPanelContainer.style.display = 'block';
+                    if (btnVolverAlPanel) {
+                        btnVolverAlPanel.onclick = () => { window.location.href = 'interfazAdmin.html'; };
+                    }
+                } else {
+                    adminPanelContainer.style.display = 'none';
                 }
             }
         } catch (err) {
             console.warn("Modo fallback perfil:", err.message);
             const fallback = {
-                nombre: 'Santiago',
-                apellido: 'Carrillo Rivera',
-                email: 'carrilloriverasantiago@gmail.com',
+                nombre: 'Usuario',
+                apellido: '',
+                email: 'usuario@ejemplo.com',
                 idRol: 1
             };
             usuarioActual = fallback;
             renderizarDatosUsuario(fallback);
-            renderizarDireccionesLocal();
+            cargarDirecciones();
+            if (adminPanelContainer) adminPanelContainer.style.display = 'none';
         }
     }
 
     function renderizarDatosUsuario(u) {
-        const full = `${u.nombre || ''} ${u.apellido || ''}`.trim() || 'Santiago Carrillo Rivera';
+        const full = `${u.nombre || ''} ${u.apellido || ''}`.trim() || 'Usuario';
         if (userNameDisplay) userNameDisplay.textContent = full;
-        if (userEmailInput) userEmailInput.value = u.email || u.correo || 'carrilloriverasantiago@gmail.com';
+        if (userEmailInput) userEmailInput.value = u.email || u.correo || '';
     }
 
     // ── MODAL "EDITAR PERFIL" ────────────────────────────────────────────────
@@ -220,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const idU = usuarioActual ? usuarioActual.idUsuarios || '' : '';
             const dirs = await DireccionService.listar(idU);
-            if (dirs && dirs.length > 0) {
+            if (dirs && Array.isArray(dirs) && dirs.length > 0) {
                 renderizarDireccionesLista(dirs);
             } else {
                 renderizarDireccionesLocal();
@@ -237,15 +238,15 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = 'address-item-card';
 
             const esPredet = d.esPredeterminada ? '<span class="address-item-card__badge">[Predeterminada]</span>' : '';
-            const fullNombre = `${d.nombre || usuarioActual?.nombre || 'Santiago'} ${d.apellido || usuarioActual?.apellido || 'Carrillo Rivera'}`;
-            const dirTexto = `${fullNombre} ${esPredet}, ${d.calle || 'Calle 64e 1w 48'}, ${d.barrio || 'Balcones de gratamira'}, ${d.codigoPostal || '680006'} ${d.ciudad || 'Bucaramanga'} ${d.departamento || 'Santander'}, ${d.pais || 'Colombia'}`;
+            const fullNombre = `${d.nombre || usuarioActual?.nombre || ''} ${d.apellido || usuarioActual?.apellido || ''}`.trim();
+            const telText = d.telefono ? `, Tel: ${d.telefono}` : '';
+            const dirTexto = `${fullNombre} ${esPredet}, ${d.calle || ''}, ${d.codigoPostal || ''} ${d.ciudad || ''} ${d.departamento || ''}, ${d.pais || 'Colombia'}${telText}`;
 
             card.innerHTML = `
                 <div class="address-item-card__text">${dirTexto}</div>
                 <button type="button" class="btn-dark-secondary btn-editar-direccion" style="font-size:0.78rem;">Editar</button>
             `;
 
-            // CORRECCIÓN ERROR 2: Vincular el evento click del botón 'Editar' para cargar los datos en el modal
             const btnEdit = card.querySelector('.btn-editar-direccion');
             if (btnEdit) {
                 btnEdit.addEventListener('click', () => abrirModalEditarDireccion(d, idx));
@@ -259,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!addressListContainer) return;
         const saved = JSON.parse(localStorage.getItem('saved_addresses')) || [];
         if (saved.length === 0) {
-            addressListContainer.innerHTML = '<div class="empty-placeholder" style="padding:20px; color:#888; text-align:center;">No has registrado ninguna dirección de envío.</div>';
+            addressListContainer.innerHTML = '<div class="empty-placeholder" style="padding:20px; color:var(--text-muted, #a1a1aa); text-align:center;">No tienes direcciones de envío guardadas.</div>';
             return;
         }
 
@@ -270,14 +271,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const esPredet = d.esPredeterminada ? '<span class="address-item-card__badge">[Predeterminada]</span>' : '';
             const fullNombre = `${d.nombre} ${d.apellido}`;
-            const dirTexto = `${fullNombre} ${esPredet}, ${d.calle}, ${d.barrio || 'Balcones de gratamira'}, ${d.codigoPostal} ${d.ciudad} ${d.departamento}, ${d.pais}`;
+            const dirTexto = `${fullNombre} ${esPredet}, ${d.calle}, ${d.codigoPostal || ''} ${d.ciudad} ${d.departamento}, ${d.pais}`;
 
             card.innerHTML = `
                 <div class="address-item-card__text">${dirTexto}</div>
                 <button type="button" class="btn-dark-secondary btn-editar-direccion" style="font-size:0.78rem;">Editar</button>
             `;
 
-            // CORRECCIÓN ERROR 2: Vincular el evento click del botón 'Editar' para direcciones locales
             const btnEdit = card.querySelector('.btn-editar-direccion');
             if (btnEdit) {
                 btnEdit.addEventListener('click', () => abrirModalEditarDireccion(d, idx));
@@ -374,47 +374,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── VISTA 2: HISTORIAL Y DETALLE DE PEDIDOS ──────────────────────────────
     const pedidosContainer = document.getElementById('pedidosDynamicContainer');
 
-    const PEDIDOS_MOCK = [
-        {
-            idPedido: 1585,
-            fecha: '2026-01-28',
-            estado: 'en_camino',
-            estadoTexto: 'En camino',
-            total: 190000,
-            contacto: 'carrilloriverasantiago@gmail.com',
-            direccionCompleta: 'Santiago Carrillo Rivera\nCalle 64e 1w 48, Balcones de gratamira\n680006 Bucaramanga Santander, Colombia',
-            metodoPago: 'CONTRAENTREGA',
-            articulos: [
-                { id: 1, nombre: 'Sudadera False', variante: 'Negro / L', cantidad: 1, precio: 95000, imagen: '../public/images/34.webp' },
-                { id: 2, nombre: 'Hoodie Crossroads', variante: 'Gris / M', cantidad: 1, precio: 95000, imagen: '../public/images/bmm92840_black_xl.webp' }
-            ]
-        }
-    ];
-
     async function cargarPedidos() {
         if (!pedidosContainer) return;
+        pedidosContainer.innerHTML = '';
         try {
             const list = await PedidoService.listarMisPedidos();
-            if (list && list.length > 0) {
+            if (list && Array.isArray(list) && list.length > 0) {
                 renderizarListaPedidos(list);
             } else {
-                renderizarListaPedidos(PEDIDOS_MOCK);
+                renderizarEstadoPedidosVacio();
             }
-        } catch {
-            renderizarListaPedidos(PEDIDOS_MOCK);
+        } catch (err) {
+            console.warn("No se pudieron cargar los pedidos:", err);
+            renderizarEstadoPedidosVacio();
         }
+    }
+
+    function renderizarEstadoPedidosVacio() {
+        if (!pedidosContainer) return;
+        pedidosContainer.innerHTML = `
+            <div class="dark-card empty-placeholder" style="text-align: center; padding: 40px 20px;">
+                <i class="bx bx-package" style="font-size: 3rem; color: var(--text-disabled, #71717a); margin-bottom: 12px; display: block;"></i>
+                <p style="margin-bottom: 16px; color: var(--text-muted, #a1a1aa);">Aún no has realizado ningún pedido.</p>
+                <a href="interfazCatalogo.html" class="btn-dark-action" style="text-decoration: none; display: inline-block; padding: 10px 20px;">Explorar productos</a>
+            </div>
+        `;
     }
 
     function renderizarListaPedidos(lista) {
         pedidosContainer.innerHTML = '';
 
         if (!lista || lista.length === 0) {
-            pedidosContainer.innerHTML = `
-                <div class="dark-card empty-placeholder">
-                    <i class="bx bx-package" style="font-size:3rem; color:var(--text-disabled); margin-bottom:12px; display:block;"></i>
-                    <p style="margin:0;">No se ha realizado ningún pedido aún.</p>
-                </div>
-            `;
+            renderizarEstadoPedidosVacio();
             return;
         }
 
